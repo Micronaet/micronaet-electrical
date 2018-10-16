@@ -26,9 +26,10 @@ from openerp.exceptions import Warning
 
 
 class DdTCreateInvoice(models.TransientModel):
+    ''' Wizard to create invoice from DDT open
+    '''
 
     _name = 'ddt.create.invoice'
-    _rec_name = 'journal_id'
 
     # -------------------------------------------------------------------------
     # COLUMNS:
