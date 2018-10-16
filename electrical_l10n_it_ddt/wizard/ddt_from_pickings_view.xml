@@ -23,8 +23,7 @@
                             <!--<field name="method" />-->
                             <field name="auto_confirm" />
                         </group>
-                    </sheet>
-                    
+                    </sheet>                    
                 </form>
             </field>
         </record>

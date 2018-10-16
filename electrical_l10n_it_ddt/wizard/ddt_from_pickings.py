@@ -97,7 +97,7 @@ class DdTFromPickings(models.TransientModel):
             
         pickings = picking_pool.search(domain)
         if not pickings:
-            return True
+            raise Warning(_('No pick out selected with this filter'))
         
         picking_db = {}
         for picking in pickings:
