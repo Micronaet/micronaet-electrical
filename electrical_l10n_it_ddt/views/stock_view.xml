@@ -336,8 +336,10 @@
                 <button name="invoice_open" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </button>
+                <!--<button name="invoice_open" position="after">
+                    <button name="invoice_open_manual" string="Validate" type="object" />
+                </button>-->
                 
-                <button name="invoice_open_manual" string="Validate" type="object" />
             </field>
         </record>
 

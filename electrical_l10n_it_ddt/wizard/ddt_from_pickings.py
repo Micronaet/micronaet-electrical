@@ -79,6 +79,142 @@ class DdTFromPickings(models.TransientModel):
     # -------------------------------------------------------------------------
     #                                 BUTTONS:
     # -------------------------------------------------------------------------
+    def print_selection(self, cr, uid, ids, context=None):
+        ''' Print selection filter
+        '''
+        # Pool used:
+        excel_pool = self.pool.get('excel.writer')
+        picking_pool = self.pool.get('stock.picking')
+        
+        domain = self.filter_domain(cr, uid, context=context)
+        
+        picking_ids = picking_pool.search(cr, uid, domain, context=context)
+        if not picking_ids:
+            raise Warning(_('No picking selected with this filter'))
+        
+        # Collect data:
+        picking_db = {}
+        for picking in picking_pool.browse(
+                cr, uid, picking_ids, context=context):
+            key = (picking.partner_id, picking.account_id)
+            if key not in picking_db:
+                picking_db[key] = []
+            picking_db[key].append(picking)
+        
+        # ---------------------------------------------------------------------
+        #                                Excel creation:
+        # ---------------------------------------------------------------------        
+        # Sheet name:
+        ws_names = [
+            [
+                'DDT', 
+                [35, 15, 30, 15, 15, ], 
+                ['Partner', 'DDT', 'Conto analitico', 'Picking'], 
+                0,
+                ],
+                
+            [
+                'Dettaglio', 
+                [35, 15, 30, 15, 15, 10, 10,], 
+                ['Partner', 'DDT', 'Conto analitico', 'Picking', 
+                    'Prodotto', 'Q.', 'UM.', 
+                    #'Subtotale',
+                    ], 
+                0
+                ],
+            ]
+
+        
+        
+        # ---------------------------------------------------------------------        
+        # WS creation:    
+        # ---------------------------------------------------------------------        
+        format_load = False
+        for record in ws_names:            
+            ws_name, width, header, row = record
+
+            # Create sheet:
+            excel_pool.create_worksheet(ws_name)
+            
+
+            # -----------------------------------------------------------------
+            # Get used format:
+            # -----------------------------------------------------------------
+            if not format_load:
+                format_load = True
+                excel_pool.get_format()
+                f_title = excel_pool.get_format('title')
+                f_header = excel_pool.get_format('header')
+                f_text = excel_pool.get_format('text')
+                f_number = excel_pool.get_format('number')
+
+            # Setup columns
+            excel_pool.column_width(ws_name, width)
+            
+            # Print header
+            excel_pool.write_xls_line(
+                ws_name, row, header, default_format=f_header)
+            record[3] += 1    
+
+        # Print data:    
+        i = 0
+        for key in picking_db:
+            i += 1
+            partner, account = key
+            data = [
+                # Invoice:
+                partner.name,
+                '# %s' % i,
+                account.name,
+
+                # Picking:
+                '',
+                
+                # Stock move:
+                '',
+                '',
+                '',
+                ]
+            
+            for picking in picking_db[key]:
+                data[3] = picking.name
+                
+                # ---------------------------------------------------------
+                # Detail: 
+                # ---------------------------------------------------------
+                if picking.move_lines:
+                    for move in picking.move_lines:
+                        data[4] = move.product_id.default_code
+                        data[5] = move.product_qty
+                        data[6] = move.product_uom.name
+                        
+                        excel_pool.write_xls_line(
+                            ws_names[1][0], ws_names[1][3], data,
+                            default_format=f_text)
+                        ws_names[1][3] += 1
+                else: # No movement
+                    data[4] = 'NESSUN MOVIMENTO'
+                    data[5] = '/'
+                    data[6] = '/'
+                    
+                    excel_pool.write_xls_line(
+                        ws_names[1][0], ws_names[1][3], data,
+                        default_format=f_text)
+                    ws_names[1][3] += 1
+                        
+            
+                # ---------------------------------------------------------
+                # Summary:
+                # ---------------------------------------------------------
+                excel_pool.write_xls_line(
+                    ws_names[0][0], ws_names[0][3], data[:4], 
+                    default_format=f_text)
+                ws_names[0][3] += 1
+               
+
+        return excel_pool.return_attachment(
+            cr, uid, 'Consegne_generate') #'invoice.xlsx')    
+
     @api.multi
     def create_ddt(self):
         ''' Select depend on partner and create DDT from pickings

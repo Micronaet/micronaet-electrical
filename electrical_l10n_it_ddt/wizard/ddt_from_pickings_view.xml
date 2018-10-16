@@ -7,6 +7,7 @@
             <field name="arch" type="xml">
                 <form string="DDT from Pickings">
                     <header>
+                        <button name="print_selection" string="Print" type="object" icon="gtk-print"/>
                         <button name="create_ddt" string="Create" type="object" class="oe_highlight"/>
                         or
                         <button string="Cancel" class="oe_link" special="cancel" />
@@ -15,7 +16,7 @@
                         <group colspan="4" col="4">                    
                             <separator string="Picking" colspan="4"/>
                             <field name="partner_id" />
-                            <field name="account_id" />
+                            <field name="account_id" domain="[('type','in',['normal','contract']),('state', '&lt;&gt;', 'close'),'|',('partner_id','=',False),('partner_id','=',partner_id)]"/>
                             
                             <field name="from_date" />
                             <field name="to_date" />

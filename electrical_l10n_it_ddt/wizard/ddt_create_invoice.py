@@ -174,7 +174,7 @@ class DdTCreateInvoice(models.TransientModel):
                 'Dettaglio', 
                 [35, 15, 30, 15, 15, 20, 10, 10,], 
                 ['Partner', 'Fattura', 'Conto analitico', 'DDT', 'Picking', 
-                    'Prodotto', 'UM.', 'Q.', 
+                    'Prodotto',  'Q.', 'UM.',
                     #'Subtotale',
                     ], 
                 0
@@ -246,8 +246,8 @@ class DdTCreateInvoice(models.TransientModel):
                     if picking.move_lines:
                         for move in picking.move_lines:
                             data[5] = move.product_id.default_code
-                            data[6] = move.product_uom.name
-                            data[7] = move.product_qty
+                            data[6] = move.product_qty
+                            data[7] = move.product_uom.name
                             
                             excel_pool.write_xls_line(
                                 ws_names[1][0], ws_names[1][3], data,
@@ -271,7 +271,6 @@ class DdTCreateInvoice(models.TransientModel):
                         ws_names[0][0], ws_names[0][3], data[:5], 
                         default_format=f_text)
                     ws_names[0][3] += 1
-               
 
         return excel_pool.return_attachment(
             cr, uid, 'Fatture_generate') #'invoice.xlsx')    
