@@ -165,8 +165,10 @@ class DdTCreateInvoice(models.TransientModel):
         ws_names = [
             [
                 'Fatture', 
-                [35, 15, 30, 15, 15, ], 
-                ['Partner', 'Fattura', 'Conto analitico', 'DDT', 'Picking', ], 
+                [35, 15, 30, 15, 15, 15,], 
+                ['Partner', 'Fattura', 'Conto analitico', 'DDT', 'Picking', 
+                    'Totale'
+                    ], 
                 0,
                 ],
                 
@@ -174,14 +176,11 @@ class DdTCreateInvoice(models.TransientModel):
                 'Dettaglio', 
                 [35, 15, 30, 15, 15, 20, 10, 10,], 
                 ['Partner', 'Fattura', 'Conto analitico', 'DDT', 'Picking', 
-                    'Prodotto',  'Q.', 'UM.',
-                    #'Subtotale',
+                    'Prodotto', 'UM.', 'Q.', 'Listino', 'Subtotale', 
                     ], 
                 0
                 ],
             ]
-
-        
         
         # ---------------------------------------------------------------------        
         # WS creation:    
@@ -234,43 +233,64 @@ class DdTCreateInvoice(models.TransientModel):
                 '',
                 '',
                 '',
+                '',
+                '',
+                
+                # Total,
+                0.0,
                 ]
             
             for ddt in ddt_db[key]:
                 data[3] = ddt.name or 'NON CONFERMATA'
                 for picking in ddt.picking_ids:
                     data[4] = picking.name
+                    
                     # ---------------------------------------------------------
                     # Detail: 
                     # ---------------------------------------------------------
-                    if picking.move_lines:
+                    if picking.move_lines:                                        
                         for move in picking.move_lines:
+                            try:
+                                list_price = move.product_id.metel_list_price
+                            except:
+                                list_price = 0.0    
+                            total =  list_price * move.product_qty
+                            
                             data[5] = move.product_id.default_code
-                            data[6] = move.product_qty
-                            data[7] = move.product_uom.name
+                            data[6] = move.product_uom.name
+                            data[7] = (move.product_qty, f_number)
+                            data[8] = (list_price, f_number)
+                            data[9] = (total, f_number)
+                            
+                            data[10] += total
                             
                             excel_pool.write_xls_line(
-                                ws_names[1][0], ws_names[1][3], data,
+                                ws_names[1][0], ws_names[1][3], data[:10],
                                 default_format=f_text)
                             ws_names[1][3] += 1
                     else: # No movement
                         data[5] = 'NESSUN MOVIMENTO'
                         data[6] = '/'
-                        data[7] = '/'
+                        data[7] = 0.0
+                        data[8] = 0.0
+                        data[9] = 0.0
                         
                         excel_pool.write_xls_line(
-                            ws_names[1][0], ws_names[1][3], data,
+                            ws_names[1][0], ws_names[1][3], data[:10],
                             default_format=f_text)
                         ws_names[1][3] += 1
                             
                 
-                    # ---------------------------------------------------------
-                    # Summary:
-                    # ---------------------------------------------------------
-                    excel_pool.write_xls_line(
-                        ws_names[0][0], ws_names[0][3], data[:5], 
-                        default_format=f_text)
-                    ws_names[0][3] += 1
+            # -----------------------------------------------------------------
+            # Summary:
+            # -----------------------------------------------------------------
+            summary = data[:5]
+            summary.append((data[10], f_number))
+
+            excel_pool.write_xls_line(
+                ws_names[0][0], ws_names[0][3], summary,
+                default_format=f_text)
+            ws_names[0][3] += 1
 
         return excel_pool.return_attachment(
             cr, uid, 'Fatture_generate') #'invoice.xlsx')    
