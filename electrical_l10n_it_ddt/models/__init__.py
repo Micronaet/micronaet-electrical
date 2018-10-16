@@ -20,7 +20,6 @@
 #
 ##############################################################################
 
-
 from . import account
 from . import partner
 from . import sale

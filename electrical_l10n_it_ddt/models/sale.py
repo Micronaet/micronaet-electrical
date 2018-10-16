@@ -90,8 +90,7 @@ class SaleOrder(models.Model):
         return inv_id
 
     def action_ship_create(
-        self, cr, uid, ids, context=None
-    ):
+            self, cr, uid, ids, context=None):
         res = super(SaleOrder, self).action_ship_create(
             cr, uid, ids, context=context)
         for order in self.browse(cr, uid, ids, context):

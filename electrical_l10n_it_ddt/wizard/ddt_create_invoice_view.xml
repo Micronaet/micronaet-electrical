@@ -29,7 +29,6 @@
             <field name="view_id" ref="view_ddt_create_invoice"/>
             <field name="target">new</field>
         </record>
-
         <record model="ir.values" id="ddt_create_invoice">
             <field name="model_id" ref="electrical_l10n_it_ddt.model_stock_ddt" />
             <field name="name">Create Invoice</field>

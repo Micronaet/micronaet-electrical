@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
     <data>
-
         <template id="delivery_data">
-
             <style type="text/css">
                 table.delivery_data td h6 { margin: 0; }
                 .signature { min-height: 4em; }
@@ -88,7 +86,7 @@
                                     </tr>
                                 </tbody>
                             </table>
-                            <t t-call="l10n_it_ddt.delivery_data">
+                            <t t-call="electrical_l10n_it_ddt.delivery_data">
                                 <t t-set="ddt" t-value="o"/>
                             </t>
                         </div>
@@ -96,14 +94,12 @@
                 </t>
             </t>
         </template>
-
         <report
             string="DDT"
             id="action_report_ddt"
             model="stock.ddt"
             report_type="qweb-pdf"
-            name="l10n_it_ddt.report_ddt"
-            file="l10n_it_ddt.report_ddt"/>
-
+            name="electrical_l10n_it_ddt.report_ddt"
+            file="electrical_l10n_it_ddt.report_ddt"/>
     </data>
 </openerp>
