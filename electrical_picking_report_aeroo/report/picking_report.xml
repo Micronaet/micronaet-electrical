@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<openerp>
+    <data noupdate="1">
+        <record id="aeroo_stock_picking_report_pdf_id" model="ir.actions.report.xml">
+            <field name="name">Pick out (pdf)</field>
+            <field name="type">ir.actions.report.xml</field>
+            <field name="model">stock.picking</field>
+            <field name="report_name">custom_picking_out_pdf_report</field>
+            <field name="report_type">aeroo</field>
+            <field name="in_format">oo-odt</field>
+            <!--<field name="out_format" eval="ref('report_aeroo_ooo.report_mimetypes_pdf_odt')" />-->
+            <field name="parser_loc">electrical_picking_report_aeroo/report/picking_parser.py</field>
+            <field name="report_rml">electrical_picking_report_aeroo/report/picking.odt</field>
+            <field name="parser_state">loc</field>
+            <field name="tml_source">file</field>
+        </record>
+
+        <ir_set>
+            <field eval="'action'" name="key"/>
+            <field eval="'client_print_multi'" name="key2"/>
+            <field eval="['stock.picking']" name="models"/>
+            <field name="name">custom_picking_out_pdf</field>
+            <field eval="'ir.actions.report.xml,'+str(aeroo_stock_picking_report_pdf_id)" name="value"/>
+            <field eval="True" name="isobject"/>
+            <field eval="True" name="replace"/>
+        </ir_set>
+    </data>
+</openerp>
+
