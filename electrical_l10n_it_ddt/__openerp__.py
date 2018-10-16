@@ -39,6 +39,9 @@ to guarantee compatibility.
     'depends': [
         'sale_stock', 
         'stock_account',
+        'excel_export',
+        'account',
+        'analytic',
         ],
     'data': [
         'security/ir.model.access.csv',

@@ -10,14 +10,10 @@
                     <page string="Shipping Informations">
                         <group string="Shipping Informations">
                             <group>
-                                <field name="goods_description_id"
-                                    widget="selection"/>
-                                <field name="carriage_condition_id"
-                                    widget="selection"/>
-                                <field name="transportation_reason_id"
-                                    widget="selection"/>
-                                <field name="transportation_method_id"
-                                    widget="selection"/>
+                                <field name="goods_description_id" widget="selection"/>
+                                <field name="carriage_condition_id" widget="selection"/>
+                                <field name="transportation_reason_id" widget="selection"/>
+                                <field name="transportation_method_id" widget="selection"/>
                                 <field name="parcels" />
                             </group>
                             <!--<group>
@@ -35,6 +31,7 @@
             <field name="arch" type="xml">
                 <search string="DDT Search" version="7.0">        
                     <field name="name" />
+                    <field name="account_id"/>
                     <field name="goods_description_id" />
                     <field name="carriage_condition_id" />
                     <field name="transportation_reason_id" />
@@ -48,6 +45,7 @@
                     <group expand="0" string="Group By">
                         <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
                         <filter name="group_invoice" string="Invoice" context="{'group_by': 'invoice_id'}"/>
+                        <filter name="group_account" string="Account" context="{'group_by': 'account_id'}"/>
                         <filter name="group_date" string="Date" context="{'group_by': 'date'}"/>
                         <filter name="group_delivery" string="Delivery" context="{'group_by': 'delivery_date'}"/>
                         <filter string="Status" context="{'group_by': 'state'}" icon="terp-stock_effects-object-colorize"/>
@@ -90,6 +88,7 @@
                             <group>
                                 <field name="date"/>
                                 <field name="delivery_date"/>
+                                <field name="account_id"/>
                             </group>
                         </group>
                         <notebook>
@@ -97,8 +96,7 @@
                                 <field name="ddt_lines"/>
                             </page>
                             <page string="Pickings">
-                                <field name="picking_ids"
-                                    domain="[('partner_id', '=', partner_id)]"/>
+                                <field name="picking_ids" domain="[('partner_id', '=', partner_id)]"/>
                             </page>
                             <page string="Shipping Informations">
                                 <group string="Shipping Informations">
@@ -136,6 +134,7 @@
                     <field name="date"/>
                     <field name="delivery_date"/>
                     <field name="partner_id"/>
+                    <field name="account_id"/>
                     <field name="invoice_id"/>
                     <field name="not_invoiced" invisible="1"/>
                     <field name="state"/>
@@ -321,6 +320,25 @@
             <field name="type">ir.actions.act_window</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
+        </record>
+
+        <!--account.invoice-->
+        <record model="ir.ui.view" id="view_account_invoice_page_form">
+            <field name="name">account.invoice.ddt.page.form</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="/form/sheet/notebook/page[1]" position="after">
+                    <page string="DDT">
+                        <field name="ddt_ids" />
+                    </page>
+                </xpath>
+                <button name="invoice_open" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </button>
+                
+                <button name="invoice_open_manual" string="Validate" type="object" />
+            </field>
         </record>
 
         <menuitem action="action_transportation_method_tree"

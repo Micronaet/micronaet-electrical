@@ -132,6 +132,8 @@ class StockDdT(models.Model):
         compute='_get_lines')
     invoice_id = fields.Many2one(
         'account.invoice', string='Invoice', required=False)
+    account_id = fields.Many2one(
+        'account.analytic.account', string='Account', required=False)
     not_invoiced = fields.Boolean('Not invoiced')    
     partner_id = fields.Many2one(
         'res.partner', string='Partner', required=True)
@@ -282,3 +284,29 @@ class StockPicking(models.Model):
             'text_note_post': note_post,            
             })            
         return res
+
+class AccountInvoice(models.Model):
+    ''' Relation for invoice
+    '''
+    _inherit = 'account.invoice'
+        
+    def invoice_open_manual(self, cr, uid, ids, context=None):
+        """ Button event
+            @param cr: cursor to database
+            @param uid: id of current user
+            @param ids: list of record ids on which business flow executes
+            @param context: other context
+            
+            @return: always return True
+        """
+        action_date_assign()
+        #action_move_create()
+        action_number()
+        #invoice_validate()
+        
+        
+        return True    
+        
+    ddt_ids = fields.One2many(
+        'stock.ddt', 'invoice_id', string='DDT', readonly=True)
+        

@@ -34,9 +34,6 @@ class DdTCreateInvoice(models.TransientModel):
     # -------------------------------------------------------------------------
     # COLUMNS:
     # -------------------------------------------------------------------------
-    #journal_id = fields.Many2one('account.journal', 'Journal', required=True)
-    #date = fields.Date('Date')
-    # Filter paremeters:
     partner_id = fields.Many2one('res.partner', 'Partner')
     account_id = fields.Many2one('account.analytic.account', 'Account')
     from_date = fields.Date('From date')
@@ -51,9 +48,7 @@ class DdTCreateInvoice(models.TransientModel):
         '''
         # Start: 
         domain = [
-            ('ddt_id', '!=', False), # only DDT
             ('partner_id', '!=', False), # with partner
-            ('ddt_id', '=', False), # not DDT
             ('invoice_id', '=', False), # not direct invoiced
             ]
         
@@ -123,8 +118,7 @@ class DdTCreateInvoice(models.TransientModel):
 
             if (
                 payment_term_id and
-                ddt.payment_term_id.id != payment_term_id
-            ):
+                    ddt.payment_term_id.id != payment_term_id):
                 raise Warning(
                     _('Selected DDTs have different '
                       'Payment terms'))
@@ -143,6 +137,145 @@ class DdTCreateInvoice(models.TransientModel):
                     _('Selected DDTs have different '
                       'Carrier'))
 
+    def print_selection(self, cr, uid, ids, context=None):
+        ''' Print selection filter
+        '''
+        # Pool used:
+        excel_pool = self.pool.get('excel.writer')
+        ddt_pool = self.pool.get('stock.ddt')
+        
+        domain = self.filter_domain(cr, uid, context=context)
+        
+        ddt_ids = ddt_pool.search(cr, uid, domain, context=context)
+        if not ddt_ids:
+            raise Warning(_('No DDT selected with this filter'))
+        
+        # Collect data:
+        ddt_db = {}
+        for ddt in ddt_pool.browse(cr, uid, ddt_ids, context=context):
+            key = (ddt.partner_id, ddt.account_id)
+            if key not in ddt_db:
+                ddt_db[key] = []
+            ddt_db[key].append(ddt)
+        
+        # ---------------------------------------------------------------------
+        #                                Excel creation:
+        # ---------------------------------------------------------------------        
+        # Sheet name:
+        ws_names = [
+            [
+                'Fatture', 
+                [35, 15, 30, 15, 15, ], 
+                ['Partner', 'Fattura', 'Conto analitico', 'DDT', 'Picking', ], 
+                0,
+                ],
+                
+            [
+                'Dettaglio', 
+                [35, 15, 30, 15, 15, 20, 10, 10,], 
+                ['Partner', 'Fattura', 'Conto analitico', 'DDT', 'Picking', 
+                    'Prodotto', 'UM.', 'Q.', 
+                    #'Subtotale',
+                    ], 
+                0
+                ],
+            ]
+
+        
+        
+        # ---------------------------------------------------------------------        
+        # WS creation:    
+        # ---------------------------------------------------------------------        
+        format_load = False
+        for record in ws_names:            
+            ws_name, width, header, row = record
+
+            # Create sheet:
+            excel_pool.create_worksheet(ws_name)
+            
+
+            # -----------------------------------------------------------------
+            # Get used format:
+            # -----------------------------------------------------------------
+            if not format_load:
+                format_load = True
+                excel_pool.get_format()
+                f_title = excel_pool.get_format('title')
+                f_header = excel_pool.get_format('header')
+                f_text = excel_pool.get_format('text')
+                f_number = excel_pool.get_format('number')
+
+            # Setup columns
+            excel_pool.column_width(ws_name, width)
+            
+            # Print header
+            excel_pool.write_xls_line(
+                ws_name, row, header, default_format=f_header)
+            record[3] += 1    
+
+        # Print data:    
+        i = 0
+        for key in ddt_db:
+            i += 1
+            partner, account = key
+            data = [
+                # Invoice:
+                partner.name,
+                '# %s' % i,
+                account.name,
+
+                # DDT:
+                '', 
+                
+                # Picking:
+                'NON PRESENTI',
+                
+                # Stock move:
+                '',
+                '',
+                '',
+                ]
+            
+            for ddt in ddt_db[key]:
+                data[3] = ddt.name or 'NON CONFERMATA'
+                for picking in ddt.picking_ids:
+                    data[4] = picking.name
+                    # ---------------------------------------------------------
+                    # Detail: 
+                    # ---------------------------------------------------------
+                    if picking.move_lines:
+                        for move in picking.move_lines:
+                            data[5] = move.product_id.default_code
+                            data[6] = move.product_uom.name
+                            data[7] = move.product_qty
+                            
+                            excel_pool.write_xls_line(
+                                ws_names[1][0], ws_names[1][3], data,
+                                default_format=f_text)
+                            ws_names[1][3] += 1
+                    else: # No movement
+                        data[5] = 'NESSUN MOVIMENTO'
+                        data[6] = '/'
+                        data[7] = '/'
+                        
+                        excel_pool.write_xls_line(
+                            ws_names[1][0], ws_names[1][3], data,
+                            default_format=f_text)
+                        ws_names[1][3] += 1
+                            
+                
+                    # ---------------------------------------------------------
+                    # Summary:
+                    # ---------------------------------------------------------
+                    excel_pool.write_xls_line(
+                        ws_names[0][0], ws_names[0][3], data[:5], 
+                        default_format=f_text)
+                    ws_names[0][3] += 1
+               
+
+        return excel_pool.return_attachment(
+            cr, uid, 'Fatture_generate') #'invoice.xlsx')    
+
     @api.multi
     def create_invoice(self):
         ''' Create invoice from selected pickings ddt
@@ -150,11 +283,11 @@ class DdTCreateInvoice(models.TransientModel):
         '''
         # Pool used:
         ddt_model = self.env['stock.ddt']
-        invoice_pool = self.pool['account.invoice']
+        invoice_pool = self.pool.get('account.invoice') # old
 
         domain = self.filter_domain()
         
-        ddts = ddt_model.filter(domain)
+        ddts = ddt_model.search(domain)
         if not ddts:
             raise Warning(_('No DDT selected with this filter'))
         
@@ -172,16 +305,15 @@ class DdTCreateInvoice(models.TransientModel):
             # -----------------------------------------------------------------
             # Create new Invoice: 
             # -----------------------------------------------------------------
-            # TODO manage 'out_refund'   'in_invoice'   'in_refund'
-            date_invoice = fields.Date.from_string(fields.Date.now())
+            # TODO manage     'out_refund'     'in_invoice'     'in_refund'
+            date_invoice = fields.Date.today()
                 
             values = {
                 'partner_id': partner.id,
                 'date_invoice': date_invoice,
                 #'journal_id': False,
                 
-                'delivery_date': 
-                    date_invoice,
+                #'delivery_date': date_invoice,
                 #'carriage_condition_id': partner.carriage_condition_id.id,
                 #'goods_description_id': partner.goods_description_id.id,
                 #'transportation_reason_id': 
@@ -193,27 +325,28 @@ class DdTCreateInvoice(models.TransientModel):
             # -----------------------------------------------------------------
             # Update onchange ref (partner):    
             # -----------------------------------------------------------------
-            import pdb; pdb.set_trace()
             res = invoice_pool.onchange_partner_id(
-                cr, uid, False,
+                self.env.cr, self.env.uid, 
+                False,
                 'out_invoice', 
                 partner.id, 
                 date_invoice, 
                 False,#payment_term,
                 False,#partner_bank_id, 
                 1, #company_id, 
-                #context
+                self.env.context
                 )
             values.update(res.get('value', {}))    
             
-            invoice = invoice_pool.create(values)
-            invoice_ids.append(invoice.id)
+            invoice_id = invoice_pool.create(
+                self.env.cr, self.env.uid, values, self.env.context)
+            invoice_ids.append(invoice_id)
             
             # -----------------------------------------------------------------
             # Link DDT to new invoice:
             # -----------------------------------------------------------------
             for ddt in ddt_db[key]:
-                ddt.invoice_id = invoice.id
+                ddt.invoice_id = invoice_id
         
         #self.check_ddt_data(ddts)
         #for ddt in ddts:
@@ -224,12 +357,12 @@ class DdTCreateInvoice(models.TransientModel):
         #                raise Warning(
         #                    _('Move %s is not invoiceable') % move.name)
 
-        invoices = picking_pool.action_invoice_create(
-            self.env.cr,
-            self.env.uid,
-            pickings,
-            self.journal_id.id, group=True, context=None)
-        invoice_obj = self.env['account.invoice'].browse(invoices)
+        #invoices = picking_pool.action_invoice_create(
+        #    self.env.cr,
+        #    self.env.uid,
+        #    pickings,
+        #    self.journal_id.id, group=True, context=None)
+        #invoice_obj = self.env['account.invoice'].browse(invoices)
         
 
         # ---------------------------------------------------------------------
@@ -251,5 +384,6 @@ class DdTCreateInvoice(models.TransientModel):
             #'res_id': invoices[0],
             'view_id': tree_id,
             'views': [(tree_id, 'tree'), (form_id, 'form')],
+            'domain': [('id', 'in', invoice_ids)],
             'type': 'ir.actions.act_window',
             }

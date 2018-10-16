@@ -7,6 +7,7 @@
             <field name="arch" type="xml">
               <form string="DdT Create Invoice">
                     <header>
+                        <button name="print_selection" string="Print" type="object" icon="gtk-print"/>
                         <button name="create_invoice" string="Create" type="object" class="oe_highlight"/>
                         or
                         <button string="Cancel" class="oe_link" special="cancel" />
@@ -19,9 +20,6 @@
                             
                             <field name="from_date" />
                             <field name="to_date" />
-
-                            <!--<field name="method" />-->
-                            <field name="auto_confirm" />
                         </group>
                     </sheet>
               </form>

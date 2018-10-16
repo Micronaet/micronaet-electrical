@@ -112,6 +112,7 @@ class DdTFromPickings(models.TransientModel):
             
             # Create new DDT:                     
             values = {
+                'account_id': account.id,
                 'delivery_date': 
                     fields.Datetime.from_string(fields.Datetime.now()),
                 'partner_id': partner.id,
