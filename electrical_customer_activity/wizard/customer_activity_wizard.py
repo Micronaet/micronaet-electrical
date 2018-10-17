@@ -229,6 +229,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'header': ['Commessa', 'Intervento', 'Utente'],
                 'width': [35, 15, 20, ],
                 'total': {},
+                'cost': {},
                 'data': intervent_db, 
                 },   
 
@@ -476,7 +477,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         cost = sheet['cost']
         for key in invoice_db:
             for invoice in invoice_db[key]:
-                account = invoice.account_id
+                account = invoice.analytic_id
                 account_id = account.id
                 if account not in account_used:
                     account_used.append(account)
@@ -532,13 +533,70 @@ class ResPartnerActivityWizard(orm.TransientModel):
         ws_name = 'Interventi'
         sheet = sheets[ws_name]
 
+        total = sheet['total']
+        for key in intervent_db:        
+            for intervent in intervent_db[key]:
+                account = intervent.account_id
+                account_id = account.id
+                if account and account not in account_used:
+                    account_used.append(account)
+
+                if account_id not in total:
+                    total[account_id] = 0.0
+                    cost[account_id] = 0.0
+
+                # TODO cost / revenue!!!
+                this_cost = 0.0
+                this_revenue = 0.0
+
+                data = [
+                    account.name or 'NON ASSEGNATA',
+                    intervent.ref,
+                    intervent.name,
+                    intervent.mode,
+                    intervent.operation_id.name,
+                    intervent.user_id.name,
+                    
+                    # Intervent:
+                    intervent.intervent_duration,
+                    intervent.intervent_total,
+                    intervent.unit_total,
+
+                    # Extra hour:                    
+                    intervent.trip_require,
+                    intervent.trip_hour,                    
+                    intervent.break_require,
+                    intervent.break_hour,
+                    
+                    # Text:
+                    intervent.intervention_request,
+                    intervent.intervention,
+                    intervent.intervention_note,
+                    
+                    # Revenue:
+                    intervent.amount,
+                    intervent.to_invoice,
+                    intervent.not_in_report,
+                    
+                    intervent.state,
+                    ]
+
+                # Total per account:                            
+                cost[account_id] += this_cost
+                total[account_id] += this_revenue
+                
+                excel_pool.write_xls_line(
+                    ws_name, sheet['row'], data,
+                    default_format=f_text)
+                sheet['row'] += 1
+
         # ---------------------------------------------------------------------
         # E. ACCOUNT:
         # ---------------------------------------------------------------------
         ws_name = 'Commesse'
         sheet = sheets[ws_name]
 
-        # Block all account
+        # Block all account:
         for key in account_db:
             for account in account_db[key]:
                 data = [
@@ -557,12 +615,45 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     default_format=f_text)
                 sheet['row'] += 1
 
+        
+        # Block account used:
+        sheet['row'] += 2
+        excel_pool.write_xls_line(
+            ws_name, sheet['row'], ['Commesse toccate nel periodo:'],
+            default_format=f_title)
+
+        sheet['row'] += 1
+        excel_pool.write_xls_line(
+            ws_name, sheet['row'], sheet['header'],
+            default_format=f_header)
+
+        sheet['row'] += 1
+        for account in account_used:   
+            if not account:
+                continue
+            data = [
+                account.account_mode,
+                account.code,
+                account.name,
+                account.parent_id.name or '/',
+                account.from_date,
+                '/', #account.fiscal_position.name,
+                account.total_hours,
+                account.state,
+                ]
+            
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], data,
+                default_format=f_text)
+            sheet['row'] += 1
+
         # ---------------------------------------------------------------------
         # SUMMARY:
         # ---------------------------------------------------------------------
         ws_name = 'Riepilogo'
         sheet = sheets[ws_name]
-        
+
+
         
         
         return excel_pool.return_attachment(
@@ -587,5 +678,3 @@ class ResPartnerActivityWizard(orm.TransientModel):
         }
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
-
-
