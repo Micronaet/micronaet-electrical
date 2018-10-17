@@ -267,9 +267,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             'Commesse': { # Account
                 'row': 0,
-                'header': ['Codice', 'Commessa', 'Padre', 'Data', 
-                    'Posizione fiscale', 'Fatturazione', 'Ore', 'Stato'],
-                'width': [10, 30, 20, 15, 25, 20, 10, 10],
+                'header': ['Fatturazione', 'Codice', 'Commessa', 'Padre', 'Data', 
+                    'Posizione fiscale', 'Ore', 'Stato'],
+                'width': [25, 10, 30, 20, 15, 20, 10, 10],
                 'data': account_db, 
                 },                
 
@@ -538,15 +538,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
         ws_name = 'Commesse'
         sheet = sheets[ws_name]
 
+        # Block all account
         for key in account_db:
             for account in account_db[key]:
                 data = [
+                    account.account_mode,
                     account.code,
                     account.name,
                     account.parent_id.name or '/',
                     account.from_date,
                     '/', #account.fiscal_position.name,
-                    account.account_mode,
                     account.total_hours,
                     account.state,
                     ]
@@ -561,6 +562,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         ws_name = 'Riepilogo'
         sheet = sheets[ws_name]
+        
         
         
         return excel_pool.return_attachment(
