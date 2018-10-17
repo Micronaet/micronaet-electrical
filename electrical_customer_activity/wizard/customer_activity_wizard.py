@@ -57,10 +57,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
             context = {}        
 
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
-        partner_id = self.partner_id.id # Mandatory:
-        account_id = self.account_id.id
-        from_date = self.from_date
-        to_date = self.to_date
+        partner_id = wiz_browse.partner_id.id # Mandatory:
+        account_id = wiz_browse.account_id.id
+        from_date = wiz_browse.from_date
+        to_date = wiz_browse.to_date
 
         # ---------------------------------------------------------------------
         # Pool used:
@@ -71,15 +71,23 @@ class ResPartnerActivityWizard(orm.TransientModel):
         picking_pool = self.pool.get('stock.picking')
         ddt_pool = self.pool.get('stock.ddt')
         invoice_pool = self.pool.get('account.invoice')
+        account_pool = self.pool.get('account.analytic.account')
+
+        # Interventi:
+        intervent_pool = self.pool.get('hr.analytic.timesheet')
         
         # ---------------------------------------------------------------------
-        #                          STOCK MATERIAL:
+        #                          COLLECT DATA:
+        # ---------------------------------------------------------------------
+
+        # ---------------------------------------------------------------------
+        # A. STOCK MATERIAL:
         # ---------------------------------------------------------------------
         # Domain:
         domain = [
-            ('partner_id', '=', partner_id)
-            ('min_date', '>=', '%s 00:00:00' % from_date)
-            ('min_date', '<=', '%s 23:59:59' % to_date)
+            ('partner_id', '=', partner_id),
+            ('min_date', '>=', '%s 00:00:00' % from_date),
+            ('min_date', '<=', '%s 23:59:59' % to_date),
             ('ddt_id', '=', False), # Not DDT
             ]
         if account_id:
@@ -99,13 +107,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
             picking_db[key].append(picking)
 
         # ---------------------------------------------------------------------
-        #                           DDT MATERIAL:
+        # B. DDT MATERIAL:
         # ---------------------------------------------------------------------
         # Domain:
         domain = [
-            ('partner_id', '=', partner_id)
-            ('delivery_date', '>=', '%s 00:00:00' % from_date)
-            ('delivery_date', '<=', '%s 23:59:59' % to_date)
+            ('partner_id', '=', partner_id),
+            ('delivery_date', '>=', '%s 00:00:00' % from_date),
+            ('delivery_date', '<=', '%s 23:59:59' % to_date),
             ('invoice_id', '=', False), # Not Invoiced
             ]
         if account_id:
@@ -125,16 +133,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ddt_db[key].append(ddt)
 
         # ---------------------------------------------------------------------
-        #                          INVOICED MATERIAL:
+        # C. INVOICED MATERIAL:
         # ---------------------------------------------------------------------
         # Domain:
         domain = [
-            ('partner_id', '=', partner_id)
-            ('date_invoice', '>=', from_date)
-            ('date_invoice', '<=', to_date)
+            ('partner_id', '=', partner_id),
+            ('date_invoice', '>=', from_date),
+            ('date_invoice', '<=', to_date),
             ]
         if account_id:
-            domain.append(('account_id', '=', account_id))
+            domain.append(('analytic_id', '=', account_id))
         invoice_ids = invoice_pool.search(cr, uid, domain, context=context)
         invoice_proxy = invoice_pool.browse(
             cr, uid, invoice_ids, context=context)
@@ -149,18 +157,397 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 invoice_db[key] = []
             invoice_db[key].append(invoice)
 
-        
-        return {
-            'type': 'ir.actions.act_window_close'
+        # ---------------------------------------------------------------------
+        # D. INTERVENT:
+        # ---------------------------------------------------------------------
+        # Domain:
+        domain = [
+            ('intervent_partner_id', '=', partner_id),
+            ('date_start', '>=', from_date),
+            ('date_start', '<=', to_date),
+            #('account_id.is_extra_report', '=', False),
+            ]
+        if account_id:
+            domain.append(('account_id', '=', account_id))
+        intervent_ids = intervent_pool.search(cr, uid, domain, context=context)
+        intervent_proxy = intervent_pool.browse(
+            cr, uid, intervent_ids, context=context)
+        intervent_db = {}
+        for intervent in intervent_proxy:
+            key = (
+                #intervent.intervent_partner_id.name,
+                intervent.account_id.name,
+                intervent.ref, 
+                )
+            if key not in intervent_db:
+                intervent_db[key] = []
+            intervent_db[key].append(intervent)
+
+        # ---------------------------------------------------------------------
+        # E. ACCOUNT:
+        # ---------------------------------------------------------------------
+        # Domain:
+        domain = []
+        if account_id:
+            domain.append(('account_id', '=', account_id))
+        account_ids = account_pool.search(cr, uid, domain, context=context)
+        account_proxy = account_pool.browse(
+            cr, uid, account_ids, context=context)
+        account_db = {}
+        for account in account_proxy:
+            key = (
+                #account.partner_id.name,
+                account.account_mode,
+                account.name,
+                )
+            if key not in account_db:
+                account_db[key] = []
+            account_db[key].append(account)
+
+        # ---------------------------------------------------------------------
+        #                             EXCEL REPORT:
+        # ---------------------------------------------------------------------
+        sheets = {
+            # -----------------------------------------------------------------
+            # Summary sheet:
+            # -----------------------------------------------------------------
+            'Riepilogo': { # Summary
+                'row': 0,
+                'header': [],
+                'width': [],
+                'data': True, # Create sheet
+                },
+
+            # -----------------------------------------------------------------
+            # Sheet detail:
+            # -----------------------------------------------------------------
+            'Interventi': { # Invertent list
+                'row': 0,
+                'header': ['Commessa', 'Intervento', 'Utente'],
+                'width': [35, 15, 20, ],
+                'total': {},
+                'data': intervent_db, 
+                },   
+
+            'Consegne': { # Picking to delivery
+                'row': 0,
+                'header': [
+                    'Commessa', 'Picking', 'Data', 'Stato', 'Codice', 'UM', 
+                    'Q.', 'Prezzo', 'Subtotale'],
+                'width': [35, 15, 25, 20, 20, 15, 10, 10, 15],
+                'total': {},
+                'data': picking_db, 
+                },   
+
+            'DDT': { # DDT not invoiced
+                'row': 0,
+                'header': [
+                    'Commessa', 'DDT', 'Data', 'Codice', 'UM', 'Q.', 'Prezzo', 
+                    'Subtotale'],
+                'width': [35, 15, 20, 25, 10, 15, 15, 20],
+                'total': {},
+                'data': ddt_db, 
+                },
+
+            'Fatture': { # Invoiced document
+                'row': 0,
+                'header': [
+                    'Commessa', 'Fattura', 'Data', 'Posizione', 'Articolo', 
+                    'UM', 'Q.', 'Prezzo', 'Sconto', 'Subtotale', 
+                    #'Costo',
+                    ],
+                'width': [35, 15, 15, 20, 20, 10, 10, 10, 15, 15,],
+                'total': {},
+                'cost': {},
+                'data': invoice_db, 
+                },   
+
+            'Commesse': { # Account
+                'row': 0,
+                'header': ['Commessa', 'Da', 'A', 'Stato'],
+                'width': [35, 15, 15, 25],
+                'data': account_db, 
+                },                
             }
+
+        sheet_order = [
+            'Riepilogo', 'Interventi', 'Consegne', 'DDT', 'Fatture', 
+            'Commesse',
+            ]
+        format_load = False # To update only first sheet creation:        
+        for ws_name in sheet_order:
+            sheet = sheets[ws_name]
+            
+            if not sheet['data']:
+                continue # No sheet creation
+
+            # Create sheet:
+            excel_pool.create_worksheet(ws_name)
+
+            # -----------------------------------------------------------------
+            # Get used format:
+            # -----------------------------------------------------------------
+            if not format_load:
+                format_load = True
+                excel_pool.get_format()
+                
+                # -------------------------------------------------------------
+                # Format list:
+                # -------------------------------------------------------------
+                f_title = excel_pool.get_format('title')
+                f_header = excel_pool.get_format('header')
+                f_text = excel_pool.get_format('text')
+                f_number = excel_pool.get_format('number')
+
+            # Setup columns
+            excel_pool.column_width(ws_name, sheet['width'])
+            
+            # Print header
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], sheet['header'], 
+                default_format=f_header)
+            sheet['row'] += 1    
+        
+        # ---------------------------------------------------------------------
+        # A. STOCK MATERIAL:
+        # ---------------------------------------------------------------------
+        ws_name = 'Consegne'
+        sheet = sheets[ws_name]
+
+        total = sheet['total']
+        for key in picking_db:            
+            for picking in picking_db[key]:
+                account_id = picking.account_id.id
+                if account_id not in total:
+                    total[account_id] = 0.0
+                if picking.move_lines:
+                    if picking.move_lines:
+                        for move in picking.move_lines:
+                            try:
+                                list_price = \
+                                    move.product_id.metel_list_price
+                            except:
+                                list_price = 0.0    
+                            subtotal = list_price * move.product_qty
+                            
+                            data = [  
+                                # Header
+                                picking.account_id.name,
+                                picking.name,
+                                picking.min_date,
+                                picking.pick_state,
+                                
+                                # Move:
+                                move.product_id.default_code,
+                                move.product_uom.name,
+                                (move.product_qty, f_number),
+                                (list_price, f_number),
+                                (subtotal, f_number),
+                                ]
+                            # Total per account:                            
+                            total[account_id] += subtotal
+                            
+                            excel_pool.write_xls_line(
+                                ws_name, sheet['row'], data,
+                                default_format=f_text)
+                            sheet['row'] += 1
+
+                    else: # Picking no movements:
+                        data = [
+                            # Header
+                            picking.account_id.name,
+                            picking.name,
+                            picking.min_date,
+                            picking.pick_state,
+                            
+                            # Move:
+                            'NESSUN MOVIMENTO',
+                            '/',
+                            (0.0, f_number),
+                            (0.0, f_number),
+                            (0.0, f_number),
+                            ]
+                        
+                        excel_pool.write_xls_line(
+                            ws_name, sheet['row'], data,
+                            default_format=f_text)
+                        sheet['row'] += 1
+                            
+        # ---------------------------------------------------------------------
+        # B. DDT MATERIAL:
+        # ---------------------------------------------------------------------
+        ws_name = 'DDT'
+        sheet = sheets[ws_name]
+        total = sheet['total']
+        for key in ddt_db:
+            for ddt in ddt_db[key]:
+                account_id = ddt.account_id.id
+                if account_id not in total:
+                    total[account_id] = 0.0                
+                if ddt.picking_ids:
+                    for picking in ddt.picking_ids:
+                        if picking.move_lines:
+                            for move in picking.move_lines:
+                                try:
+                                    list_price = \
+                                        move.product_id.metel_list_price
+                                except:
+                                    list_price = 0.0    
+                                subtotal = list_price * move.product_qty
+                                
+                                data = [  
+                                    # Header
+                                    ddt.account_id.name,
+                                    ddt.name,
+                                    ddt.delivery_date,
+                                    
+                                    # Move:
+                                    move.product_id.default_code,
+                                    move.product_uom.name,
+                                    (move.product_qty, f_number),
+                                    (list_price, f_number),
+                                    (subtotal, f_number),
+                                    ]
+                                # Total per account:    
+                                total[account_id] += subtotal
+                                
+                                excel_pool.write_xls_line(
+                                    ws_name, sheet['row'], data,
+                                    default_format=f_text)
+                                sheet['row'] += 1
+
+                        else: # Picking no movements:
+                            data = [
+                                # Header
+                                ddt.account_id.name,
+                                ddt.name,
+                                ddt.delivery_date,
+                                
+                                # Move:
+                                'NESSUN MOVIMENTO',
+                                '/',
+                                (0.0, f_number),
+                                (0.0, f_number),
+                                (0.0, f_number),
+                                ]
+                            
+                            excel_pool.write_xls_line(
+                                ws_name, sheet['row'], data,
+                                default_format=f_text)
+                            sheet['row'] += 1
+                else: # no 
+                    data = [
+                        # Header
+                        ddt.account_id.name,
+                        ddt.name,
+                        ddt.delivery_date,
+                        
+                        # Move:
+                        'NESSUN PICKING',
+                        '/',
+                        (0.0, f_number),
+                        (0.0, f_number),
+                        (0.0, f_number),
+                        ]
+                    
+                    excel_pool.write_xls_line(
+                        ws_name, sheet['row'], data,
+                        default_format=f_text)
+                    sheet['row'] += 1
+                            
+            # -----------------------------------------------------------------
+            # Summary:
+            # -----------------------------------------------------------------
+            #summary = data[:5]
+            #summary.append((data[10], f_number))
+
+            #excel_pool.write_xls_line(
+            #    ws_names[0][0], ws_names[0][3], summary,
+            #    default_format=f_text)
+            #ws_names[0][3] += 1
+
+        # ---------------------------------------------------------------------
+        # C. INVOICED MATERIAL:
+        # ---------------------------------------------------------------------
+        ws_name = 'Fatture'
+        sheet = sheets[ws_name]
+
+        total = sheet['total']
+        cost = sheet['cost']
+        for key in invoice_db:
+            for invoice in invoice_db[key]:
+                account_id = invoice.account_id.id
+                if account_id not in total:
+                    total[account_id] = 0.0                
+                    cost[account_id] = 0.0                
+
+                # -------------------------------------------------------------
+                # Cost total from DDT linked:
+                # -------------------------------------------------------------
+                for ddt in invoice.ddt_ids:
+                    if ddt.ddt_lines:
+                        for move in ddt.ddt_lines:
+                            try:
+                                list_price = \
+                                    move.product_id.metel_list_price
+                            except:
+                                list_price = 0.0    
+                            subtotal = list_price * move.product_qty
+                            cost[account_id] += subtotal
+
+                # -------------------------------------------------------------
+                # Invoice line:
+                # -------------------------------------------------------------
+                for line in invoice.invoice_line:
+                    subtotal = line.price_subtotal#quantity * line.price_unit
+                    data = [
+                        # Header
+                        invoice.analytic_id.name,
+                        invoice.number,
+                        invoice.date_invoice,
+                        invoice.fiscal_position.name,
+                        
+                        # Move:
+                        line.product_id.default_code,
+                        line.uos_id.name,
+                        (line.quantity, f_number),
+                        (line.price_unit, f_number),
+                        (line.discount, f_number),
+                        (subtotal, f_number),
+                        ]
+                    total[account_id] += subtotal
+                    
+                    excel_pool.write_xls_line(
+                        ws_name, sheet['row'], data,
+                        default_format=f_text)
+                    sheet['row'] += 1
+        # ---------------------------------------------------------------------
+        # D. INTERVENT:
+        # ---------------------------------------------------------------------
+        ws_name = 'Interventi'
+        sheet = sheets[ws_name]
+
+        # ---------------------------------------------------------------------
+        # E. ACCOUNT:
+        # ---------------------------------------------------------------------
+        ws_name = 'Commesse'
+        sheet = sheets[ws_name]
+
+        # ---------------------------------------------------------------------
+        # SUMMARY:
+        # ---------------------------------------------------------------------
+        ws_name = 'Riepilogo'
+        sheet = sheets[ws_name]
+        
+        
+        return excel_pool.return_attachment(
+            cr, uid, 'partner_activity')
 
     _columns = {
         'partner_id': fields.many2one(
             'res.partner', 'Partner', required=True),
         'account_id': fields.many2one(
             'account.analytic.account', 'Account'),
-        #'user_id': fields.many2one(
-        #    'res.users', 'User'),
         'from_date': fields.date('From date >= ', required=True),
         'to_date': fields.date('To date <', required=True),
         'float_time': fields.boolean('Formatted hour', 
@@ -169,7 +556,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
         
     _defaults = {
         'float_time': lambda *x: True,
-        #'user_id': lambda s, cr, uid, ctx: uid,
         'from_date': lambda *x: datetime.now().strftime('%Y-%m-01'),
         'to_date': lambda *x: (
             datetime.now() + relativedelta(months=1)).strftime('%Y-%m-01'),
