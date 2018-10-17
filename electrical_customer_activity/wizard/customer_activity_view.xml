@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+       <!-- account.distribution.stats.wizard -->
+       <record id="res_partner_activity_wizard_view" model="ir.ui.view">
+            <field name="name">Personal stats report</field>
+            <field name="model">res.partner.activity.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Stats report" version="7.0">
+                   <header>
+                       <button name="action_print" string="Print" type="object" icon="gtk-print" class="oe_highlight" />
+                       Or 
+                       <button string="Cancel" class="oe_link" special="cancel" />
+                   </header>                   
+                   <group colspan="4" col="4">
+                        <separator string="Period" colspan="4"/>
+                        <field name="from_date" />
+                        <field name="to_date" />
+                   
+                        <separator string="Relation" colspan="4"/>
+                        <field name="partner_id" domain="[('is_company', '=', True)]" />                        
+                            <field name="account_id" domain="[('type','in',['normal','contract']),'|',('partner_id','=',False),('partner_id','=',partner_id)]"/><!--('state', '&lt;&gt;', 'close')/>-->
+                        <field name="float_time" />
+                   </group>
+                </form>
+            </field>
+      </record>
+      <record model="ir.actions.act_window" id="action_res_partner_activity_wizard_view">
+          <field name="name">Customer activity</field>
+          <field name="res_model">res.partner.activity.wizard</field>
+          <field name="view_type">form</field>
+          <field name="view_mode">form</field>
+          <field name="target">new</field>
+          <field name="view_id" ref="res_partner_activity_wizard_view"/>
+      </record>      
+      <menuitem 
+           parent="base.menu_partner_form" 
+           id="menu_res_partner_activity_wizard_view" 
+           action="action_res_partner_activity_wizard_view"
+           sequence="10"
+           />
+    </data>
+</openerp>
+
