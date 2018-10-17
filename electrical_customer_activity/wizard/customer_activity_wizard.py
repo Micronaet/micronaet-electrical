@@ -79,6 +79,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         #                          COLLECT DATA:
         # ---------------------------------------------------------------------
+        account_used = []
 
         # ---------------------------------------------------------------------
         # A. STOCK MATERIAL:
@@ -187,7 +188,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # E. ACCOUNT:
         # ---------------------------------------------------------------------
         # Domain:
-        domain = []
+        domain = [
+            ('partner_id', '=', partner_id),
+            ]
         if account_id:
             domain.append(('account_id', '=', account_id))
         account_ids = account_pool.search(cr, uid, domain, context=context)
@@ -234,7 +237,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'header': [
                     'Commessa', 'Picking', 'Data', 'Stato', 'Codice', 'UM', 
                     'Q.', 'Prezzo', 'Subtotale'],
-                'width': [35, 15, 25, 20, 20, 15, 10, 10, 15],
+                'width': [35, 15, 25, 20, 20, 15, 10, 10, 15, ],
                 'total': {},
                 'data': picking_db, 
                 },   
@@ -244,7 +247,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'header': [
                     'Commessa', 'DDT', 'Data', 'Codice', 'UM', 'Q.', 'Prezzo', 
                     'Subtotale'],
-                'width': [35, 15, 20, 25, 10, 15, 15, 20],
+                'width': [35, 15, 20, 25, 10, 15, 15, 20, ],
                 'total': {},
                 'data': ddt_db, 
                 },
@@ -256,7 +259,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'UM', 'Q.', 'Prezzo', 'Sconto', 'Subtotale', 
                     #'Costo',
                     ],
-                'width': [35, 15, 15, 20, 20, 10, 10, 10, 15, 15,],
+                'width': [35, 15, 15, 20, 20, 10, 10, 10, 10, 15, ],
                 'total': {},
                 'cost': {},
                 'data': invoice_db, 
@@ -264,12 +267,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             'Commesse': { # Account
                 'row': 0,
-                'header': ['Commessa', 'Da', 'A', 'Stato'],
-                'width': [35, 15, 15, 25],
+                'header': ['Codice', 'Commessa', 'Padre', 'Data', 
+                    'Posizione fiscale', 'Fatturazione', 'Ore', 'Stato'],
+                'width': [10, 30, 20, 15, 25, 20, 10, 10],
                 'data': account_db, 
                 },                
-            }
 
+            }
         sheet_order = [
             'Riepilogo', 'Interventi', 'Consegne', 'DDT', 'Fatture', 
             'Commesse',
@@ -317,7 +321,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
         total = sheet['total']
         for key in picking_db:            
             for picking in picking_db[key]:
-                account_id = picking.account_id.id
+                account = picking.account_id
+                account_id = account.id
+                if account not in account_used:
+                    account_used.append(account)
+
                 if account_id not in total:
                     total[account_id] = 0.0
                 if picking.move_lines:
@@ -332,7 +340,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             
                             data = [  
                                 # Header
-                                picking.account_id.name,
+                                picking.account_id.name or 'NON ASSEGNATA',
                                 picking.name,
                                 picking.min_date,
                                 picking.pick_state,
@@ -355,7 +363,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     else: # Picking no movements:
                         data = [
                             # Header
-                            picking.account_id.name,
+                            picking.account_id.name or 'NON ASSEGNATA',
                             picking.name,
                             picking.min_date,
                             picking.pick_state,
@@ -381,7 +389,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         total = sheet['total']
         for key in ddt_db:
             for ddt in ddt_db[key]:
-                account_id = ddt.account_id.id
+                account = ddt.account_id
+                account_id = account.id
+                if account not in account_used:
+                    account_used.append(account)
                 if account_id not in total:
                     total[account_id] = 0.0                
                 if ddt.picking_ids:
@@ -419,7 +430,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         else: # Picking no movements:
                             data = [
                                 # Header
-                                ddt.account_id.name,
+                                ddt.account_id.name or 'NON ASSEGNATA',
                                 ddt.name,
                                 ddt.delivery_date,
                                 
@@ -438,7 +449,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 else: # no 
                     data = [
                         # Header
-                        ddt.account_id.name,
+                        ddt.account_id.name or 'NON ASSEGNATA',
                         ddt.name,
                         ddt.delivery_date,
                         
@@ -454,17 +465,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         ws_name, sheet['row'], data,
                         default_format=f_text)
                     sheet['row'] += 1
-                            
-            # -----------------------------------------------------------------
-            # Summary:
-            # -----------------------------------------------------------------
-            #summary = data[:5]
-            #summary.append((data[10], f_number))
-
-            #excel_pool.write_xls_line(
-            #    ws_names[0][0], ws_names[0][3], summary,
-            #    default_format=f_text)
-            #ws_names[0][3] += 1
 
         # ---------------------------------------------------------------------
         # C. INVOICED MATERIAL:
@@ -476,7 +476,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
         cost = sheet['cost']
         for key in invoice_db:
             for invoice in invoice_db[key]:
-                account_id = invoice.account_id.id
+                account = invoice.account_id
+                account_id = account.id
+                if account not in account_used:
+                    account_used.append(account)
+
                 if account_id not in total:
                     total[account_id] = 0.0                
                     cost[account_id] = 0.0                
@@ -502,8 +506,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     subtotal = line.price_subtotal#quantity * line.price_unit
                     data = [
                         # Header
-                        invoice.analytic_id.name,
-                        invoice.number,
+                        invoice.analytic_id.name or 'NON ASSEGNATA',
+                        invoice.number or 'BOZZA',
                         invoice.date_invoice,
                         invoice.fiscal_position.name,
                         
@@ -521,6 +525,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         ws_name, sheet['row'], data,
                         default_format=f_text)
                     sheet['row'] += 1
+
         # ---------------------------------------------------------------------
         # D. INTERVENT:
         # ---------------------------------------------------------------------
@@ -532,6 +537,24 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         ws_name = 'Commesse'
         sheet = sheets[ws_name]
+
+        for key in account_db:
+            for account in account_db[key]:
+                data = [
+                    account.code,
+                    account.name,
+                    account.parent_id.name or '/',
+                    account.from_date,
+                    '/', #account.fiscal_position.name,
+                    account.account_mode,
+                    account.total_hours,
+                    account.state,
+                    ]
+                
+                excel_pool.write_xls_line(
+                    ws_name, sheet['row'], data,
+                    default_format=f_text)
+                sheet['row'] += 1
 
         # ---------------------------------------------------------------------
         # SUMMARY:
