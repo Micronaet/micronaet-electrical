@@ -217,7 +217,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Riepilogo': { # Summary
                 'row': 0,
                 'header': [],
-                'width': [],
+                'width': [40, 25, 15, 15],
                 'data': True, # Create sheet
                 },
 
@@ -226,8 +226,20 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             'Interventi': { # Invertent list
                 'row': 0,
-                'header': ['Commessa', 'Intervento', 'Utente'],
-                'width': [35, 15, 20, ],
+                'header': [
+                    'Commessa', 'Intervento', 'Oggetto', 'Modo', 'Operazione', 
+                    'Utente', 'Durata', 'Totale', 'Reale', 
+                    'Viaggio', 'H. Viaggio', 'Pausa', 'H. Pausa',  
+                    'Richiesta', 'Intervento', 'Note',
+                    'Costo', 'Conteggio', 'Non usare', 'Stato'                                    
+                    ],
+                'width': [
+                    35, 15, 20, 15, 20,
+                    20, 10, 10, 10, 
+                    3, 10, 3, 10,
+                    30, 30, 30, 
+                    10, 10, 5, 15,
+                    ],
                 'total': {},
                 'cost': {},
                 'data': intervent_db, 
@@ -264,20 +276,47 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'total': {},
                 'cost': {},
                 'data': invoice_db, 
-                },   
+                },
 
             'Commesse': { # Account
                 'row': 0,
-                'header': ['Fatturazione', 'Codice', 'Commessa', 'Padre', 'Data', 
-                    'Posizione fiscale', 'Ore', 'Stato'],
+                'header': ['Fatturazione', 'Codice', 'Commessa', 'Padre', 
+                    'Data', 'Posizione fiscale', 'Ore', 'Stato'],
                 'width': [25, 10, 30, 20, 15, 20, 10, 10],
                 'data': account_db, 
                 },                
-
             }
+
+        summary = {
+            'Interventi': {
+                'header': ['Commessa', 'Intervento', 'Costo', 'Totale'],
+                'data': {},
+                },
+
+            'Consegne': {
+                'header': ['Commessa', 'Picking', 'Totale'],
+                'data': {},
+                },
+
+            'DDT': {
+                'header': ['Commessa', 'DDT', 'Totale'],
+                'data': {},
+                },
+
+            'Fatture': {
+                'header': ['Commessa', 'Fattura', 'Costo', 'Totale'],
+                'data': {},
+                },
+
+            'Commesse': {
+                'header': ['Commessa', 'Cliente'],
+                'data': {},
+                },                
+            }
+
         sheet_order = [
-            'Riepilogo', 'Interventi', 'Consegne', 'DDT', 'Fatture', 
-            'Commesse',
+            'Riepilogo', 
+            'Interventi', 'Consegne', 'DDT', 'Fatture', 'Commesse',
             ]
         format_load = False # To update only first sheet creation:        
         for ws_name in sheet_order:
@@ -318,10 +357,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         ws_name = 'Consegne'
         sheet = sheets[ws_name]
+        summary_data = summary[ws_name]['data']
 
         total = sheet['total']
         for key in picking_db:            
             for picking in picking_db[key]:
+                document_total = 0.0
                 account = picking.account_id
                 account_id = account.id
                 if account not in account_used:
@@ -354,6 +395,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 (subtotal, f_number),
                                 ]
                             # Total per account:                            
+                            document_total += subtotal
                             total[account_id] += subtotal
                             
                             excel_pool.write_xls_line(
@@ -381,15 +423,29 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             ws_name, sheet['row'], data,
                             default_format=f_text)
                         sheet['row'] += 1
-                            
+                        
+                # Summary data (picking):         
+                block_key = (picking.pick_state, account)
+                if block_key not in summary_data:
+                    summary_data[block_key] = []
+                summary_data[block_key].append((
+                    account.name, 
+                    picking.name, 
+                    (document_total, f_number),
+                    )) 
+                    
+                    
         # ---------------------------------------------------------------------
         # B. DDT MATERIAL:
         # ---------------------------------------------------------------------
         ws_name = 'DDT'
         sheet = sheets[ws_name]
+        summary_data = summary[ws_name]['data']
+
         total = sheet['total']
         for key in ddt_db:
             for ddt in ddt_db[key]:
+                document_total = 0.0
                 account = ddt.account_id
                 account_id = account.id
                 if account not in account_used:
@@ -420,7 +476,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     (list_price, f_number),
                                     (subtotal, f_number),
                                     ]
+
                                 # Total per account:    
+                                document_total += subtotal
                                 total[account_id] += subtotal
                                 
                                 excel_pool.write_xls_line(
@@ -467,16 +525,28 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         default_format=f_text)
                     sheet['row'] += 1
 
+                # Summary data (DDT):         
+                block_key = (account.name, ddt.name)
+                if block_key not in summary_data:
+                    summary_data[block_key] = []
+                summary_data[block_key].append((
+                    account.name, 
+                    ddt.name, 
+                    (document_total, f_number),
+                    )) 
+
         # ---------------------------------------------------------------------
         # C. INVOICED MATERIAL:
         # ---------------------------------------------------------------------
         ws_name = 'Fatture'
         sheet = sheets[ws_name]
+        summary_data = summary[ws_name]['data']
 
         total = sheet['total']
         cost = sheet['cost']
         for key in invoice_db:
             for invoice in invoice_db[key]:
+                document_total = 0.0
                 account = invoice.analytic_id
                 account_id = account.id
                 if account not in account_used:
@@ -520,22 +590,38 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         (line.discount, f_number),
                         (subtotal, f_number),
                         ]
+                    
+                    # Total:    
                     total[account_id] += subtotal
+                    document_total += subtotal
                     
                     excel_pool.write_xls_line(
                         ws_name, sheet['row'], data,
                         default_format=f_text)
                     sheet['row'] += 1
 
+                # Summary data (Invoice):         
+                block_key = (account.name, invoice.number)
+                if block_key not in summary_data:
+                    summary_data[block_key] = []
+                summary_data[block_key].append((
+                    account.name, 
+                    invoice.number, 
+                    (document_total, f_number),
+                    (0.0, f_number), # TODO
+                    )) 
+
         # ---------------------------------------------------------------------
         # D. INTERVENT:
         # ---------------------------------------------------------------------
         ws_name = 'Interventi'
         sheet = sheets[ws_name]
+        summary_data = summary[ws_name]['data']
 
         total = sheet['total']
         for key in intervent_db:        
             for intervent in intervent_db[key]:
+                document_total = 0.0
                 account = intervent.account_id
                 account_id = account.id
                 if account and account not in account_used:
@@ -551,16 +637,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                 data = [
                     account.name or 'NON ASSEGNATA',
-                    intervent.ref,
+                    intervent.ref or 'BOZZA',
                     intervent.name,
                     intervent.mode,
-                    intervent.operation_id.name,
+                    intervent.operation_id.name or '',
                     intervent.user_id.name,
                     
                     # Intervent:
                     intervent.intervent_duration,
                     intervent.intervent_total,
-                    intervent.unit_total,
+                    intervent.unit_amount,
 
                     # Extra hour:                    
                     intervent.trip_require,
@@ -571,12 +657,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     # Text:
                     intervent.intervention_request,
                     intervent.intervention,
-                    intervent.intervention_note,
+                    intervent.internal_note,
                     
                     # Revenue:
                     intervent.amount,
-                    intervent.to_invoice,
-                    intervent.not_in_report,
+                    intervent.to_invoice.name or '/',
+                    'X' if intervent.not_in_report else '',
                     
                     intervent.state,
                     ]
@@ -584,17 +670,30 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # Total per account:                            
                 cost[account_id] += this_cost
                 total[account_id] += this_revenue
+                #TODO document_total += subtotal
                 
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], data,
                     default_format=f_text)
                 sheet['row'] += 1
 
+                # Summary data (Intervent):   
+                block_key = (account.name, intervent.ref)
+                if block_key not in summary_data:
+                    summary_data[block_key] = []
+                summary_data[block_key].append((
+                    account.name, 
+                    intervent.ref, 
+                    (document_total, f_number), 
+                    (0.0, f_number), # TODO
+                    ))
+
         # ---------------------------------------------------------------------
         # E. ACCOUNT:
         # ---------------------------------------------------------------------
         ws_name = 'Commesse'
         sheet = sheets[ws_name]
+        summary_data = summary[ws_name]['data']
 
         # Block all account:
         for key in account_db:
@@ -653,8 +752,28 @@ class ResPartnerActivityWizard(orm.TransientModel):
         ws_name = 'Riepilogo'
         sheet = sheets[ws_name]
 
+        for block in sheet_order[1:-1]: # Jump TODO commesse?!?
+            block_record = summary[block]
 
-        
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], ['Blocco: %s' % block],
+                default_format=f_title)
+            sheet['row'] += 1
+
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], block_record['header'],
+                default_format=f_header)
+            sheet['row'] += 1
+            
+            for key in block_record['data']:                
+                for record in block_record['data'][key]:
+                    excel_pool.write_xls_line(
+                        ws_name, sheet['row'], record,
+                        default_format=f_text)
+                    sheet['row'] += 1
+
+            sheet['row'] += 1
+            # TODO account total        
         
         return excel_pool.return_attachment(
             cr, uid, 'partner_activity')
