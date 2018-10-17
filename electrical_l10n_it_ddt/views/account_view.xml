@@ -7,8 +7,8 @@
             <field name="model">account.invoice</field>
             <field name="inherit_id" ref="account.invoice_form"/>
             <field name="arch" type="xml">
-                <field name="number" position="after">
-                    <field name="account_id" />
+                <field name="partner_id" position="after">
+                    <field name="analytic_id" />
                 </field>
                 <xpath expr="//page[@string='Other Info']" position="after">
                     <page string="Shipping Informations">

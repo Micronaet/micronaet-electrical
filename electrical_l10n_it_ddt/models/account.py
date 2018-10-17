@@ -29,8 +29,8 @@ class account_invoice(orm.Model):
     _inherit = 'account.invoice'
 
     _columns = {
-        'account_id': fields.many2one(
-            'account.analytic.account', string='Account', required=False)
+        'analytic_id': fields.many2one(
+            'account.analytic.account', string='Account', required=False),
 
         'carriage_condition_id': fields.many2one(
             'stock.picking.carriage_condition', 'Carriage Condition'),
