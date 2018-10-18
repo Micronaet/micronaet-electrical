@@ -110,7 +110,7 @@ class MetelMetel(orm.Model):
         if logger is None:
             logger = []
 
-        if not text:
+        if not text or not text.strip():
             return False
             
         if mode == 'YYYYMMDD':
