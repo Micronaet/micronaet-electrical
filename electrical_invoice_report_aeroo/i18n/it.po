@@ -1,0 +1,72 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mx_invoice_report_aeroo
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 8.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-07-27 16:28+0000\n"
+"PO-Revision-Date: 2017-08-06 10:48+0100\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"Language: it\n"
+"X-Generator: Poedit 1.6.10\n"
+
+#. module: mx_invoice_report_aeroo
+#: code:addons/mx_invoice_report_aeroo/report/invoice_parser.py:141
+#, python-format
+msgid " (Your ref.: %s )"
+msgstr " (Vostro rif.: %s )"
+
+#. module: mx_invoice_report_aeroo
+#: code:addons/mx_invoice_report_aeroo/report/invoice_parser.py:139
+#, python-format
+msgid " Order: %s%s "
+msgstr " Ordine: %s%s "
+
+#. module: mx_invoice_report_aeroo
+#: code:addons/mx_invoice_report_aeroo/report/invoice_parser.py:147
+#, python-format
+msgid " Reference error "
+msgstr "Errore riferimento"
+
+#. module: mx_invoice_report_aeroo
+#: model:ir.model,name:mx_invoice_report_aeroo.model_account_invoice
+msgid "Invoice"
+msgstr "Fattura"
+
+#. module: mx_invoice_report_aeroo
+#: model:ir.actions.report.xml,name:mx_invoice_report_aeroo.aeroo_mx_invoice_report_PDF_id
+msgid "Mx invoice PDF report"
+msgstr "Fattura (PDF)"
+
+#. module: mx_invoice_report_aeroo
+#: model:ir.actions.report.xml,name:mx_invoice_report_aeroo.aeroo_mx_invoice_report_id
+msgid "Mx invoice report"
+msgstr "Fattura (ODT)"
+
+#. module: mx_invoice_report_aeroo
+#: model:ir.actions.report.xml,name:mx_invoice_report_aeroo.aeroo_mx_proforma_invoice_report_PDF_id
+msgid "Mx proforma invoice PDF report"
+msgstr "FT Proforma (PDF) PR, OC"
+
+#. module: mx_invoice_report_aeroo
+#: model:ir.actions.report.xml,name:mx_invoice_report_aeroo.aeroo_mx_proforma_invoice_remain_report_id
+msgid "Mx proforma invoice remain report"
+msgstr "Proforma Residuo"
+
+#. module: mx_invoice_report_aeroo
+#: model:ir.actions.report.xml,name:mx_invoice_report_aeroo.aeroo_mx_proforma_invoice_report_id
+msgid "Mx proforma invoice report"
+msgstr "FT Proforma (ODT) PR, OC"
+
+#. module: mx_invoice_report_aeroo
+#: code:addons/mx_invoice_report_aeroo/report/invoice_parser.py:128
+#, python-format
+msgid "No ref. "
+msgstr "Nessun rif."

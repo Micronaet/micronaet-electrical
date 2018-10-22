@@ -33,7 +33,7 @@
             <field name="arch" type="xml">
                 <tree string="Metel statistic group" editable="bottom" colors="blue:metel_serie_id==False">
                     <field name="is_serie" invisible="1" />        
-                    <field name="name" readonly="1"/>
+                    <field name="name" />
                     <field name="metel_statistic" readonly="1" />
                     <field name="parent_id" readonly="1" string="Statistic category"/>
                     <field name="metel_serie_id" context="{'default_parent_id': parent_id, 'default_metel_mode': 'serie'}" domain="[('parent_id', '=', parent_id),('metel_mode', '=', 'serie')]" />

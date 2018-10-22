@@ -187,7 +187,7 @@ class ProductCategory(orm.Model):
         Create structure: METEL / Producer / Brand
     """
     _inherit = 'product.category'
-
+    
     # -------------------------------------------------------------------------
     # Utility:
     # -------------------------------------------------------------------------
