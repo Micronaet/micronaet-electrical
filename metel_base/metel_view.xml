@@ -135,7 +135,7 @@
                     <label for="is_metel" />
                 </field>
                 <xpath expr="//page[1]" position="after">
-                    <page string="METEL" attrs="{'invisible': [('is_metel','=',False)]}">
+                    <page string="METEL" name="metel" attrs="{'invisible': [('is_metel','=',False)]}">
                        <group colspan="4" col="4">
                             <separator string="Information:" colspan="4"/>
                             <field name="metel_electrocod" readonly="1"/>

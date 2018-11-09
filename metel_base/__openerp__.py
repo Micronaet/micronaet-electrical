@@ -35,6 +35,7 @@
     'init_xml': [],
     'demo': [],
     'data': [
+        'security/cost_group.xml',
         'security/ir.model.access.csv',    
         'metel_view.xml',
         
