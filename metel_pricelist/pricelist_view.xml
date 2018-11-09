@@ -54,30 +54,27 @@
                            <notebook colspan="4">
                                <page string="Cost management">
                                     <group colspan="4" col="4">                           
-                                       <separator string="Price:" colspan="3"/>                                       
+                                       <separator string="Sale Price:" colspan="3"/>
                                        <button name="metel_product_return" string="Product detail" type="object" class="oe_highlight" colspan="1" />
 
                                        <field name="lst_price" /><!--SUPPLIER LAST-->
                                        <field name="lst_price_vat" />
                                        
+                                       <field name="net_selection" readonly="1"/> 
+                                       <newline/>
                                        <field name="metel_net" />
                                        <field name="metel_net_vat" />
-                                       <!--<field name="lst_price_vat" />-->
 
+                                       <separator string="Net Price:" colspan="4"/>
                                        <field name="standard_price" /> <!--METEL-->
-                                       <field name="standard_price_vat" /> <!--METEL-->
-                                       
+                                       <field name="standard_price_vat" />
+
+                                       <field name="sale_selection" readonly="1" /> 
+                                       <newline/>                                       
                                        <field name="metel_sale" />
                                        <field name="metel_sale_vat" />
-                                       <!--<field name="standard_price_vat" /> -->
+
                                        
-                                       <!--METEL - SUPPLIER DISCOUNT-->
-                                       <!--<field name="metel_net" /> 
-                                       <field name="metel_net_vat" />-->
-                                       <!--METEL - MARGIN -->
-                                       <!--
-                                       <field name="metel_sale" /> 
-                                       <field name="metel_sale_vat" />-->
                                        
                                        <separator string="Rules:" colspan="4"/>
                                        <field name="metel_brand_id" readonly="1" context="{'form_view_ref': 'metel_pricelist.view_product_category_metel_discount_form'}"/> 

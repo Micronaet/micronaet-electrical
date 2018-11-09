@@ -227,30 +227,30 @@ class ProductProduct(orm.Model):
             # -----------------------------------------------------------------
             # Priority 1: force price
             if product.metel_net_force:
-                net_seletion = 'price'
+                net_selection = 'price'
                 metel_net = product.metel_net_force
             # Priority 2: force discount:
             elif product.metel_net_force_perc:
-                net_seletion = 'discount'
+                net_selection = 'discount'
                 metel_net = lst_price * (
                     100.0 - product.metel_net_force_perc) / 100.0
             # Priority 3: force statistic discount:
             elif product.metel_statistic_id.metel_net_force_perc:
-                net_seletion = 'statistic'
-                metel_sale = lst_price * (
+                net_selection = 'statistic'
+                metel_net = lst_price * (
                     100.0 - product.metel_statistic_id.metel_net_force_perc
                     ) / 100.0
             
             # Priority 4: force brand discount:
             elif product.metel_brand_id.metel_net_force_perc:
-                net_seletion = 'brand'
-                metel_sale = lst_price * (
+                net_selection = 'brand'
+                metel_net = lst_price * (
                     100.0 - product.metel_brand_id.metel_net_force_perc
                     ) / 100.0
             
             # Priority 5: last price:
             else:
-                net_seletion = False
+                net_selection = 'default'
                 metel_net = standard_price
 
             # -----------------------------------------------------------------
@@ -258,30 +258,30 @@ class ProductProduct(orm.Model):
             # -----------------------------------------------------------------
             # Priority 1: force price
             if product.metel_sale_force:
-                sale_seletion = 'price'
+                sale_selection = 'price'
                 metel_sale = product.metel_sale_force
             # Priority 2: force discount:
             elif product.metel_sale_force_perc:
-                sale_seletion = 'discount'
+                sale_selection = 'discount'
                 metel_sale = lst_price * (
                     100.0 - product.metel_sale_force_perc) / 100.0
             # Priority 3: force statistic discount:
             elif product.metel_statistic_id.metel_sale_force_perc:
-                sale_seletion = 'statistic'
+                sale_selection = 'statistic'
                 metel_sale = lst_price * (
                     100.0 - product.metel_statistic_id.metel_sale_force_perc
                     ) / 100.0
             
             # Priority 4: force brand discount:
             elif product.metel_brand_id.metel_sale_force_perc:
-                sale_seletion = 'brand'
+                sale_selection = 'brand'
                 metel_sale = lst_price * (
                     100.0 - product.metel_brand_id.metel_sale_force_perc
                     ) / 100.0
 
             # Priority 5: metel pricelist:
             else:
-                sale_seletion = False
+                sale_selection = 'default'
                 metel_sale = lst_price
 
 
@@ -336,7 +336,8 @@ class ProductProduct(orm.Model):
                 ('brand', 'Brand'),
                 ('discount', 'Force discount'),
                 ('price', 'Force price'),
-                ], 'Net selection'),
+                ('default', 'Metel price'),
+                ], string='Net selection'),
 
         # ---------------------------------------------------------------------
         #                             Sale price:    
@@ -368,7 +369,8 @@ class ProductProduct(orm.Model):
                 ('brand', 'Brand'),
                 ('discount', 'Force discount'),
                 ('price', 'Force price'),
-                ], 'Sale selection'),
+                ('default', 'Last price'),
+                ], string='Sale selection'),
 
         # Vat:
         'standard_price_vat': fields.function(
