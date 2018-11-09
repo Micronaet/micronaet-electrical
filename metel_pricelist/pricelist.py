@@ -174,23 +174,65 @@ class ProductProduct(orm.Model):
     def _get_metel_price_data(self, cr, uid, ids, fields, args, context=None):
         ''' Fields function for calculate 
         '''    
+        add_vat = 1.22 # TODO parametrize
         res = {}
-        return res
         for product in self.browse(cr, uid, ids, context=context):
+            lst_price = product.lst_price
+            standard_price = product.standard_price
+            
+            # -----------------------------------------------------------------
+            #                        NET PRICE:
+            # -----------------------------------------------------------------
+            # Priority 1: force price
+            if product.metel_net_force:
+                metel_net = product.metel_net_force
+            # Priority 2: force discount:
+            elif product.metel_net_force_perc:
+                metel_net = lst_price * (
+                    100.0 - product.metel_net_force_perc) / 100.0
+            # Priority 3: force statistic discount:
+            
+            # Priority 4: force brand discount:
+            
+            # Priority 5: last price:
+            else:
+                metel_net = standard_price
+
+            # -----------------------------------------------------------------
+            #                        SALE PRICE:
+            # -----------------------------------------------------------------
+            # Priority 1: force price
+            if product.metel_sale_force:
+                metel_sale = product.metel_sale_force
+            # Priority 2: force discount:
+            elif product.metel_sale_force_perc:
+                metel_sale = lst_price * (
+                    100.0 - product.metel_sale_force_perc) / 100.0
+            # Priority 3: force statistic discount:
+            
+            # Priority 4: force brand discount:
+
+            # Priority 5: metel pricelist:
+            else:
+                metel_sale = lst_price
+
+
             res[product.id] = {
-                'metel_net': 0.0,
-                'metel_net_vat': 0.0,
+                'metel_net': metel_net,
+                'metel_net_vat': metel_net * add_vat,
+                'lst_price_vat': lst_price * add_vat,
                 
-                'metel_sale': 0.0,
-                'metel_sale_vat': 0.0,
-                
-                'lst_price_vat': 0.0,
-                'standard_price_vat': 0.0,
-                }
+                'metel_sale': metel_sale,
+                'metel_sale_vat': metel_sale * add_vat,
+                'standard_price_vat': standard_price * add_vat,
+                }                
         return res
 
     _columns = {    
-        # Net price:
+        # ---------------------------------------------------------------------
+        #                             Net price:
+        # ---------------------------------------------------------------------
+        # Force:
         'metel_net_force': fields.float(
             'METEL Net force', 
             digits_compute=dp.get_precision('Product Price')),
@@ -199,6 +241,8 @@ class ProductProduct(orm.Model):
         'metel_net_force_perc': fields.float(
             'METEL Net force %', digits=(16, 8),
             ),
+
+        # Calculated:
         'metel_net': fields.function(
             _get_metel_price_data, method=True, 
             type='float', string='Net', multi=True,
@@ -208,7 +252,17 @@ class ProductProduct(orm.Model):
             type='float', string='Net VAT', multi=True,
             ), 
 
-        # Sale price:    
+        # Vat:
+        'lst_price_vat': fields.function(
+            _get_metel_price_data, method=True, 
+            type='float', string='METEL VAT', multi=True,
+            digits_compute=dp.get_precision('Product Price'),
+            ),
+
+        # ---------------------------------------------------------------------
+        #                             Sale price:    
+        # ---------------------------------------------------------------------
+        # Force:
         'metel_sale_force': fields.float(
             'METEL Sale force',
             digits_compute=dp.get_precision('Product Price')),
@@ -217,6 +271,8 @@ class ProductProduct(orm.Model):
         'metel_sale_force_perc': fields.float(
             'METEL Sale force %', digits=(16, 8),
             ),
+
+        # Calculated:
         'metel_sale': fields.function(
             _get_metel_price_data, method=True, 
             type='float', string='Sale', multi=True,
@@ -225,25 +281,11 @@ class ProductProduct(orm.Model):
             _get_metel_price_data, method=True, 
             type='float', string='Sale VAT', multi=True,
             ), 
-    
-        # VAT product:            
-        'lst_price_vat': fields.function(
-            _get_metel_price_data, method=True, 
-            type='float', string='Last VAT', multi=True,
-            digits_compute=dp.get_precision('Product Price'),
-            ),
+
+        # Vat:
         'standard_price_vat': fields.function(
             _get_metel_price_data, method=True, 
-            type='float', string='METEL VAT', multi=True,
+            type='float', string='LAst VAT', multi=True,
             ), 
-        
-        #'metel_sale': fields.function( >>> use lst_price
-        #    _get_metel_price_data, method=True, 
-        #    type='float', string='Net', 
-        #    multi=True), 
-
-        #'metel_last_load': fields.float( >>> use standard_cost
-        #    'Last price', digits=(16, 3)),
-        #    ),        
         }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
