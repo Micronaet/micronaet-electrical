@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-09 17:53+0000\n"
-"PO-Revision-Date: 2018-11-09 18:58+0100\n"
+"POT-Creation-Date: 2018-11-09 18:06+0000\n"
+"PO-Revision-Date: 2018-11-09 19:06+0100\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -67,9 +67,9 @@ msgid "Last VAT"
 msgstr "Costo ultimo (ivato)"
 
 #. module: metel_pricelist
-#: selection:product.product,sale_selection:0
+#: selection:product.product,net_selection:0
 msgid "Last price"
-msgstr "Costo ultimo"
+msgstr "Ultimo prezzo"
 
 #. module: metel_pricelist
 #: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form
@@ -121,9 +121,9 @@ msgid "METEL price rule"
 msgstr "METEL regole prezzo"
 
 #. module: metel_pricelist
-#: selection:product.product,net_selection:0
+#: selection:product.product,sale_selection:0
 msgid "Metel price"
-msgstr "Prezzo Metel"
+msgstr "Prezzo METEL"
 
 #. module: metel_pricelist
 #: field:product.product,metel_net:0
