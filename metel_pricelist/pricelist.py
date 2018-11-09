@@ -42,7 +42,7 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
-class MetelPriceRule(orm.Model):
+'''class MetelPriceRule(orm.Model):
     """ Model name: Metel Price Rule
     """
     
@@ -62,7 +62,53 @@ class MetelPriceRule(orm.Model):
     
     _defaults = {
         'mode': lambda *x: 'mode',
-        }
+        }'''
+
+class ProductProduct(orm.Model):
+    """ Model name: ProductProduct
+    """    
+    _inherit = 'product.category'
+    
+    # -------------------------------------------------------------------------
+    # On change function:
+    # -------------------------------------------------------------------------
+    def onchange_metel_net_force_scale(self, cr, uid, ids, 
+            discount_rates, context=None):
+        ''' Update calc value, reformat text
+        '''                
+        product_pool = self.pool.get('product.product')
+        res = product_pool.format_multi_discount(discount_rates)
+        return {
+            'value': {
+                'metel_net_force_perc': res['value'],
+                'metel_net_force_scale': res['text'],
+                }}    
+
+    def onchange_metel_sale_force_scale(self, cr, uid, ids, 
+            discount_rates, context=None):
+        ''' Update calc value, reformat text
+        '''        
+        product_pool = self.pool.get('product.product')
+        res = product_pool.format_multi_discount(discount_rates)
+        return {
+            'value': {
+                'metel_sale_force_perc': res['value'],
+                'metel_sale_force_scale': res['text'],
+                }}    
+
+    _columns = {
+        'metel_net_force_scale': fields.char(
+            'METEL Net scale %', size=40),
+        'metel_net_force_perc': fields.float(
+            'METEL Net force %', digits=(16, 8),
+            ),
+
+        'metel_sale_force_scale': fields.char(
+            'METEL Sale scale %', size=40),
+        'metel_sale_force_perc': fields.float(
+            'METEL Sale force %', digits=(16, 8),
+            ),
+        }    
 
 class ProductProduct(orm.Model):
     """ Model name: ProductProduct
@@ -70,6 +116,9 @@ class ProductProduct(orm.Model):
     
     _inherit = 'product.product'
     
+    # -------------------------------------------------------------------------
+    # On change function:
+    # -------------------------------------------------------------------------
     # Pricelist multi discount:
     def onchange_metel_net_force_scale(self, cr, uid, ids, 
             discount_rates, context=None):
@@ -93,7 +142,9 @@ class ProductProduct(orm.Model):
                 'metel_sale_force_scale': res['text'],
                 }}    
 
+    # -------------------------------------------------------------------------
     # Utility function for compute text and value
+    # -------------------------------------------------------------------------
     def format_multi_discount(self, multi_discount):
         ''' Manage multi discount: text like: 50%+30%
             return {'text': '50.0% + 30.0%', 'value': 65.00}
@@ -120,14 +171,6 @@ class ProductProduct(orm.Model):
     def metel_product_return(self, cr, uid, ids, context=None):
         ''' Metel cost view
         '''
-        #model_pool = self.pool.get('ir.model.data')
-        #form_view_id = False,#model_pool.get_object_reference(
-        #    cr, uid, 
-        #    'metel_pricelist', 
-        #    'view_product_product_metel_pricelist_form',
-        #    )[1]
-    
-
         return {
             'type': 'ir.actions.act_window',
             'name': _('Product detail'),
@@ -135,11 +178,10 @@ class ProductProduct(orm.Model):
             'view_mode': 'form,tree',
             'res_id': ids[0],
             'res_model': 'product.product',
-            #'view_id': form_view_id,
             'views': [(False, 'form'), (False, 'tree')],
             'domain': [],
             'context': context,
-            'target': 'current', # 'new'
+            'target': 'current',
             'nodestroy': False,
             }
     
@@ -185,17 +227,30 @@ class ProductProduct(orm.Model):
             # -----------------------------------------------------------------
             # Priority 1: force price
             if product.metel_net_force:
+                net_seletion = 'price'
                 metel_net = product.metel_net_force
             # Priority 2: force discount:
             elif product.metel_net_force_perc:
+                net_seletion = 'discount'
                 metel_net = lst_price * (
                     100.0 - product.metel_net_force_perc) / 100.0
             # Priority 3: force statistic discount:
+            elif product.metel_statistic_id.metel_net_force_perc:
+                net_seletion = 'statistic'
+                metel_sale = lst_price * (
+                    100.0 - product.metel_statistic_id.metel_net_force_perc
+                    ) / 100.0
             
             # Priority 4: force brand discount:
+            elif product.metel_brand_id.metel_net_force_perc:
+                net_seletion = 'brand'
+                metel_sale = lst_price * (
+                    100.0 - product.metel_brand_id.metel_net_force_perc
+                    ) / 100.0
             
             # Priority 5: last price:
             else:
+                net_seletion = False
                 metel_net = standard_price
 
             # -----------------------------------------------------------------
@@ -203,17 +258,30 @@ class ProductProduct(orm.Model):
             # -----------------------------------------------------------------
             # Priority 1: force price
             if product.metel_sale_force:
+                sale_seletion = 'price'
                 metel_sale = product.metel_sale_force
             # Priority 2: force discount:
             elif product.metel_sale_force_perc:
+                sale_seletion = 'discount'
                 metel_sale = lst_price * (
                     100.0 - product.metel_sale_force_perc) / 100.0
             # Priority 3: force statistic discount:
+            elif product.metel_statistic_id.metel_sale_force_perc:
+                sale_seletion = 'statistic'
+                metel_sale = lst_price * (
+                    100.0 - product.metel_statistic_id.metel_sale_force_perc
+                    ) / 100.0
             
             # Priority 4: force brand discount:
+            elif product.metel_brand_id.metel_sale_force_perc:
+                sale_seletion = 'brand'
+                metel_sale = lst_price * (
+                    100.0 - product.metel_brand_id.metel_sale_force_perc
+                    ) / 100.0
 
             # Priority 5: metel pricelist:
             else:
+                sale_seletion = False
                 metel_sale = lst_price
 
 
@@ -221,14 +289,16 @@ class ProductProduct(orm.Model):
                 'metel_net': metel_net,
                 'metel_net_vat': metel_net * add_vat,
                 'lst_price_vat': lst_price * add_vat,
+                'net_selection': net_selection,
                 
                 'metel_sale': metel_sale,
                 'metel_sale_vat': metel_sale * add_vat,
                 'standard_price_vat': standard_price * add_vat,
+                'sale_selection': sale_selection,
                 }                
         return res
 
-    _columns = {    
+    _columns = {
         # ---------------------------------------------------------------------
         #                             Net price:
         # ---------------------------------------------------------------------
@@ -237,7 +307,7 @@ class ProductProduct(orm.Model):
             'METEL Net force', 
             digits_compute=dp.get_precision('Product Price')),
         'metel_net_force_scale': fields.char(
-            'METEL Net scale %', size=20),
+            'METEL Net scale %', size=40),
         'metel_net_force_perc': fields.float(
             'METEL Net force %', digits=(16, 8),
             ),
@@ -258,6 +328,15 @@ class ProductProduct(orm.Model):
             type='float', string='METEL VAT', multi=True,
             digits_compute=dp.get_precision('Product Price'),
             ),
+        'net_selection': fields.function(
+            _get_metel_price_data, method=True, 
+            type='selection', multi=True,
+            selection = [
+                ('statistic', 'Statistic category'),
+                ('brand', 'Brand'),
+                ('discount', 'Force discount'),
+                ('price', 'Force price'),
+                ], 'Net selection'),
 
         # ---------------------------------------------------------------------
         #                             Sale price:    
@@ -267,7 +346,7 @@ class ProductProduct(orm.Model):
             'METEL Sale force',
             digits_compute=dp.get_precision('Product Price')),
         'metel_sale_force_scale': fields.char(
-            'METEL Net scale %', size=20),
+            'METEL Net scale %', size=40),
         'metel_sale_force_perc': fields.float(
             'METEL Sale force %', digits=(16, 8),
             ),
@@ -281,11 +360,20 @@ class ProductProduct(orm.Model):
             _get_metel_price_data, method=True, 
             type='float', string='Sale VAT', multi=True,
             ), 
+        'sale_selection': fields.function(
+            _get_metel_price_data, method=True, 
+            type='selection', multi=True,
+            selection = [
+                ('statistic', 'Statistic category'),
+                ('brand', 'Brand'),
+                ('discount', 'Force discount'),
+                ('price', 'Force price'),
+                ], 'Sale selection'),
 
         # Vat:
         'standard_price_vat': fields.function(
             _get_metel_price_data, method=True, 
-            type='float', string='LAst VAT', multi=True,
+            type='float', string='Last VAT', multi=True,
             ), 
         }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

@@ -39,7 +39,7 @@
     'init_xml': [],
     'demo': [],
     'data': [
-        'security/ir.model.access.csv',    
+        #'security/ir.model.access.csv',    
         'pricelist_view.xml',
         ],
     'active': False,
