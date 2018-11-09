@@ -336,7 +336,7 @@ class ProductProduct(orm.Model):
                 ('brand', 'Brand'),
                 ('discount', 'Force discount'),
                 ('price', 'Force price'),
-                ('default', 'Metel price'),
+                ('default', 'Last price'),
                 ], string='Net selection'),
 
         # ---------------------------------------------------------------------
@@ -369,7 +369,7 @@ class ProductProduct(orm.Model):
                 ('brand', 'Brand'),
                 ('discount', 'Force discount'),
                 ('price', 'Force price'),
-                ('default', 'Last price'),
+                ('default', 'Metel price'),
                 ], string='Sale selection'),
 
         # Vat:
