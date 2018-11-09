@@ -1,0 +1,207 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* metel_pricelist
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 8.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-11-09 17:53+0000\n"
+"PO-Revision-Date: 2018-11-09 18:58+0100\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"Language: it\n"
+"X-Generator: Poedit 1.6.10\n"
+
+#. module: metel_pricelist
+#: selection:product.product,net_selection:0
+#: selection:product.product,sale_selection:0
+msgid "Brand"
+msgstr "Marchio"
+
+#. module: metel_pricelist
+#: view:product.product:metel_pricelist.view_product_product_metel_page_form
+#: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form
+msgid "Cost management"
+msgstr "Gestione costi"
+
+#. module: metel_pricelist
+#: view:product.category:metel_pricelist.view_product_category_metel_discount_form
+msgid "Cost rule:"
+msgstr "Regole costo:"
+
+#. module: metel_pricelist
+#: selection:product.product,net_selection:0
+#: selection:product.product,sale_selection:0
+msgid "Force discount"
+msgstr "Forza sconto"
+
+#. module: metel_pricelist
+#: selection:product.product,net_selection:0
+#: selection:product.product,sale_selection:0
+msgid "Force price"
+msgstr "Forza prezzo"
+
+#. module: metel_pricelist
+#: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form
+msgid "Force rules:"
+msgstr "Regole forzature:"
+
+#. module: metel_pricelist
+#: view:product.category:metel_pricelist.view_product_category_metel_discount_form
+msgid "Group rule"
+msgstr "Gruppo regole"
+
+#. module: metel_pricelist
+#: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form
+msgid "Information:"
+msgstr "Informazioni:"
+
+#. module: metel_pricelist
+#: field:product.product,standard_price_vat:0
+msgid "Last VAT"
+msgstr "Costo ultimo (ivato)"
+
+#. module: metel_pricelist
+#: selection:product.product,sale_selection:0
+msgid "Last price"
+msgstr "Costo ultimo"
+
+#. module: metel_pricelist
+#: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form
+msgid "METEL"
+msgstr "METEL"
+
+#. module: metel_pricelist
+#: field:product.product,metel_net_force:0
+msgid "METEL Net force"
+msgstr "METEL Netto forzato"
+
+#. module: metel_pricelist
+#: field:product.category,metel_net_force_perc:0
+#: field:product.product,metel_net_force_perc:0
+msgid "METEL Net force %"
+msgstr "METEL % Netto forzato"
+
+#. module: metel_pricelist
+#: field:product.category,metel_net_force_scale:0
+#: field:product.product,metel_net_force_scale:0
+#: field:product.product,metel_sale_force_scale:0
+msgid "METEL Net scale %"
+msgstr "METEL % Netto scala"
+
+#. module: metel_pricelist
+#: field:product.product,metel_sale_force:0
+msgid "METEL Sale force"
+msgstr "METEL Forza scontato"
+
+#. module: metel_pricelist
+#: field:product.category,metel_sale_force_perc:0
+#: field:product.product,metel_sale_force_perc:0
+msgid "METEL Sale force %"
+msgstr "METEL % Forzato scontato"
+
+#. module: metel_pricelist
+#: field:product.category,metel_sale_force_scale:0
+msgid "METEL Sale scale %"
+msgstr "METEL %  Scontato scala"
+
+#. module: metel_pricelist
+#: field:product.product,lst_price_vat:0
+msgid "METEL VAT"
+msgstr "METEL (ivato)"
+
+#. module: metel_pricelist
+#: model:ir.model,name:metel_pricelist.model_metel_price_rule
+msgid "METEL price rule"
+msgstr "METEL regole prezzo"
+
+#. module: metel_pricelist
+#: selection:product.product,net_selection:0
+msgid "Metel price"
+msgstr "Prezzo Metel"
+
+#. module: metel_pricelist
+#: field:product.product,metel_net:0
+msgid "Net"
+msgstr "Netto"
+
+#. module: metel_pricelist
+#: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form
+msgid "Net Price:"
+msgstr "Prezzo netto:"
+
+#. module: metel_pricelist
+#: field:product.product,metel_net_vat:0
+msgid "Net VAT"
+msgstr "Netto (ivato)"
+
+#. module: metel_pricelist
+#: field:product.product,net_selection:0
+msgid "Net selection"
+msgstr "Netto selezionato"
+
+#. module: metel_pricelist
+#: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form
+msgid "Order:"
+msgstr "Ordine:"
+
+#. module: metel_pricelist
+#: model:ir.model,name:metel_pricelist.model_product_product
+msgid "Product"
+msgstr "Prodotto"
+
+#. module: metel_pricelist
+#: model:ir.model,name:metel_pricelist.model_product_category
+msgid "Product Category"
+msgstr "Categoria prodotto"
+
+#. module: metel_pricelist
+#: model:ir.model,name:metel_pricelist.model_product_template
+msgid "Product Template"
+msgstr "Modello Prodotto"
+
+#. module: metel_pricelist
+#: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form
+msgid "Product detail"
+msgstr "Dettaglio prodotto"
+
+#. module: metel_pricelist
+#: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form
+msgid "Rules:"
+msgstr "Regole:"
+
+#. module: metel_pricelist
+#: field:product.product,metel_sale:0
+msgid "Sale"
+msgstr "Scontato"
+
+#. module: metel_pricelist
+#: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form
+msgid "Sale Price:"
+msgstr "Prezzo scontato:"
+
+#. module: metel_pricelist
+#: field:product.product,metel_sale_vat:0
+msgid "Sale VAT"
+msgstr "Scontato (ivato)"
+
+#. module: metel_pricelist
+#: field:product.product,sale_selection:0
+msgid "Sale selection"
+msgstr "Scontato selezionato"
+
+#. module: metel_pricelist
+#: selection:product.product,net_selection:0
+#: selection:product.product,sale_selection:0
+msgid "Statistic category"
+msgstr "Categoria statistica"
+
+#. module: metel_pricelist
+#: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form
+msgid "String"
+msgstr "Stringa"
