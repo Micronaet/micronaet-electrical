@@ -92,7 +92,7 @@ msgstr "METEL % Netto forzato"
 #: field:product.product,metel_net_force_scale:0
 #: field:product.product,metel_sale_force_scale:0
 msgid "METEL Net scale %"
-msgstr "METEL % Netto scala"
+msgstr "METEL % Netto (scala sconti)"
 
 #. module: metel_pricelist
 #: field:product.product,metel_sale_force:0
@@ -108,7 +108,7 @@ msgstr "METEL % Forzato scontato"
 #. module: metel_pricelist
 #: field:product.category,metel_sale_force_scale:0
 msgid "METEL Sale scale %"
-msgstr "METEL %  Scontato scala"
+msgstr "METEL % Scontato (scala sconti)"
 
 #. module: metel_pricelist
 #: field:product.product,lst_price_vat:0

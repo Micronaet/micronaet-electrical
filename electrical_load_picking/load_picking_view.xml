@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="view_res_partner_supplier_path_form">
+            <field name="name">res.partner.form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[1]" position="after">
+                    <page string="Import DDT" attrs="{'invisible': [('supplier','=',False)]}">
+                        <group col="4" colspan="4">
+                            <field name="electrical_address_code" />
+                            <field name="electrical_extension" />
+                            
+                            <field name="electrical_path" />
+                            <button name="open_electrical_file_ids" string="File imported" type="object" class="oe_highlight"/>
+                            
+                            <button name="electrical_load_picking_routine" string="A. Load files" type="object" />
+                            <button name="electrical_generate_picking_routine" string="B. Generate picking" type="object" />
+                            <button name="electrical_all_picking_routine" string="A + B. Load and generate picking" type="object" />
+                        </group>
+                    </page>    
+                </xpath>
+            </field>
+        </record>
+
+        <!--stock.picking.input.file-->
+        <record model="ir.ui.view" id="view_stock_picking_input_file_tree">
+            <field name="name">stock.picking.input.file.tree</field>
+            <field name="model">stock.picking.input.file</field>
+            <field name="arch" type="xml">
+                <tree string="Picking file" colors="grey:state=='draft';green:state=='load'">        
+                    <field name="create_date" />
+                    <field name="name" />
+                    <field name="mode" />
+                    <field name="picking_id" />
+                    <field name="partner_id" invisible="1"/>                    
+                    <field name="address_id" />
+                    <field name="state" />
+                </tree>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="view_stock_picking_input_file_form">
+            <field name="name">stock.picking.input.file.form</field>
+            <field name="model">stock.picking.input.file</field>
+            <field name="arch" type="xml">
+                <form string="Picking file">
+                    <header>
+                        <field name="state" widget="statusbar"/>                        
+                    </header>
+                    <sheet>
+                        <group col="4" colspan="4">
+                            <field name="create_date" />
+                            <field name="mode" />
+                            
+                            <field name="name" colspan="4"/>
+
+                            <field name="partner_id" />
+                            <field name="address_id" />
+
+                            <field name="picking_id" />
+                            <newline/>
+                            
+                            <separator string="Content:" colspan="4"/>
+                            <field name="content" colspan="4" nolabel="1" />
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</openerp>
+
