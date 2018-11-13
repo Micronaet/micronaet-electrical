@@ -95,6 +95,7 @@ class StockPickingFile(orm.Model):
         state = context.get('import_state', 'load') # else close
         
         # Pool used:
+        product_pool = self.pool.get('product.product')
         picking_pool = self.pool.get('stock.picking')
         move_pool = self.pool.get('stock.mode')
         
@@ -116,18 +117,23 @@ class StockPickingFile(orm.Model):
 
         partner = current_proxy.partner_id
         filename = os.path.join(
-            partner.electrical_path, 
+            os.path.expanduser(partner.electrical_path), 
             current_proxy.name,
             )
 
         picking_id = False    
         content = ''
+
         for line in open(filename, 'r'):
+            if not line.strip():
+                _logger.error('Empty line')
+                continue
+                
             # -----------------------------------------------------------------
             # Extract parameter from line:
             # -----------------------------------------------------------------
             address_code = self._clean_string(line[:3])
-            mode = line[3:5] # TODO mode filter
+            mode = self._clean_mode(line[3:5]) 
             year = self._clean_string(line[5:9])
             supplier_code = self._clean_string(line[9:16])
             supplier_date = self._clean_date(line[16:24]) # ISO format
@@ -137,13 +143,18 @@ class StockPickingFile(orm.Model):
             name = self._clean_string(line[58:118])
             uom = self._clean_string(line[118:120])
             product_qty = self._clean_float(line[120:131], 1000.0)
-            price = self._clean_string(line[131:144], 100000.0)
+            price = self._clean_float(line[131:144], 100000.0)
             company_ref = self._clean_string(line[144:159])
             company_date = self._clean_date(line[160:168]) # XXX jump one char
             company_number = self._clean_string(line[168:175])
 
-            content += 'Art.: %s Q. %s %s x %s EUR\n' % (
+            product_ids = product_pool.search(cr, uid, [
+                ('default_code', '=', default_code),
+                ], context=context)               
+
+            content += 'Art.: %s%s Q. %s %s x %s EUR\n' % (
                 default_code,
+                '' if product_ids else ' (not found)*',
                 product_qty,
                 uom,
                 price,
@@ -151,7 +162,13 @@ class StockPickingFile(orm.Model):
 
             if state != 'load':
                 continue # not create picking + movement
-                    
+
+            if not product_ids:
+                # product not found:
+                _logger.error('Product not found: %s' % default_code)
+                continue
+                
+            product_id = product_ids[0]         
             # -----------------------------------------------------------------
             # Create new pick:
             # -----------------------------------------------------------------
@@ -212,6 +229,8 @@ class ResPartnerFolder(orm.Model):
     def electrical_load_picking_routine(self, cr, uid, ids, context=None):
         ''' Start procedure for load documents from folder
         '''
+        if context is None:
+            context = {}
         file_pool = self.pool.get('stock.picking.input.file')
         
         file_ids = file_pool.search(cr, uid, [
@@ -228,18 +247,22 @@ class ResPartnerFolder(orm.Model):
         ctx = context.copy()
         ctx['import_state'] = 'draft'
         file_ids = []
-        for root, folder, files in os.path:
+        for root, folder, files in os.walk(path):
             for f in files:
                 if f.split('.')[-1].lower() != extension:
                     _logger.warning('Wrong estension [%s]: %s' % (
-                        estension, f))
+                        extension, f))
                     continue # jump not same extension
                 if f in current_list:
                     _logger.warning('Yet loaded: %s' % f)
                     continue # jump not same extension
                 
                 # Create record:
-                file_id = file_pool.create(cr, uid, {}, context=ctx)
+                file_id = file_pool.create(cr, uid, {
+                    'partner_id': ids[0],
+                    'name': f,
+                    }, context=context)
+
                 file_ids.append(file_id)
                 # Load document (draft mode)
                 file_pool.load_document(cr, uid, [file_id], context=ctx)
@@ -275,6 +298,7 @@ class ResPartnerFolder(orm.Model):
         file_pool.write(cr, uid, file_ids, {
             'state': 'load', 
             }, context=context)
+
         return {
             'type': 'ir.actions.act_window',
             'name': _('File loaded'),
@@ -294,11 +318,12 @@ class ResPartnerFolder(orm.Model):
     def electrical_all_picking_routine(self, cr, uid, ids, context=None):
         ''' Start procedure for load documents from folder
         '''
-        self.electrical_load_picking_routine(cr, uid, ids, context=context)
-        self.electrical_generate_picking_routine(cr, uid, ids, context=context)
-        return True
+        self.electrical_load_picking_routine(
+            cr, uid, ids, context=context)
+        return self.electrical_generate_picking_routine(
+            cr, uid, ids, context=context)
 
-    def open_electrical_file_ids(self, cr, uid, ids, context=context):
+    def open_electrical_file_ids(self, cr, uid, ids, context=None):
         ''' 
         '''
         file_pool = self.pool.get('stock.picking.input.file')
@@ -327,7 +352,7 @@ class ResPartnerFolder(orm.Model):
         'electrical_path': fields.char(
             'Picking folder', size=180, 
             help='Load document folder'),
-        'electrical_estension': fields.char(
+        'electrical_extension': fields.char(
             'File estension', size=6, 
             help='Document file estension'),
         'electrical_address_code': fields.char(

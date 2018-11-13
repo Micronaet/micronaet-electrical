@@ -13,7 +13,7 @@
                             <field name="electrical_extension" />
                             
                             <field name="electrical_path" />
-                            <button name="open_electrical_file_ids" string="File imported" type="object" class="oe_highlight"/>
+                            <button name="open_electrical_file_ids" string="File imported" type="object" class="oe_highlight" colspan="2"/>
                             
                             <button name="electrical_load_picking_routine" string="A. Load files" type="object" />
                             <button name="electrical_generate_picking_routine" string="B. Generate picking" type="object" />
@@ -46,6 +46,7 @@
             <field name="arch" type="xml">
                 <form string="Picking file">
                     <header>
+                        <button name="load_document" string="Load document" type="object" class="oe_highlight"/>
                         <field name="state" widget="statusbar"/>                        
                     </header>
                     <sheet>
