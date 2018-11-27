@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+       <!-- metel.product.search.wizard -->
+       <record id="metel_product_search_wizard_view" model="ir.ui.view">
+            <field name="name">METEL Product search</field>
+            <field name="model">metel.product.search.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Wizard" version="7.0">
+                   <header>
+                       <button string="Cancel" special="cancel" />
+                       <button name="action_search" string="Search" type="object" icon="gtk-search" class="oe_highlight" />
+                   </header>                   
+                   <group colspan="4" col="4">
+                        <field name="start" />
+                        <field name="end" />
+                        <field name="code" />
+                        <field name="name" />
+                        <field name="ean13" />
+
+                        <separator string="METEL" colspan="4"/>
+                        <field name="metel_producer_id" domain="[('metel_mode', '=', 'producer')]"/>
+                        <field name="metel_brand_id" domain="[('metel_mode', '=', 'brand')]" />
+                        <field name="metel_serie_id" domain="[('metel_mode', '=', 'serie')]"/>
+                        <field name="categ_id"  domain="[('metel_mode', '=', 'electrocod')]"/>
+                   </group>
+                </form>
+            </field>
+      </record>
+      <record model="ir.actions.act_window" id="action_metel_product_search_wizard_view">
+          <field name="name">METEL product search</field>
+          <field name="res_model">metel.product.search.wizard</field>
+          <field name="view_type">form</field>
+          <field name="view_mode">form</field>
+          <field name="target">new</field>
+          <field name="view_id" ref="metel_product_search_wizard_view"/>
+      </record>
+      <menuitem 
+          parent="base.menu_product" 
+          id="menu_action_openerp_model_tree" 
+          action="action_metel_product_search_wizard_view"
+          sequence="10"
+          />
+    </data>
+</openerp>

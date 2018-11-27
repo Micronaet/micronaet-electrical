@@ -1,0 +1,114 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* metel_product_search
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 8.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-11-27 09:47+0000\n"
+"PO-Revision-Date: 2018-11-27 10:48+0100\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"Language: it\n"
+"X-Generator: Poedit 1.6.10\n"
+
+#. module: metel_product_search
+#: view:metel.product.search.wizard:metel_product_search.metel_product_search_wizard_view
+msgid "Cancel"
+msgstr "Annulla"
+
+#. module: metel_product_search
+#: field:metel.product.search.wizard,create_uid:0
+msgid "Created by"
+msgstr "Creato da"
+
+#. module: metel_product_search
+#: field:metel.product.search.wizard,create_date:0
+msgid "Created on"
+msgstr "Creato il"
+
+#. module: metel_product_search
+#: field:metel.product.search.wizard,ean13:0
+msgid "EAN 13"
+msgstr "EAN 13"
+
+#. module: metel_product_search
+#: field:metel.product.search.wizard,categ_id:0
+msgid "Electrocod"
+msgstr "Electrocod"
+
+#. module: metel_product_search
+#: field:metel.product.search.wizard,id:0
+msgid "ID"
+msgstr "ID"
+
+#. module: metel_product_search
+#: field:metel.product.search.wizard,write_uid:0
+msgid "Last Updated by"
+msgstr "Aggiornato da"
+
+#. module: metel_product_search
+#: field:metel.product.search.wizard,write_date:0
+msgid "Last Updated on"
+msgstr "Aggiornato il"
+
+#. module: metel_product_search
+#: view:metel.product.search.wizard:metel_product_search.metel_product_search_wizard_view
+msgid "METEL"
+msgstr "METEL"
+
+#. module: metel_product_search
+#: model:ir.actions.act_window,name:metel_product_search.action_metel_product_search_wizard_view
+#: model:ir.ui.menu,name:metel_product_search.menu_action_openerp_model_tree
+msgid "METEL product search"
+msgstr "METEL ricerca prodotto"
+
+#. module: metel_product_search
+#: field:metel.product.search.wizard,metel_brand_id:0
+msgid "Metel brand"
+msgstr "Metel marchio"
+
+#. module: metel_product_search
+#: field:metel.product.search.wizard,metel_producer_id:0
+msgid "Metel producer"
+msgstr "Metel produttore"
+
+#. module: metel_product_search
+#: field:metel.product.search.wizard,metel_serie_id:0
+msgid "Metel serie"
+msgstr "Metel serie"
+
+#. module: metel_product_search
+#: field:metel.product.search.wizard,code:0
+msgid "Product code"
+msgstr "Codice prodotto"
+
+#. module: metel_product_search
+#: field:metel.product.search.wizard,end:0
+msgid "Product code end"
+msgstr "Fine codice"
+
+#. module: metel_product_search
+#: field:metel.product.search.wizard,start:0
+msgid "Product code start"
+msgstr "Inizio codice"
+
+#. module: metel_product_search
+#: field:metel.product.search.wizard,name:0
+msgid "Product name"
+msgstr "Nome prodotto"
+
+#. module: metel_product_search
+#: view:metel.product.search.wizard:metel_product_search.metel_product_search_wizard_view
+msgid "Search"
+msgstr "Ricerca"
+
+#. module: metel_product_search
+#: view:metel.product.search.wizard:metel_product_search.metel_product_search_wizard_view
+msgid "Wizard"
+msgstr "Wizard"
