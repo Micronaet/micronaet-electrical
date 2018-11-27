@@ -39,7 +39,8 @@
     'init_xml': [],
     'demo': [],
     'data': [
-        'wizard/product_search_view.xml',
+        'search_view.xml',
+        'wizard/product_search_view.xml',        
         ],
     'active': False,
     'installable': True,

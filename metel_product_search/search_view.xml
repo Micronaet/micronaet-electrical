@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="view_product_search_start_code_search">
+            <field name="name">product.template.search</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_search_view"/>
+            <field name="arch" type="xml">
+                <field name="name" position="before">
+                    <field name="name" string="Inizio codice" filter_domain="[('default_code','=ilike',self+'%')]"/>
+                </field>
+                <field name="name" position="after">
+                    <field name="ean13" string="EAN" filter_domain="[('ean13','ilike',self)]"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</openerp>
+
