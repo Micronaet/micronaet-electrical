@@ -9,6 +9,7 @@
                 <form string="Wizard" version="7.0">
                    <header>
                        <button string="Cancel" special="cancel" />
+                       <button name="action_print_label" string="Label print" type="object" icon="gtk-search" class="oe_highlight" />
                        <button name="action_search" string="Search" type="object" icon="gtk-search" class="oe_highlight" />
                    </header>                   
                    <group colspan="4" col="4">

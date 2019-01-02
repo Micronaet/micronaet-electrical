@@ -40,6 +40,7 @@
     'demo': [],
     'data': [
         'search_view.xml',
+        'report/report_label.xml',
         'wizard/product_search_view.xml',        
         ],
     'active': False,

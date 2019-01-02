@@ -47,21 +47,13 @@ class MetelProductSearchWizard(orm.TransientModel):
     '''
     _name = 'metel.product.search.wizard'
 
-    # --------------------
-    # Wizard button event:
-    # --------------------
-    def action_search(self, cr, uid, ids, context=None):
-        ''' Event for button done
-        '''
-        if context is None: 
-            context = {}        
-        
-        wiz_proxy = self.browse(cr, uid, ids, context=context)[0]
-        model_pool = self.pool.get('ir.model.data')
-        #view_id = model_pool.get_object_reference(
-        #    'module_name', 'view_name')[1]
-        form_id = tree_id = False
-        
+    # -------------------------------------------------------------------------
+    # Utility:
+    # -------------------------------------------------------------------------
+    def _get_selected_product_from_wizard(self, cr, uid, wiz_proxy, 
+            context=None):
+        ''' Return product selected with wizard
+        '''    
         product_pool = self.pool.get('product.product')
         
         # Domain creation:
@@ -93,7 +85,35 @@ class MetelProductSearchWizard(orm.TransientModel):
             domain.append(
                 ('categ_id', '=', wiz_proxy.categ_id.id))
 
-        product_ids = product_pool.search(cr, uid, domain, context=context)
+        return product_pool.search(cr, uid, domain, context=context)
+        
+    # -------------------------------------------------------------------------
+    # Wizard button event:
+    # -------------------------------------------------------------------------
+    def action_print_label(self, cr, uid, ids, context=None):
+        ''' Print label selected
+        '''
+        wiz_proxy = self.browse(cr, uid, ids, context=context)[0]
+        product_ids = self._get_selected_product_from_wizard(
+            cr, uid, wiz_proxy, context=context)
+        datas = {
+            'wizard': True, # Check from wizard
+            'product_ids': product_ids, # selected product
+            }
+        return {
+            'type': 'ir.actions.report.xml',
+            'report_name': 'product_product_metel_label', 
+            'datas': datas,
+            'context': context,
+            }
+
+    def action_search(self, cr, uid, ids, context=None):
+        ''' Event for button done
+        '''
+        wiz_proxy = self.browse(cr, uid, ids, context=context)[0]
+        product_ids = self._get_selected_product_from_wizard(
+            cr, uid, wiz_proxy, context=context)
+            
         if not product_ids:
             raise osv.except_osv(
                 _('Error'), 
@@ -108,6 +128,10 @@ class MetelProductSearchWizard(orm.TransientModel):
             view_mode = 'form,tree'
             views = [(tree_id, 'form'), (tree_id, 'tree')]
             
+        model_pool = self.pool.get('ir.model.data')
+        #view_id = model_pool.get_object_reference(
+        #    'module_name', 'view_name')[1]
+        form_id = tree_id = False
         return {
             'type': 'ir.actions.act_window',
             'name': _('Result for view_name'),
