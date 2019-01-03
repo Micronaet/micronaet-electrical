@@ -35,6 +35,7 @@
         'base',
         'metel_base',
         'product',
+        'report_aeroo',
         ],
     'init_xml': [],
     'demo': [],

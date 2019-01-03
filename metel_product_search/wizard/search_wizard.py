@@ -100,9 +100,10 @@ class MetelProductSearchWizard(orm.TransientModel):
             'wizard': True, # Check from wizard
             'product_ids': product_ids, # selected product
             }
+            
         return {
             'type': 'ir.actions.report.xml',
-            'report_name': 'product_product_metel_label', 
+            'report_name': 'product_product_metel_label',
             'datas': datas,
             'context': context,
             }
@@ -114,6 +115,7 @@ class MetelProductSearchWizard(orm.TransientModel):
         product_ids = self._get_selected_product_from_wizard(
             cr, uid, wiz_proxy, context=context)
             
+        form_id = tree_id = False
         if not product_ids:
             raise osv.except_osv(
                 _('Error'), 
@@ -131,7 +133,6 @@ class MetelProductSearchWizard(orm.TransientModel):
         model_pool = self.pool.get('ir.model.data')
         #view_id = model_pool.get_object_reference(
         #    'module_name', 'view_name')[1]
-        form_id = tree_id = False
         return {
             'type': 'ir.actions.act_window',
             'name': _('Result for view_name'),
