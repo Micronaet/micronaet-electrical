@@ -298,7 +298,7 @@ class ProductProduct(orm.Model):
         if product.default_code and prefix:                
             url = '%s%s' % (prefix, product.default_code[code_remove:])
         return {
-            'type' : 'ir.actions.act_url',
+            'type': 'ir.actions.act_url',
             'url': url,
             'target': 'blank',
             }
