@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-03-28 12:15+0000\n"
-"PO-Revision-Date: 2018-03-28 15:08+0100\n"
+"POT-Creation-Date: 2019-01-07 15:20+0000\n"
+"PO-Revision-Date: 2019-01-07 16:26+0100\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -28,9 +28,33 @@ msgid "Alternate barcode type"
 msgstr "Tipo codice a barre alternativo"
 
 #. module: metel_base
+#: model:ir.actions.act_window,name:metel_base.act_assign_metel_serie_wizard
+msgid "Assign serie"
+msgstr "Assegna serie"
+
+#. module: metel_base
+#: model:ir.actions.act_window,name:metel_base.action_assign_metel_serie_wizard
+msgid "Assign serie to statistic"
+msgstr "Assegna serie a statistica"
+
+#. module: metel_base
+#: field:metel.assign.serie.wizard,brand_id:0
+#: view:product.category:metel_base.view_product_category_discount_search
+#: view:product.category:metel_base.view_product_category_discount_tree
+#: view:product.category:metel_base.view_product_category_statistic_search
+#: selection:product.category,metel_mode:0
+msgid "Brand"
+msgstr "Marchio"
+
+#. module: metel_base
 #: field:product.product,metel_brand_code:0
 msgid "Brand code"
 msgstr "Codice marchio"
+
+#. module: metel_base
+#: view:metel.assign.serie.wizard:metel_base.assign_metel_serie_wizard_view
+msgid "Cancel"
+msgstr "Annulla"
 
 #. module: metel_base
 #: selection:product.product,metel_state:0
@@ -43,16 +67,29 @@ msgid "Cancelled service"
 msgstr "Servizio cancellato"
 
 #. module: metel_base
+#: code:addons/metel_base/metel.py:204
+#, python-format
+msgid "Code present more than one! [%s]"
+msgstr "Codice multiplo presente! [%s]"
+
+#. module: metel_base
 #: field:metel.parameter,company_id:0
 msgid "Company"
 msgstr "Azienda"
 
 #. module: metel_base
+#: model:ir.ui.menu,name:metel_base.menu_action_metel_root_config
+msgid "Configuration"
+msgstr "Configurazione"
+
+#. module: metel_base
+#: field:metel.assign.serie.wizard,create_uid:0
 #: field:metel.parameter,create_uid:0
 msgid "Created by"
 msgstr "Creato da"
 
 #. module: metel_base
+#: field:metel.assign.serie.wizard,create_date:0
 #: field:metel.parameter,create_date:0
 msgid "Created on"
 msgstr "Creato il"
@@ -63,9 +100,50 @@ msgid "Discount"
 msgstr "Sconto"
 
 #. module: metel_base
+#: model:ir.actions.act_window,name:metel_base.action_product_category_discount_form
+#: model:ir.ui.menu,name:metel_base.menu_action_product_category_discount_form
+#: selection:product.category,metel_mode:0
+msgid "Discount category"
+msgstr "Categoria sconto"
+
+#. module: metel_base
+#: field:product.category,metel_discount:0
+msgid "Discount code"
+msgstr "Codice sconto"
+
+#. module: metel_base
+#: view:product.category:metel_base.view_product_category_statistic_search
+msgid "Discount family"
+msgstr "Famiglia sconto"
+
+#. module: metel_base
+#: view:metel.assign.serie.wizard:metel_base.assign_metel_serie_wizard_view
+msgid "Done"
+msgstr "Fatto"
+
+#. module: metel_base
+#: selection:product.category,metel_mode:0
 #: field:product.product,metel_electrocod:0
 msgid "Electrocod"
 msgstr "Electrocod"
+
+#. module: metel_base
+#: code:addons/metel_base/metel.py:101
+#, python-format
+msgid "Error converting float %s (decimal: %s)"
+msgstr "Errore convertendo in reale float %s (decimale: %s)"
+
+#. module: metel_base
+#: code:addons/metel_base/metel.py:65
+#, python-format
+msgid "Error converting text %s"
+msgstr "Error converting text %s"
+
+#. module: metel_base
+#: code:addons/metel_base/metel.py:77
+#, python-format
+msgid "Error converting text boolean %s"
+msgstr "Error converting text boolean %s"
 
 #. module: metel_base
 #: selection:product.product,metel_state:0
@@ -73,7 +151,18 @@ msgid "Finished or to be cancel"
 msgstr "Terminato o che deve essere cancellato"
 
 #. module: metel_base
-#: field:metel.parameter,id:0
+#: model:ir.ui.menu,name:metel_base.menu_action_metel_root_group
+msgid "Group"
+msgstr "Groppo"
+
+#. module: metel_base
+#: view:product.category:metel_base.view_product_category_discount_search
+#: view:product.category:metel_base.view_product_category_statistic_search
+msgid "Group By..."
+msgstr "Raggruppa per..."
+
+#. module: metel_base
+#: field:metel.assign.serie.wizard,id:0 field:metel.parameter,id:0
 msgid "ID"
 msgstr "ID"
 
@@ -93,16 +182,23 @@ msgid "Is Metel"
 msgstr "Metel"
 
 #. module: metel_base
+#: field:product.category,is_serie:0
+msgid "Is serie"
+msgstr "Is serie"
+
+#. module: metel_base
 #: field:product.product,metel_kit:0
 msgid "KIT"
 msgstr "KIT"
 
 #. module: metel_base
+#: field:metel.assign.serie.wizard,write_uid:0
 #: field:metel.parameter,write_uid:0
 msgid "Last Updated by"
 msgstr "Aggiornato da"
 
 #. module: metel_base
+#: field:metel.assign.serie.wizard,write_date:0
 #: field:metel.parameter,write_date:0
 msgid "Last Updated on"
 msgstr "Aggiornato il"
@@ -113,6 +209,7 @@ msgid "Last variation"
 msgstr "Ultima variazione"
 
 #. module: metel_base
+#: model:ir.module.category,name:metel_base.group_category_root
 #: model:ir.ui.menu,name:metel_base.menu_action_metel_root
 #: view:product.product:metel_base.view_product_product_metel_page_form
 #: view:product.product:metel_base.view_product_product_metel_search
@@ -135,14 +232,39 @@ msgid "METEL Last variation"
 msgstr "METEL Ultima variazione"
 
 #. module: metel_base
+#: model:res.groups,name:metel_base.group_metel_manager
+msgid "METEL Manager"
+msgstr "METEL Manager"
+
+#. module: metel_base
 #: view:product.product:metel_base.view_product_product_metel_search
 msgid "METEL Producer"
 msgstr "METEL Produttore"
 
 #. module: metel_base
 #: view:product.product:metel_base.view_product_product_metel_search
+msgid "METEL Serie"
+msgstr "METEL Serie"
+
+#. module: metel_base
+#: view:product.product:metel_base.view_product_product_metel_search
 msgid "METEL State"
 msgstr "METEL Stato"
+
+#. module: metel_base
+#: view:product.product:metel_base.view_product_product_metel_search
+msgid "METEL Statistic"
+msgstr "METEL Statistic"
+
+#. module: metel_base
+#: model:res.groups,name:metel_base.group_metel_cost_manager
+msgid "METEL cost manager"
+msgstr "METEL cost manager"
+
+#. module: metel_base
+#: model:ir.module.category,description:metel_base.group_category_root
+msgid "METEL management user groups"
+msgstr "METEL management user groups"
 
 #. module: metel_base
 #: model:ir.actions.act_window,name:metel_base.action_metel_parameter_tree
@@ -151,9 +273,24 @@ msgid "METEL parameter"
 msgstr "METEL parametero"
 
 #. module: metel_base
+#: model:res.groups,name:metel_base.group_metel_user
+msgid "METEL user"
+msgstr "METEL user"
+
+#. module: metel_base
 #: selection:product.product,metel_state:0
 msgid "Managed with stock"
 msgstr "Gestito con magazzino"
+
+#. module: metel_base
+#: selection:product.category,metel_mode:0
+msgid "Metel"
+msgstr "Metel"
+
+#. module: metel_base
+#: field:product.category,metel_mode:0
+msgid "Metel Mode"
+msgstr "Metel Mode"
 
 #. module: metel_base
 #: field:product.category,metel_partner_id:0
@@ -186,6 +323,53 @@ msgid "Metel description"
 msgstr "Metel descrizione"
 
 #. module: metel_base
+#: field:product.product,metel_discount_id:0
+msgid "Metel discount"
+msgstr "Metel discount"
+
+#. module: metel_base
+#: view:product.category:metel_base.view_product_category_discount_search
+#: view:product.category:metel_base.view_product_category_discount_tree
+msgid "Metel discount group"
+msgstr "Metel discount group"
+
+#. module: metel_base
+#: model:ir.actions.act_window,name:metel_base.action_metel_group_metel_brand
+#: model:ir.ui.menu,name:metel_base.menu_action_metel_group_metel_brand
+msgid "Metel group brand"
+msgstr "Metel group brand"
+
+#. module: metel_base
+#: model:ir.actions.act_window,name:metel_base.action_metel_group_metel_discount
+#: model:ir.ui.menu,name:metel_base.menu_action_metel_group_metel_discount
+msgid "Metel group discount category"
+msgstr "Metel group discount category"
+
+#. module: metel_base
+#: model:ir.actions.act_window,name:metel_base.action_metel_group_metel_electrocod
+#: model:ir.ui.menu,name:metel_base.menu_action_metel_group_metel_electrocod
+msgid "Metel group electrocod"
+msgstr "Metel group electrocod"
+
+#. module: metel_base
+#: model:ir.actions.act_window,name:metel_base.action_metel_group_metel_producer
+#: model:ir.ui.menu,name:metel_base.menu_action_metel_group_metel_producer
+msgid "Metel group producer"
+msgstr "Metel gruppo produttore"
+
+#. module: metel_base
+#: model:ir.actions.act_window,name:metel_base.action_metel_group_metel_serie
+#: model:ir.ui.menu,name:metel_base.menu_action_metel_group_metel_serie
+msgid "Metel group serie"
+msgstr "Metel gropo serie"
+
+#. module: metel_base
+#: model:ir.actions.act_window,name:metel_base.action_metel_group_metel_statistic
+#: model:ir.ui.menu,name:metel_base.menu_action_metel_group_metel_statistic
+msgid "Metel group statistic category"
+msgstr "Metel groppo categoria statistica"
+
+#. module: metel_base
 #: help:product.category,metel_description:0
 msgid "Metel name: producer or brand"
 msgstr "Metel nome; produttore o marchio"
@@ -206,6 +390,38 @@ msgid "Metel producer"
 msgstr "Metel produttore"
 
 #. module: metel_base
+#: field:product.category,metel_serie_id:0
+#: field:product.product,metel_serie_id:0
+msgid "Metel serie"
+msgstr "Metel serie"
+
+#. module: metel_base
+#: field:product.product,metel_statistic_id:0
+msgid "Metel statistic"
+msgstr "Metel statistica"
+
+#. module: metel_base
+#: view:product.category:metel_base.view_product_category_statistic_search
+#: view:product.category:metel_base.view_product_category_statistic_tree
+msgid "Metel statistic group"
+msgstr "Metel gruppo statistico"
+
+#. module: metel_base
+#: field:product.category,metel_web_prefix:0
+msgid "Metel web prefix"
+msgstr "Metel prefisso web"
+
+#. module: metel_base
+#: help:product.category,metel_web_prefix:0
+msgid "Metel web prefix, ex: https://www.metel.com/code/"
+msgstr "Metel sito web prefixxo, es: https://www.metel.com/code/"
+
+#. module: metel_base
+#: view:product.category:metel_base.view_product_category_statistic_search
+msgid "Mode"
+msgstr "Mode"
+
+#. module: metel_base
 #: field:product.product,metel_multi_price:0
 msgid "Multi price"
 msgstr "Multi prezzo"
@@ -219,6 +435,18 @@ msgstr "Nuovo prodotto"
 #: selection:product.product,metel_state:0
 msgid "New service"
 msgstr "Nuovo servizio"
+
+#. module: metel_base
+#: code:addons/metel_base/wizard/assign_serie.py:95
+#: code:addons/metel_base/wizard/assign_serie.py:110
+#, python-format
+msgid "No selected statistic group selected!"
+msgstr "No selected statistic group selected!"
+
+#. module: metel_base
+#: view:product.product:metel_base.view_product_product_metel_page_form
+msgid "Open producer site"
+msgstr "Apri scheda produttore"
 
 #. module: metel_base
 #: field:product.product,metel_leadtime:0
@@ -251,6 +479,12 @@ msgid "Parameter for that company already present!"
 msgstr "Parametro per questa azienda già presente"
 
 #. module: metel_base
+#: view:product.category:metel_base.view_product_category_discount_search
+#: view:product.category:metel_base.view_product_category_statistic_search
+msgid "Parent"
+msgstr "Parent"
+
+#. module: metel_base
 #: selection:product.product,metel_state:0
 msgid "Produced with order"
 msgstr "Prodotto su ordine"
@@ -259,6 +493,12 @@ msgstr "Prodotto su ordine"
 #: selection:product.product,metel_state:0
 msgid "Produced with order to be cancelled"
 msgstr "Prodotto su ordine (verrà cancellato)"
+
+#. module: metel_base
+#: view:product.category:metel_base.view_product_category_statistic_search
+#: selection:product.category,metel_mode:0
+msgid "Producer"
+msgstr "Producer"
 
 #. module: metel_base
 #: field:product.product,metel_producer_code:0
@@ -286,6 +526,30 @@ msgid "Q. x pack"
 msgstr "Q. x scatola"
 
 #. module: metel_base
+#: code:addons/metel_base/wizard/assign_serie.py:119
+#, python-format
+msgid "Selection is not all statistic category!"
+msgstr "Selection is not all statistic category!"
+
+#. module: metel_base
+#: code:addons/metel_base/wizard/assign_serie.py:129
+#, python-format
+msgid "Selection is not in the same BRAND!"
+msgstr "Selection is not in the same BRAND!"
+
+#. module: metel_base
+#: field:metel.assign.serie.wizard,serie_id:0
+#: view:product.category:metel_base.view_product_category_statistic_search
+#: selection:product.category,metel_mode:0
+msgid "Serie"
+msgstr "Serie"
+
+#. module: metel_base
+#: help:product.category,metel_serie_id:0
+msgid "Serie for brand category, used for set up on product"
+msgstr "Serie for brand category, used for set up on product"
+
+#. module: metel_base
 #: selection:product.product,metel_state:0
 msgid "Service (no material)"
 msgstr "Servizi (no materiale)"
@@ -294,6 +558,20 @@ msgstr "Servizi (no materiale)"
 #: field:product.product,metel_statistic:0
 msgid "Statistic"
 msgstr "Statistica"
+
+#. module: metel_base
+#: model:ir.actions.act_window,name:metel_base.action_product_category_statistic_form
+#: model:ir.ui.menu,name:metel_base.menu_action_product_category_statistic_form
+#: view:product.category:metel_base.view_product_category_statistic_search
+#: view:product.category:metel_base.view_product_category_statistic_tree
+#: selection:product.category,metel_mode:0
+msgid "Statistic category"
+msgstr "Categoria statistica"
+
+#. module: metel_base
+#: field:product.category,metel_statistic:0
+msgid "Statistic code"
+msgstr "Codice statistico"
 
 #. module: metel_base
 #: help:product.product,metel_state:0
@@ -306,6 +584,43 @@ msgid "String"
 msgstr "Stringa"
 
 #. module: metel_base
+#: help:product.category,is_serie:0
+msgid "This category is used as a Serie for product and brand"
+msgstr "Questa categoria è utilizzata per prodotto e marca"
+
+#. module: metel_base
+#: field:metel.assign.serie.wizard,total:0
+msgid "Total"
+msgstr "Totale"
+
+#. module: metel_base
+#: field:product.product,metel_weblink:0
+msgid "Weblink"
+msgstr "Link sito"
+
+#. module: metel_base
 #: help:product.product,metel_multi_price:0
 msgid "When price is < 0.01 use multiplicator"
 msgstr "Quando il prezzo è < 0.01 utilizza il moltiplicatore"
+
+#. module: metel_base
+#: view:product.category:metel_base.view_product_category_statistic_search
+msgid "With serie"
+msgstr "Con serie"
+
+#. module: metel_base
+#: view:product.category:metel_base.view_product_category_statistic_search
+msgid "Without serie"
+msgstr "Senza serie"
+
+#. module: metel_base
+#: view:metel.assign.serie.wizard:metel_base.assign_metel_serie_wizard_view
+msgid "Wizard"
+msgstr "Wizard"
+
+#. module: metel_base
+#: code:addons/metel_base/wizard/assign_serie.py:118
+#: code:addons/metel_base/wizard/assign_serie.py:128
+#, python-format
+msgid "Wrong selection"
+msgstr "Selezione errata"

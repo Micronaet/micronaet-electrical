@@ -249,6 +249,8 @@ class ProductCategory(orm.Model):
             context=context)
         
     _columns = {
+        'metel_web_prefix': fields.char('Metel web prefix', size=180, 
+            help='Metel web prefix, ex: https://www.metel.com/code/'),
         'metel_code': fields.char('Metel code', size=18, 
             help='Metel code: producer of brand'),
         'metel_description': fields.char('Metel description', size=40, 
@@ -283,7 +285,39 @@ class ProductProduct(orm.Model):
     """ Model name: Product Product
     """    
     _inherit = 'product.product'
-    
+
+    # -------------------------------------------------------------------------
+    # Button action:
+    # -------------------------------------------------------------------------
+    def open_producer_product_web_link(self, cr, uid, ids, context=None):
+        ''' Open URL for producer link
+        '''
+        code_remove = 3 # TODO parametrize
+        product = self.browse(cr, uid, ids, context=context)[0]
+        prefix = product.metel_producer_id.metel_web_prefix
+        if product.default_code and prefix:                
+            url = '%s%s' % (prefix, product.default_code[code_remove:])
+        return {
+            'type' : 'ir.actions.act_url',
+            'url': url,
+            'target': 'blank',
+            }
+        
+    # -------------------------------------------------------------------------
+    # Field function:    
+    # -------------------------------------------------------------------------
+    def _get_producer_web_link(self, cr, uid, ids, fields, args, context=None):
+        ''' Fields function for calculate 
+        '''    
+        res = {}
+        for product in self.browse(cr, uid, ids, context=context):
+            prefix = product.metel_producer_id.metel_web_prefix
+            if product.default_code and prefix:                
+                res[product.id] = '%s%s' % (prefix, product.default_code)
+            else:    
+                res[product.id] = False
+        return res        
+
     _columns = {
         #'metel_code': fields.char('Metel code', size=18),
         'is_metel': fields.boolean('Is Metel'),
@@ -335,6 +369,10 @@ class ProductProduct(orm.Model):
             ('8', 'Service (no material)'),
             ('9', 'Cancel product'),
             ], 'Metel State', help='Status product in METEL'),
+        
+        'metel_weblink': fields.function(
+            _get_producer_web_link, method=True, type='char', 
+            string='Weblink'), 
         }
         
     _defaults = {

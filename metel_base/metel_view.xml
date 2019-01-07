@@ -25,7 +25,18 @@
         </record>
         
                               <!--STATISTIC FAMILY:-->
-        <!--product.category-->
+        <!--product.category-->        
+        <record model="ir.ui.view" id="view_product_category_extra_form">
+            <field name="name">product.category.form</field>
+            <field name="model">product.category</field>
+            <field name="inherit_id" ref="product.product_category_form_view"/>
+            <field name="arch" type="xml">
+                <field name="type" position="after">
+                    <field name="metel_web_prefix" colspan="4" attrs="{'invisible': [('metel_mode','!=','producer')]}"/>
+                    <field name="metel_mode" invisible="1" />
+                </field>
+            </field>
+        </record>
         <record model="ir.ui.view" id="view_product_category_statistic_tree">
             <field name="name">product.category.statistic.tree</field>
             <field name="model">product.category</field>
@@ -135,9 +146,13 @@
                     <label for="is_metel" />
                 </field>
                 <xpath expr="//page[1]" position="after">
+
                     <page string="METEL" name="metel" attrs="{'invisible': [('is_metel','=',False)]}">
                        <group colspan="4" col="4">
-                            <separator string="Information:" colspan="4"/>
+                            <field name="metel_weblink" invisible="1"/>
+                            <separator string="Information:" colspan="3"/>
+                            <button name="open_producer_product_web_link" string="Open producer site" type="object" attrs="{'invisible': [('metel_weblink','=',False)]}" icon="gtk-info" colspan="1"/>
+                            
                             <field name="metel_electrocod" readonly="1"/>
                             <field name="metel_state" readonly="1" /> 
                             

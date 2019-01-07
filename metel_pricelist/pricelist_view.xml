@@ -90,7 +90,10 @@
                                </page>
                                <page string="METEL">
                                     <group colspan="4" col="4">                           
-                                        <separator string="Information:" colspan="4"/>
+                                        <field name="metel_weblink" invisible="1"/>
+                                        <separator string="Information:" colspan="3"/>
+                                        <button name="open_producer_product_web_link" string="Open producer site" type="object" attrs="{'invisible': [('metel_weblink','=',False)]}" icon="gtk-info" colspan="1"/>
+                                        
                                         <field name="metel_electrocod" readonly="1"/>
                                         <field name="metel_state" readonly="1" /> 
                                         
