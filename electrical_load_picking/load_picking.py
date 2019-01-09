@@ -247,10 +247,13 @@ class StockPickingFile(orm.Model):
                 # Create new empty pick:
                 # -------------------------------------------------------------
                 # Parameter:
-                origin = ' %s [%s] %s' % (
-                    company_number,
-                    company_date,
-                    company_ref,
+                origin = 'DDT %s [%s] %s' % (
+                    supplier_code,
+                    supplier_date,
+                    '',
+                    #company_number,
+                    #company_date,
+                    #company_ref,
                     )
 
                 # Data:
