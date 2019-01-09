@@ -200,7 +200,6 @@ class StockPickingFile(orm.Model):
                     #'create_new': False,
                     'product_qty': product_qty,
                     'standard_price': price,
-                    'mode': 'in',
                     }, context=context)
                 line_ids.append(line_id)
 
@@ -260,6 +259,7 @@ class StockPickingFile(orm.Model):
                         product_id = product_pool.create(cr, uid, {
                             'name': line.name,
                             'default_code': create_code,
+                            'standard_price': line.price,
                             # TODO extra data?
                             }, context=context)    
 
@@ -271,6 +271,8 @@ class StockPickingFile(orm.Model):
 
                 # Parameters:
                 product_qty = line.product_qty
+                
+                # TODO Update price in product:
                 
                 # -------------------------------------------------------------
                 # Create stock move:
@@ -425,6 +427,7 @@ class ResPartnerFolder(orm.Model):
                     'partner_id': ids[0],
                     'name': f,
                     'state': 'draft',
+                    'mode': 'in',
                     }, context=context)
 
                 file_ids.append(file_id)
