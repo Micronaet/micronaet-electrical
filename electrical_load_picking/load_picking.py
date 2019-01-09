@@ -110,6 +110,24 @@ class StockPickingFile(orm.Model):
     # -------------------------------------------------------------------------
     # Button document:
     # -------------------------------------------------------------------------
+    def generate_pick_out_draft(self, cr, uid, ids, context=None):
+        ''' Create pick out document depend on account analytic
+        '''
+        #`Pool used:
+        picking_pool = self.pool.get('stock.picking')
+
+        file_proxy = self.browse(cr, uid, ids, context=context)[0]
+        
+        picking_id = file_proxy.picking_id
+        if not picking_id:
+            raise osv.except_osv(
+                _('Error'), 
+                _('No pick generated from this file!'),
+                )        
+        picking_pool.generate_pick_out_draft(
+            cr, uid, [picking_id], context=context)
+        return True
+        
     def load_document(self, cr, uid, ids, context=None):
         ''' Load document of new file 
         '''
