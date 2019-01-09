@@ -272,6 +272,7 @@ class StockPickingFile(orm.Model):
         # ---------------------------------------------------------------------
         else: # load mode
             picking = current_proxy.picking_id
+            default_account = current_proxy.account_id.id or False
             for line in sorted(
                     current_proxy.line_ids, 
                     key=lambda x: x.sequence):
@@ -328,6 +329,10 @@ class StockPickingFile(orm.Model):
                     'location_id': location_id,
                     'location_dest_id': location_dest_id,
                     'state': 'done',
+
+                    # Auto pick out data:
+                    'auto_account_out_id':
+                        line.account_id.id or default_account
                     }, context=context)
 
                 # -------------------------------------------------------------
@@ -353,6 +358,7 @@ class StockPickingFile(orm.Model):
 
             # Correct error state (if present):
             self.write(cr, uid, ids, {
+                'state': state,
                 'error': False,
                 }, context=context)        
         return True
