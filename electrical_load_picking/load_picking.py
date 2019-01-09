@@ -208,10 +208,10 @@ class StockPickingFile(orm.Model):
                 # Create new empty pick:
                 # -------------------------------------------------------------
                 # Parameter:
-                origin = '%s-%s' % (
-                    company_ref,
-                    #company_date,
+                origin = ' %s [%s] %s' % (
                     company_number,
+                    company_date,
+                    company_ref,
                     )
 
                 # Data:
@@ -220,8 +220,11 @@ class StockPickingFile(orm.Model):
                     'date': now,
                     'min_date': now,
                     'origin': origin,
-                    #'pick_move'
+                    
                     'picking_type_id': picking_type.id,
+
+                    'pick_move': 'in', # XXX dept to add!
+                    'pick_state': 'delivered',
                     #'state': 'delivered', # XXX not real!
                     }
                 if picking_id:
