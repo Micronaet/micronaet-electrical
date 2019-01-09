@@ -261,13 +261,13 @@ class ProductCategory(orm.Model):
         # Image:
         'metel_web_prefix_image': fields.char('Web prefix image', 
             size=180, 
-            help='Metel web prefix image, ex: https://www.metel.com/code/'),
+            help='Metel web prefix image, ex: https://www.metel.com/image/'),
         'metel_web_postfix_image': fields.char('Web postfix', size=180, 
             help='Metel web postfix, ex: .jpg'),
 
         # PDF:
         'metel_web_prefix_pdf': fields.char('Web prefix PDF', size=180, 
-            help='Metel web prefix PDF, ex: https://www.metel.com/code/'),
+            help='Metel web prefix PDF, ex: https://www.metel.com/pdf/'),
         'metel_web_postfix_pdf': fields.char('Web postfix PDF', size=180, 
             help='Metel web postfix PDF, ex: .pdf'),
 
