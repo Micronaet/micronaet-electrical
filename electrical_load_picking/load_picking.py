@@ -30,7 +30,7 @@ import openerp.addons.decimal_precision as dp
 from openerp.osv import fields, osv, expression, orm
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from openerp import SUPERUSER_ID, api
+from openerp import SUPERUSER_ID
 from openerp import tools
 from openerp.tools.translate import _
 from openerp.tools.float_utils import float_round as round
@@ -92,115 +92,237 @@ class StockPickingFile(orm.Model):
         '''
         if context is None:
             context = {}
-        state = context.get('import_state', 'load') # else close
-        
+
         # Pool used:
+        company_pool = self.pool.get('res.company')
         product_pool = self.pool.get('product.product')
         picking_pool = self.pool.get('stock.picking')
-        move_pool = self.pool.get('stock.mode')
-        
+        type_pool = self.pool.get('stock.picking.type')
+        move_pool = self.pool.get('stock.move')
+        quant_pool = self.pool.get('stock.quant')
+        line_pool = self.pool.get('stock.picking.input.file.line')
+
         current_proxy = self.browse(cr, uid, ids, context=context)[0]
         
+        # Parameter:
+        company_id = company_pool.search(cr, uid, [], context=context)[0]
+        state = context.get('import_state', 'load') # passed draft or load
+        now = ('%s' % datetime.now())[:19]
+        
+        type_ids = type_pool.search(cr, uid, [
+            ('code', '=', 'incoming'),
+            ], context=context)
+        if not type_ids:
+            raise osv.except_osv(
+                _('Error'), 
+                _('Need setup of incoming stock.picking.type!'),
+                )    
+        picking_type = type_pool.browse(cr, uid, type_ids, context=context)[0]
+        location_id = picking_type.default_location_src_id.id
+        location_dest_id = picking_type.default_location_dest_id.id
+
         # ---------------------------------------------------------------------
         # Clean situation:
         # ---------------------------------------------------------------------
-        if state != 'load' and current_proxy.picking_id:
-            # TODO remove quants:
-            
-            # TODO remove movements:
-            
-            # -----------------------------------------------------------------
-            # Delete picking
-            # -----------------------------------------------------------------
-            picking_pool.unlink(cr, uid, [ # TODO keep it?
-                current_proxy.picking_id.id], context=context)
-
+        picking_id = current_proxy.picking_id.id or False
         partner = current_proxy.partner_id
-        filename = os.path.join(
-            os.path.expanduser(partner.electrical_path), 
-            current_proxy.name,
-            )
 
-        picking_id = False    
-        content = ''
+        # Remove picking if present:
+        #if state == 'load' and picking_id:
+        #    # Remove quants:
+        #    context['force_unlink'] = True
+        #    quant_ids = quant_pool.search(cr, uid, [
+        #        ('stock_move_id.picking_id', '=', picking_id),
+        #        ], context=context)
+        #    quant_pool.unlink(cr, uid, quant_ids, context=context)    
 
-        for line in open(filename, 'r'):
-            if not line.strip():
-                _logger.error('Empty line')
-                continue
-                
-            # -----------------------------------------------------------------
-            # Extract parameter from line:
-            # -----------------------------------------------------------------
-            address_code = self._clean_string(line[:3])
-            mode = self._clean_mode(line[3:5]) 
-            year = self._clean_string(line[5:9])
-            supplier_code = self._clean_string(line[9:16])
-            supplier_date = self._clean_date(line[16:24]) # ISO format
-            sequence = self._clean_string(line[24:29])
-            protocol = self._clean_string(line[29:38])
-            default_code = self._clean_string(line[38:58])
-            name = self._clean_string(line[58:118])
-            uom = self._clean_string(line[118:120])
-            product_qty = self._clean_float(line[120:131], 1000.0)
-            price = self._clean_float(line[131:144], 100000.0)
-            company_ref = self._clean_string(line[144:159])
-            company_date = self._clean_date(line[160:168]) # XXX jump one char
-            company_number = self._clean_string(line[168:175])
-
-            product_ids = product_pool.search(cr, uid, [
-                ('default_code', '=', default_code),
-                ], context=context)               
-
-            content += 'Art.: %s%s Q. %s %s x %s EUR\n' % (
-                default_code,
-                '' if product_ids else ' (not found)*',
-                product_qty,
-                uom,
-                price,
+        #    # Remove movements:
+        #    move_ids = move_pool.search(cr, uid, [
+        #        ('picking_id', '=', picking_id),
+        #        ], context=context)
+        #    move_pool.unlink(cr, uid, move_ids, context=context)                
+        #    # XXX NO: Remove picking: 
+        
+        # ---------------------------------------------------------------------
+        # Read file:
+        # ---------------------------------------------------------------------
+        if state == 'draft':        
+            filename = os.path.join(
+                os.path.expanduser(partner.electrical_path), 
+                current_proxy.name,
                 )
 
-            if state != 'load':
-                continue # not create picking + movement
+            line_ids = []
+            error = False
+            for line in open(filename, 'r'):
+                if not line.strip():
+                    _logger.error('Empty line, not considered')
+                    continue
+                    
+                # -----------------------------------------------------------------
+                # Extract parameter from line:
+                # -----------------------------------------------------------------
+                address_code = self._clean_string(line[:3])
+                mode = self._clean_mode(line[3:5]) 
+                year = self._clean_string(line[5:9])
+                supplier_code = self._clean_string(line[9:16])
+                supplier_date = self._clean_date(line[16:24]) # ISO format
+                sequence = self._clean_string(line[24:29])
+                protocol = self._clean_string(line[29:38])
+                default_code = self._clean_string(line[38:58])
+                name = self._clean_string(line[58:118])
+                uom = self._clean_string(line[118:120])
+                product_qty = self._clean_float(line[120:131], 1000.0)
+                price = self._clean_float(line[131:144], 100000.0)
+                company_ref = self._clean_string(line[144:159])
+                company_date = self._clean_date(line[160:168])#XXX jump 1 char
+                company_number = self._clean_string(line[168:175])
 
-            if not product_ids:
-                # product not found:
-                _logger.error('Product not found: %s' % default_code)
-                continue
+                product_ids = product_pool.search(cr, uid, [
+                    ('default_code', '=', default_code),
+                    ], context=context)
+                product_id = product_ids[0] if product_ids else False
                 
-            product_id = product_ids[0]         
-            # -----------------------------------------------------------------
-            # Create new pick:
-            # -----------------------------------------------------------------
-            if not picking_id:
-                picking_id =  picking_pool.create(cr, uid, {
-                    'partner_id': partner.id,
-                    # TODO
+                # Error management:
+                if not product_id:
+                    error = True
+
+                # Create line not linked (done after):
+                line_id = line_pool.create(cr, uid, {
+                    'sequence': sequence,
+                    'name': name,
+                    'uom': uom,
+                    'original_code': default_code,
+                    'create_code': default_code,
+                    'product_id': product_id,
+                    'original_id': product_id,
+                    #'order_id': current_proxy.id,
+                    #'create_new': False,
+                    'product_qty': product_qty,
+                    'standard_price': price,
+                    'mode': 'in',
                     }, context=context)
+                line_ids.append(line_id)
+
+                # -------------------------------------------------------------
+                # Create new empty pick:
+                # -------------------------------------------------------------
+                # Parameter:
+                origin = '%s-%s-%s' % (
+                    company_ref,
+                    company_date,
+                    company_number,
+                    )
+
+                # Data:
+                data = {
+                    'partner_id': partner.id,
+                    'date': now,
+                    'min_date': now,
+                    'origin': origin,
+                    #'pick_move'
+                    'picking_type_id': picking_type.id,
+                    #'state': 'delivered', # XXX not real!
+                    }
+                if picking_id:
+                    picking_pool.write(
+                        cr, uid, picking_id, data, context=context)
+                else:
+                    picking_id = picking_pool.create(
+                        cr, uid, data, context=context)
             
             # -----------------------------------------------------------------
-            # Create stock move:
+            # Update document file:
             # -----------------------------------------------------------------
-            move_pool.create(cr, uid, {
+            self.write(cr, uid, current_proxy.id, {
+                'state': state,
+                'line_ids': [(6, 0, line_ids)],
                 'picking_id': picking_id,
-                # TODO 
+                'error': error,
                 }, context=context)
-        
-        # Update document file:        
-        self.write(cr, uid, current_proxy.id, {
-            'state': state,
-            'content': content,
-            }, context=context)
+
+        # ---------------------------------------------------------------------
+        # Load picking:
+        # ---------------------------------------------------------------------
+        else: # load mode
+            picking = current_proxy.picking_id
+            for line in current_proxy.line_ids:
+                product_id = line.product_id.id
+                
+                if line.create_new:
+                    create_code = line.create_code
+                    product_ids = product_pool.search(cr, uid, [
+                        ('default_code', '=', create_code),
+                        ], context=context)
+                    if product_ids:
+                        product_id = product_ids[0]    
+                    else:
+                        product_id = product_pool.create(cr, uid, {
+                            'name': line.name,
+                            'default_code': create_code,
+                            # TODO extra data?
+                            }, context=context)    
+
+                if not product_id:
+                    raise osv.except_osv(
+                        _('Error'), 
+                        _('Error no product selected!'),
+                        )
+
+                # Parameters:
+                product_qty = line.product_qty
+                
+                # -------------------------------------------------------------
+                # Create stock move:
+                # -------------------------------------------------------------
+                move_id = move_pool.create(cr, uid, {
+                    'name': line.name,
+                    'picking_id': picking.id,
+                    'picking_type_id': picking_type.id,
+                    'origin': picking.origin,
+                    'product_id': product_id,
+                    'product_uom_qty': product_qty,
+                    'date': now,
+                    'location_id': location_id,
+                    'location_dest_id': location_dest_id,
+                    'state': 'done',
+                    }, context=context)
+
+                # -------------------------------------------------------------
+                # Create stock quant:
+                # -------------------------------------------------------------
+                quant_pool.create(cr, uid, {
+                     'stock_move_id': move_id, # Back link
+                     
+                     'qty': product_qty,
+                     'cost': standard_price,
+                     'location_id': location_id,
+                     'company_id': company_id,
+                     'product_id': product_id,
+                     'in_date': now,
+                     #'propagated_from_id'
+                     #'package_id'
+                     #'lot_id'
+                     #'reservation_id'
+                     #'owner_id'
+                     #'packaging_type_id'
+                     #'negative_move_id'
+                    }, context=context)
+
+            # Correct error state (if present):
+            picking_pool.write(cr, uid, picking.id, {
+                'error': False,
+                }, context=context)        
         return True
 
     _columns = {
         'create_date': fields.date('Create date'),
+        'error': fields.boolean('Error'),
         'name': fields.char(
             'Name', size=80, required=True),
         'picking_id': fields.many2one('stock.picking', 'Picking'),
         'partner_id': fields.many2one('res.partner', 'Partner', required=True),
         'address_id': fields.many2one('res.partner', 'Address'),
-        'content': fields.text('Content'),
         'mode': fields.selection([
             ('in', 'In document'), # Delivery
             ('out', 'Out document'), # Wrong delivery
@@ -215,6 +337,47 @@ class StockPickingFile(orm.Model):
     _defaults = {
         # Default value:
         'state': lambda *x: 'draft',
+        }
+
+class StockPickingFileLine(orm.Model):
+    """ Model name: Stock picking input file line
+    """    
+    _name = 'stock.picking.input.file.line'
+    _description = 'Picking in file line'
+    _rec_name = 'name'
+    _order = 'sequence'
+
+    _columns = {
+        'sequence': fields.integer('Seq.'),
+        'name': fields.char('Product name', size=64, required=True),
+        'uom': fields.char('UOM', size=10),
+
+        # Code:
+        'original_code': fields.char('Original Code', size=64, required=True),
+        'create_code': fields.char('Create code', size=64, required=True),
+
+        # Product:
+        'product_id': fields.many2one('product.product', 'Product'),
+        'original_id': fields.many2one('product.product', 'Original'),
+
+        'order_id': fields.many2one('stock.picking.input.file', 'File', 
+            ondelete='cascade'),
+        'create_new': fields.boolean('Create new product'),
+
+        'product_qty': fields.float('Q.', digits=(16, 2), required=True),
+        'standard_price': fields.float(
+            'Unit price', digits=(16, 2), required=True),
+        }
+
+class StockPickingFile(orm.Model):
+    """ Model name: Stock picking input file
+    """
+    
+    _inherit = 'stock.picking.input.file'
+    
+    _columns = {
+        'line_ids': fields.one2many(
+            'stock.picking.input.file.line', 'order_id', 'Order'),
         }
 
 class ResPartnerFolder(orm.Model):
@@ -261,9 +424,11 @@ class ResPartnerFolder(orm.Model):
                 file_id = file_pool.create(cr, uid, {
                     'partner_id': ids[0],
                     'name': f,
+                    'state': 'draft',
                     }, context=context)
 
                 file_ids.append(file_id)
+
                 # Load document (draft mode)
                 file_pool.load_document(cr, uid, [file_id], context=ctx)
             break
@@ -324,7 +489,7 @@ class ResPartnerFolder(orm.Model):
             cr, uid, ids, context=context)
 
     def open_electrical_file_ids(self, cr, uid, ids, context=None):
-        ''' 
+        ''' Open tree list of files
         '''
         file_pool = self.pool.get('stock.picking.input.file')
         file_ids = file_pool.search(cr, uid, [
