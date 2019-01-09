@@ -253,22 +253,22 @@ class ProductCategory(orm.Model):
         # Metel URL generation:
         # ---------------------------------------------------------------------
         # Default:
-        'metel_web_prefix': fields.char('Metel web prefix', size=180, 
+        'metel_web_prefix': fields.char('Web prefix form', size=180, 
             help='Metel web prefix, ex: https://www.metel.com/code/'),
-        'metel_web_postfix': fields.char('Metel web postfix', size=180, 
+        'metel_web_postfix': fields.char('Web postfix form', size=180, 
             help='Metel web postfix, ex: .php'),
 
         # Image:
-        'metel_web_prefix_image': fields.char('Metel web prefix image', 
+        'metel_web_prefix_image': fields.char('Web prefix image', 
             size=180, 
             help='Metel web prefix image, ex: https://www.metel.com/code/'),
-        'metel_web_postfix_image': fields.char('Metel web postfix', size=180, 
+        'metel_web_postfix_image': fields.char('Web postfix', size=180, 
             help='Metel web postfix, ex: .jpg'),
 
         # PDF:
-        'metel_web_prefix_pdf': fields.char('Metel web prefix PDF', size=180, 
+        'metel_web_prefix_pdf': fields.char('Web prefix PDF', size=180, 
             help='Metel web prefix PDF, ex: https://www.metel.com/code/'),
-        'metel_web_postfix_pdf': fields.char('Metel web postfix PDF', size=180, 
+        'metel_web_postfix_pdf': fields.char('Web postfix PDF', size=180, 
             help='Metel web postfix PDF, ex: .pdf'),
 
         'metel_code': fields.char('Metel code', size=18, 
