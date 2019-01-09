@@ -93,9 +93,9 @@
                             <newline/>
 
                             <separator string="Customer:" colspan="5"/>
-                            <field name="customer_id" on_change="onchange_customer_id(customer_id)" attrs="{'readonly': [('state','!=','draft')]}"/>
-                            <field name="account_id" domain="[('type','in',['normal', 'contract']),('state', '&lt;&gt;', 'close'),('use_timesheets', '=', 1),('partner_id', '!=', False)]" attrs="{'readonly': [('state','!=','draft')]}"/>
-                            <button name="generate_pick_out_draft" string="Generate pick out" type="object" help="Generate pick out document for account line selected" colspan="1" />
+                            <field name="customer_id" on_change="onchange_customer_id(customer_id)" /><!--attrs="{'readonly': [('state','!=','draft')]}"-->
+                            <field name="account_id" domain="[('type','in',['normal', 'contract']),('state', '&lt;&gt;', 'close'),('use_timesheets', '=', 1),('partner_id', '!=', False)]" /><!--attrs="{'readonly': [('state','!=','draft')]}"-->
+                            <button name="generate_pick_out_draft" string="Generate pick out" type="object" help="Generate pick out document for account line selected" colspan="1" attrs="{'invisible': [('state','!=','load')]}"/>
                             
                             <separator string="Detail:" colspan="5"/>
                             <field name="line_ids" colspan="5" nolabel="1">
