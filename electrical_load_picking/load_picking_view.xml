@@ -42,7 +42,7 @@
             </field>
         </record>
         <record model="ir.actions.act_window" id="action_supplier_delivery_load">
-            <field name="name">Supplier delivery</field>
+            <field name="name">Supplier delivery from file</field>
             <field name="res_model">res.partner</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
@@ -117,6 +117,12 @@
             action="action_supplier_delivery_load"
             sequence="40"
             />
+
+        <!--Delivery in menu:-->
+        <menuitem 
+            parent="fast_stock_move.menu_stock_picking_in_root" 
+            id="menu_supplier_delivery_load_fast" 
+            action="action_supplier_delivery_load" sequence="5"/>
         
     </data>
 </openerp>
