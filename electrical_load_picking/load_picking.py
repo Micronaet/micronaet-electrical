@@ -373,7 +373,8 @@ class StockPickingFile(orm.Model):
 
         # Analytic management:
         'customer_id': fields.many2one('res.partner', 'Customer'),
-        'analytic_id': fields.many2one('res.partner', 'Analitic account'),
+        'account_id': fields.many2one(
+            'account.analytic.account', 'Analitic account'),
 
         'mode': fields.selection([
             ('in', 'In document'), # Delivery
@@ -412,7 +413,8 @@ class StockPickingFileLine(orm.Model):
         'product_id': fields.many2one('product.product', 'Product'),
         'original_id': fields.many2one('product.product', 'Original'),
 
-        'analytic_id': fields.many2one('res.partner', 'Analitic account'),
+        'account_id': fields.many2one(
+            'account.analytic.account', 'Analitic account'),
 
         'order_id': fields.many2one('stock.picking.input.file', 'File', 
             ondelete='cascade'),
