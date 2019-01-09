@@ -74,7 +74,7 @@
             <field name="arch" type="xml">
                 <form string="Picking file">
                     <header>
-                        <button name="load_document" string="Create picking in" type="object" class="oe_highlight"/>
+                        <button name="load_document" string="Create picking in" type="object" class="oe_highlight" attrs="{'invisible': [('state','!=','draft')]}"/>
                         <field name="state" widget="statusbar"/>                        
                     </header>
                     <sheet>

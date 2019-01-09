@@ -202,19 +202,19 @@ class StockPickingFile(orm.Model):
                 # -----------------------------------------------------------------
                 # Extract parameter from line:
                 # -----------------------------------------------------------------
-                address_code = self._clean_string(line[:3])
-                mode = self._clean_mode(line[3:5]) 
-                year = self._clean_string(line[5:9])
-                supplier_code = self._clean_string(line[9:16])
-                supplier_date = self._clean_date(line[16:24]) # ISO format
-                sequence = self._clean_string(line[24:29])
-                protocol = self._clean_string(line[29:38])
+                address_code = self._clean_string(line[:3]) # ID Company
+                mode = self._clean_mode(line[3:5]) # Causal
+                year = self._clean_string(line[5:9]) # Year
+                supplier_code = self._clean_string(line[9:16]) # DDT
+                supplier_date = self._clean_date(line[16:24]) # DDT date ISO
+                sequence = self._clean_string(line[24:29]) # Seq.
+                protocol = self._clean_string(line[29:38]) # 
                 default_code = self._clean_string(line[38:58])
                 name = self._clean_string(line[58:118])
                 uom = self._clean_string(line[118:120])
                 product_qty = self._clean_float(line[120:131], 1000.0)
                 price = self._clean_float(line[131:144], 100000.0)
-                company_ref = self._clean_string(line[144:159])
+                company_ref = self._clean_string(line[144:159]) # Order
                 company_date = self._clean_date(line[160:168])#XXX jump 1 char
                 company_number = self._clean_string(line[168:175])
 
