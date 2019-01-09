@@ -13,9 +13,9 @@
                             <field name="electrical_extension" />
                             
                             <field name="electrical_path" />
-                            <button name="open_electrical_file_ids" string="File imported" type="object" class="oe_highlight" colspan="2"/>
+                            <button name="open_electrical_file_ids" string="File imported" type="object" colspan="1"/>
                             
-                            <button name="electrical_load_picking_routine" string="Load new files" type="object" />
+                            <button name="electrical_load_picking_routine" string="Load new files" type="object" class="oe_highlight" collspan="1"/>
                             <!--<button name="electrical_generate_picking_routine" string="B. Generate picking" type="object" />
                             <button name="electrical_all_picking_routine" string="A + B. Load and generate picking" type="object" />-->
                         </group>
@@ -23,7 +23,34 @@
                 </xpath>
             </field>
         </record>
-
+        <record model="ir.ui.view" id="view_res_partner_supplier_path_tree">
+            <field name="name">res.partner.tree</field>
+            <field name="model">res.partner</field>
+            <field name="priority" eval="40" />
+            <field name="arch" type="xml">
+                <tree string="Supplier delivery">
+                    <field name="name" readonly="1"/>
+                    <field name="city" readonly="1" />    
+                    <field name="phone" readonly="1" />
+                    <field name="mobile" readonly="1" />
+                    <field name="email" readonly="1" />
+                    <field name="electrical_path" readonly="1" />
+                    <field name="electrical_extension" readonly="1" />
+                    <button name="open_electrical_file_ids" string="Open imported files" type="object" />
+                    <button name="electrical_load_picking_routine" string="Load new files" type="object" class="oe_highlight" />
+                </tree>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_supplier_delivery_load">
+            <field name="name">Supplier delivery</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_res_partner_supplier_path_tree"/>
+            <field name="context">{}</field>
+            <field name="domain">[('electrical_path', '!=', False)]</field>
+        </record>
+        
         <!--stock.picking.input.file-->
         <record model="ir.ui.view" id="view_stock_picking_input_file_tree">
             <field name="name">stock.picking.input.file.tree</field>
@@ -83,6 +110,14 @@
                 </form>
             </field>
         </record>
+        
+        <menuitem 
+            parent="purchase.menu_procurement_management" 
+            id="menu_supplier_delivery_load" 
+            action="action_supplier_delivery_load"
+            sequence="40"
+            />
+        
     </data>
 </openerp>
 

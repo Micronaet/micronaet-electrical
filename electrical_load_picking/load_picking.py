@@ -96,6 +96,7 @@ class StockPickingFile(orm.Model):
         # Pool used:
         company_pool = self.pool.get('res.company')
         product_pool = self.pool.get('product.product')
+        uom_pool = self.pool.get('product.uom')
         picking_pool = self.pool.get('stock.picking')
         type_pool = self.pool.get('stock.picking.type')
         move_pool = self.pool.get('stock.move')
@@ -207,9 +208,9 @@ class StockPickingFile(orm.Model):
                 # Create new empty pick:
                 # -------------------------------------------------------------
                 # Parameter:
-                origin = '%s-%s-%s' % (
+                origin = '%s-%s' % (
                     company_ref,
-                    company_date,
+                    #company_date,
                     company_number,
                     )
 
@@ -245,8 +246,11 @@ class StockPickingFile(orm.Model):
         # ---------------------------------------------------------------------
         else: # load mode
             picking = current_proxy.picking_id
-            for line in current_proxy.line_ids:
+            for line in sorted(
+                    current_proxy.line_ids, 
+                    key=lambda x: x.sequence):
                 product_id = line.product_id.id
+                uom_id = line.product_id.uom_id.id or 1
                 
                 if line.create_new:
                     create_code = line.create_code
@@ -256,10 +260,19 @@ class StockPickingFile(orm.Model):
                     if product_ids:
                         product_id = product_ids[0]    
                     else:
+                        uom_ids = uom_pool.search(cr, uid, [
+                            '|',
+                            ('metel_code', '=', line.uom),
+                            ('name', '=', line.uom),
+                            ], context=context)
+                        uom_id = uom_ids[0] if uom_ids else 1
                         product_id = product_pool.create(cr, uid, {
                             'name': line.name,
                             'default_code': create_code,
-                            'standard_price': line.price,
+                            'standard_price': line.standard_price,
+                            'uom_id': uom_id,
+                            'uos_id': uom_id,
+                            'uom_po_id': uom_id,
                             # TODO extra data?
                             }, context=context)    
 
@@ -279,6 +292,7 @@ class StockPickingFile(orm.Model):
                 # -------------------------------------------------------------
                 move_id = move_pool.create(cr, uid, {
                     'name': line.name,
+                    'product_uom': uom_id,
                     'picking_id': picking.id,
                     'picking_type_id': picking_type.id,
                     'origin': picking.origin,
@@ -297,8 +311,8 @@ class StockPickingFile(orm.Model):
                      'stock_move_id': move_id, # Back link
                      
                      'qty': product_qty,
-                     'cost': standard_price,
-                     'location_id': location_id,
+                     'cost': line.standard_price,
+                     'location_id': location_dest_id,
                      'company_id': company_id,
                      'product_id': product_id,
                      'in_date': now,
@@ -312,7 +326,7 @@ class StockPickingFile(orm.Model):
                     }, context=context)
 
             # Correct error state (if present):
-            picking_pool.write(cr, uid, picking.id, {
+            self.write(cr, uid, ids, {
                 'error': False,
                 }, context=context)        
         return True

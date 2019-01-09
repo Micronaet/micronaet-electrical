@@ -35,6 +35,7 @@
         'base',
         'stock', 
         'product',
+        'purchase',
         ],
     'init_xml': [],
     'demo': [],
