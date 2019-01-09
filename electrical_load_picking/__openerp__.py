@@ -36,6 +36,7 @@
         'stock', 
         'product',
         'purchase',
+        'fast_stock_move', # Fast management for load document in
         ],
     'init_xml': [],
     'demo': [],
