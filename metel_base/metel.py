@@ -357,9 +357,6 @@ class ProductProduct(orm.Model):
                 'metel_weblink_image': self.get_url_mode(product, 'image'),
                 'metel_weblink_pdf': self.get_url_mode(product, 'pdf'),
                 }
-            
-            else:    
-                res[product.id] = False
         return res        
 
     _columns = {

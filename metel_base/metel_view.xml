@@ -34,6 +34,13 @@
                 <field name="type" position="after">
                     <field name="metel_web_prefix" colspan="4" attrs="{'invisible': [('metel_mode','!=','producer')]}"/>
                     <field name="metel_web_postfix" colspan="4" attrs="{'invisible': [('metel_mode','!=','producer')]}"/>
+
+                    <field name="metel_web_prefix_image" colspan="4" attrs="{'invisible': [('metel_mode','!=','producer')]}"/>
+                    <field name="metel_web_postfix_image" colspan="4" attrs="{'invisible': [('metel_mode','!=','producer')]}"/>
+
+                    <field name="metel_web_prefix_pdf" colspan="4" attrs="{'invisible': [('metel_mode','!=','producer')]}"/>
+                    <field name="metel_web_postfix_pdf" colspan="4" attrs="{'invisible': [('metel_mode','!=','producer')]}"/>
+
                     <field name="metel_mode" invisible="1" />
                 </field>
             </field>
