@@ -312,11 +312,30 @@ class ProductProduct(orm.Model):
     def open_producer_product_web_link(self, cr, uid, ids, context=None):
         ''' Open URL for producer link
         '''
-        product = self.browse(cr, uid, ids, context=context)[0]
-        
+        product = self.browse(cr, uid, ids, context=context)[0]        
         return {
             'type': 'ir.actions.act_url',
             'url': product.metel_weblink,
+            'target': 'blank',
+            }
+            
+    def open_producer_product_web_link_image(self, cr, uid, ids, context=None):
+        ''' Open URL for producer link
+        '''
+        product = self.browse(cr, uid, ids, context=context)[0]        
+        return {
+            'type': 'ir.actions.act_url',
+            'url': product.metel_weblink_image,
+            'target': 'blank',
+            }
+            
+    def open_producer_product_web_link_pdf(self, cr, uid, ids, context=None):
+        ''' Open URL for producer link PDF
+        '''
+        product = self.browse(cr, uid, ids, context=context)[0]        
+        return {
+            'type': 'ir.actions.act_url',
+            'url': product.metel_weblink_pdf,
             'target': 'blank',
             }
         
@@ -331,17 +350,21 @@ class ProductProduct(orm.Model):
         '''
         code_remove = 3 # TODO parametrize
 
+        if mode:
+            mode = '_' + mode
+
         pre_field = 'metel_web_prefix' + mode
         post_field = 'metel_web_postfix' + mode
         
         producer = product.metel_producer_id
-        pre = producer.__getattrbute__(pre_field)
-        pre = producer.__getattrbute__(post_field)
+
+        pre = producer.__getattribute__(pre_field) or ''
+        post = producer.__getattribute__(post_field) or ''
         if product.default_code and pre:
             return '%s%s%s' % (
-                pre or '', 
+                pre, 
                 product.default_code[code_remove:],
-                post or '',
+                post,
                 )
         else:
             return ''        
