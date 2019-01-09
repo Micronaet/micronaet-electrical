@@ -86,7 +86,30 @@ class StockPickingFile(orm.Model):
             value[4:6],
             value[6:8],
             )
-    
+            
+    # -------------------------------------------------------------------------
+    # Onchange
+    # -------------------------------------------------------------------------
+    def onchange_customer_id(
+            self, cr, uid, ids, customer_id, context=None):
+        ''' Change domain depend on partner
+        '''    
+        domain = [
+            ('type', 'in', ('normal', 'contract')),
+            ('state', '!=', 'close'),
+            ('use_timesheets', '=', 1),            
+            ]
+        if customer_id:
+            domain.append(('partner_id', '=', customer_id)) # Customer account
+        else:    
+            domain.append(('partner_id', '!=', False)) # All account
+
+        return {'domain': {
+            'account_id': domain,
+            }}
+    # -------------------------------------------------------------------------
+    # Button document:
+    # -------------------------------------------------------------------------
     def load_document(self, cr, uid, ids, context=None):
         ''' Load document of new file 
         '''
@@ -334,6 +357,11 @@ class StockPickingFile(orm.Model):
                 }, context=context)        
         return True
 
+    def generate_pick_out_draft(self, cr, uid, ids, context=None):
+        ''' Generate pick out document
+        '''
+        return True
+        
     _columns = {
         'create_date': fields.date('Create date'),
         'error': fields.boolean('Error'),
@@ -342,6 +370,11 @@ class StockPickingFile(orm.Model):
         'picking_id': fields.many2one('stock.picking', 'Picking'),
         'partner_id': fields.many2one('res.partner', 'Partner', required=True),
         'address_id': fields.many2one('res.partner', 'Address'),
+
+        # Analytic management:
+        'customer_id': fields.many2one('res.partner', 'Customer'),
+        'analytic_id': fields.many2one('res.partner', 'Analitic account'),
+
         'mode': fields.selection([
             ('in', 'In document'), # Delivery
             ('out', 'Out document'), # Wrong delivery
@@ -378,6 +411,8 @@ class StockPickingFileLine(orm.Model):
         # Product:
         'product_id': fields.many2one('product.product', 'Product'),
         'original_id': fields.many2one('product.product', 'Original'),
+
+        'analytic_id': fields.many2one('res.partner', 'Analitic account'),
 
         'order_id': fields.many2one('stock.picking.input.file', 'File', 
             ondelete='cascade'),

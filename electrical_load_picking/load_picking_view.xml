@@ -78,23 +78,32 @@
                         <field name="state" widget="statusbar"/>                        
                     </header>
                     <sheet>
-                        <group col="4" colspan="4">
+                        <group col="5" colspan="4">
                             <field name="create_date" />
                             <field name="mode" />
+                            <newline/>
                             
-                            <field name="name" colspan="4"/>
+                            <field name="name" colspan="5"/>
 
                             <field name="partner_id" />
                             <field name="address_id" />
+                            <newline/>
 
                             <field name="picking_id" />
                             <newline/>
+
+                            <separator string="Customer:" colspan="5"/>
+                            <field name="customer_id" on_change="onchange_customer_id(customer_id)"/>
+                            <field name="account_id" 
+                                domain="[('type','in',['normal','contract']),('state', '&lt;&gt;', 'close'),('use_timesheets','=',1),('partner_id','=',customer_id)]"/>
+                            <button name="generate_pick_out_draft" string="Generate pick out" type="object" help="Generate pick out document for account line selected" colspan="1"/>
                             
-                            <separator string="Detail:" colspan="4"/>
-                            <field name="line_ids" colspan="4" nolabel="1">
+                            <separator string="Detail:" colspan="5"/>
+                            <field name="line_ids" colspan="5" nolabel="1">
                                 <tree string="Line" editable="bottom" colors="red:product_id==False">
                                     <field name="sequence" readonly="1" />
                                     <!--<field name="name" />-->
+                                    <field name="account_id"/>
                                     <field name="original_code" readonly="1"/>
                                     <field name="original_id" readonly="1" />
                                     <field name="create_code" />

@@ -35,6 +35,8 @@
         'base',
         'stock', 
         'product',
+        'account',
+        'analytic',
         'purchase',
         'fast_stock_move', # Fast management for load document in
         ],
