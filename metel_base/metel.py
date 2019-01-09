@@ -249,8 +249,28 @@ class ProductCategory(orm.Model):
             context=context)
         
     _columns = {
+        # ---------------------------------------------------------------------
+        # Metel URL generation:
+        # ---------------------------------------------------------------------
+        # Default:
         'metel_web_prefix': fields.char('Metel web prefix', size=180, 
             help='Metel web prefix, ex: https://www.metel.com/code/'),
+        'metel_web_postfix': fields.char('Metel web postfix', size=180, 
+            help='Metel web postfix, ex: .php'),
+
+        # Image:
+        'metel_web_prefix_image': fields.char('Metel web prefix image', 
+            size=180, 
+            help='Metel web prefix image, ex: https://www.metel.com/code/'),
+        'metel_web_postfix_image': fields.char('Metel web postfix', size=180, 
+            help='Metel web postfix, ex: .jpg'),
+
+        # PDF:
+        'metel_web_prefix_pdf': fields.char('Metel web prefix PDF', size=180, 
+            help='Metel web prefix PDF, ex: https://www.metel.com/code/'),
+        'metel_web_postfix_pdf': fields.char('Metel web postfix PDF', size=180, 
+            help='Metel web postfix PDF, ex: .pdf'),
+
         'metel_code': fields.char('Metel code', size=18, 
             help='Metel code: producer of brand'),
         'metel_description': fields.char('Metel description', size=40, 
@@ -292,28 +312,52 @@ class ProductProduct(orm.Model):
     def open_producer_product_web_link(self, cr, uid, ids, context=None):
         ''' Open URL for producer link
         '''
-        code_remove = 3 # TODO parametrize
         product = self.browse(cr, uid, ids, context=context)[0]
-        prefix = product.metel_producer_id.metel_web_prefix
-        if product.default_code and prefix:                
-            url = '%s%s' % (prefix, product.default_code[code_remove:])
+        
         return {
             'type': 'ir.actions.act_url',
-            'url': url,
+            'url': product.metel_weblink,
             'target': 'blank',
             }
         
     # -------------------------------------------------------------------------
     # Field function:    
     # -------------------------------------------------------------------------
+    def get_url_mode(self, product, mode=''):
+        ''' Calculate URL per mode:
+            - nothing: default url
+            - image: image mode
+            - pdf: pdf mode
+        '''
+        code_remove = 3 # TODO parametrize
+
+        pre_field = 'metel_web_prefix' + mode
+        post_field = 'metel_web_postfix' + mode
+        
+        producer = product.metel_producer_id
+        pre = producer.__getattrbute__(pre_field)
+        pre = producer.__getattrbute__(post_field)
+        if product.default_code and pre:
+            return '%s%s%s' % (
+                pre or '', 
+                product.default_code[code_remove:],
+                post or '',
+                )
+        else:
+            return ''        
+        
     def _get_producer_web_link(self, cr, uid, ids, fields, args, context=None):
         ''' Fields function for calculate 
         '''    
+
         res = {}
         for product in self.browse(cr, uid, ids, context=context):
-            prefix = product.metel_producer_id.metel_web_prefix
-            if product.default_code and prefix:                
-                res[product.id] = '%s%s' % (prefix, product.default_code)
+            res[product.id] = {
+                'metel_weblink': self.get_url_mode(product),
+                'metel_weblink_image': self.get_url_mode(product, 'image'),
+                'metel_weblink_pdf': self.get_url_mode(product, 'pdf'),
+                }
+            
             else:    
                 res[product.id] = False
         return res        
@@ -372,7 +416,13 @@ class ProductProduct(orm.Model):
         
         'metel_weblink': fields.function(
             _get_producer_web_link, method=True, type='char', 
-            string='Weblink'), 
+            string='Weblink', multi=True), 
+        'metel_weblink_image': fields.function(
+            _get_producer_web_link, method=True, type='char', 
+            string='Weblink image', multi=True), 
+        'metel_weblink_pdf': fields.function(
+            _get_producer_web_link, method=True, type='char', 
+            string='Weblink PDF', multi=True), 
         }
         
     _defaults = {

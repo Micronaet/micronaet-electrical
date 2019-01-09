@@ -33,6 +33,7 @@
             <field name="arch" type="xml">
                 <field name="type" position="after">
                     <field name="metel_web_prefix" colspan="4" attrs="{'invisible': [('metel_mode','!=','producer')]}"/>
+                    <field name="metel_web_postfix" colspan="4" attrs="{'invisible': [('metel_mode','!=','producer')]}"/>
                     <field name="metel_mode" invisible="1" />
                 </field>
             </field>
@@ -150,8 +151,10 @@
                     <page string="METEL" name="metel" attrs="{'invisible': [('is_metel','=',False)]}">
                        <group colspan="4" col="4">
                             <field name="metel_weblink" invisible="1"/>
-                            <separator string="Information:" colspan="3"/>
+                            <separator string="Information:" colspan="1"/>
                             <button name="open_producer_product_web_link" string="Open producer site" type="object" attrs="{'invisible': [('metel_weblink','=',False)]}" icon="gtk-info" colspan="1"/>
+                            <button name="open_producer_product_web_link_image" string="Open producer site image" type="object" attrs="{'invisible': [('metel_weblink_image','=',False)]}" icon="color-picker" colspan="1"/>
+                            <button name="open_producer_product_web_link_pdf" string="Open producer site PDF" type="object" attrs="{'invisible': [('metel_weblink_pdf','=',False)]}" icon="terp-graph" colspan="1"/>
                             
                             <field name="metel_electrocod" readonly="1"/>
                             <field name="metel_state" readonly="1" /> 
