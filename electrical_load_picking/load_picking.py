@@ -122,7 +122,12 @@ class StockPickingFile(orm.Model):
             raise osv.except_osv(
                 _('Error'), 
                 _('No pick generated from this file!'),
-                )        
+                )    
+
+        self.write(cr, uid, ids, {
+            'state': 'close',
+            }, context=context)
+
         return picking_pool.generate_pick_out_draft(
             cr, uid, [picking_id], context=context)
         
