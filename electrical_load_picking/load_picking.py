@@ -309,7 +309,7 @@ class StockPickingFile(orm.Model):
                         ('default_code', '=', create_code),
                         ], context=context)
                     if product_ids:
-                        product_id = product_ids[0]    
+                        product_id = product_ids[0]
                     else:
                         uom_ids = uom_pool.search(cr, uid, [
                             '|',
@@ -335,9 +335,8 @@ class StockPickingFile(orm.Model):
 
                 # Parameters:
                 product_qty = line.product_qty
-                
-                # TODO Update price in product:
-                
+
+                # TODO Use WK button in load procedure (fast_stock_move)?                
                 # -------------------------------------------------------------
                 # Create stock move:
                 # -------------------------------------------------------------
@@ -380,7 +379,11 @@ class StockPickingFile(orm.Model):
                      #'packaging_type_id'
                      #'negative_move_id'
                     }, context=context)
-
+            
+            # Update product product data:
+            picking_pool.update_standard_price_product(
+                cr, uid, [picking.id], context=context)
+                
             # Correct error state (if present):
             self.write(cr, uid, ids, {
                 'state': state,
