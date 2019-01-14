@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="view_purchase_remove_wf_form">
+            <field name="name">purchase.order.form</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+                <field name="state" position="before">
+                    <!--Electrical WorkFlow Buttons:-->
+                    <button name="wkf_electrical_set_sent" attrs="{'invisible': [('electrical_state','!=','draft')]}" string="Sent" type="object" class="oe_highlight"/>
+                    <button name="wkf_electrical_set_done" attrs="{'invisible': [('electrical_state','!=','sent')]}" string="Done" type="object" class="oe_highlight"/>
+                    <button name="wkf_electrical_set_draft" attrs="{'invisible': [('electrical_state','!=','done')]}" string="Restart" type="object" class="oe_highlight"/>
+                    
+                    <field name="electrical_state" widget="statusbar" statusbar_visible="draft,sent,done"  readonly="1"/>
+                </field>
+                
+                <field name="state" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+                <button name="bid_received" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </button>
+                <button name="wkf_send_rfq" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </button>
+                <button name="print_quotation" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </button>
+                <button name="purchase_confirm" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </button>
+                <button name="picking_ok" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </button>
+                <button name="invoice_ok" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </button>
+                <button name="purchase_approve" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </button>
+                <button name="action_cancel_draft" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </button>
+                <button name="action_cancel" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </button>
+                <button name="view_picking" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </button>
+                <button name="view_invoice" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </button>
+            </field>
+        </record>
+        
+        <record model="ir.ui.view" id="view_purchase_order_wf2_tree">
+            <field name="name">purchase.order.tree</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_tree"/>
+            <field name="arch" type="xml">
+                <field name="state" position="before">
+                    <field name="electrical_state" />
+                </field>
+                <field name="state" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_purchase_order_draft_form">
+            <field name="name">Request for quotation</field>
+            <field name="res_model">purchase.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,graph,calendar</field>
+            <field name="context">{}</field>
+            <field name="domain">[('electrical_state', '=', 'draft')]</field>
+        </record>
+        <record model="ir.actions.act_window" id="action_purchase_order_sent_form">
+            <field name="name">Purchase order sent</field>
+            <field name="res_model">purchase.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,graph,calendar</field>
+            <field name="context">{}</field>
+            <field name="domain">[('electrical_state', '=', 'sent')]</field>
+        </record>
+        <record model="ir.actions.act_window" id="action_purchase_order_done_form">
+            <field name="name">Purchase order closed</field>
+            <field name="res_model">purchase.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,graph,calendar</field>
+            <field name="context">{}</field>
+            <field name="domain">[('electrical_state', '=', 'done')]</field>
+        </record>
+       
+        <delete model="ir.ui.menu" id="purchase.menu_purchase_rfq" />
+        <delete model="ir.ui.menu" id="purchase.menu_purchase_form_action" />
+        <menuitem 
+            parent="purchase.menu_procurement_management" 
+            id="menu_purchase_order_draft" 
+            action="action_purchase_order_draft_form"
+            sequence="1"
+            />
+        <menuitem 
+            parent="purchase.menu_procurement_management" 
+            id="menu_purchase_order_sent" 
+            action="action_purchase_order_sent_form"
+            sequence="2"
+            />
+        <menuitem 
+            parent="purchase.menu_procurement_management" 
+            id="menu_purchase_order_done" 
+            action="action_purchase_order_done_form"
+            sequence="3"
+            />
+        
+    </data>
+</openerp>
+

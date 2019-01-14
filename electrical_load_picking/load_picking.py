@@ -353,6 +353,7 @@ class StockPickingFile(orm.Model):
                     'location_id': location_id,
                     'location_dest_id': location_dest_id,
                     'state': 'done',
+                    'price_unit': line.standard_price,
 
                     # Auto pick out data:
                     'auto_account_out_id':
