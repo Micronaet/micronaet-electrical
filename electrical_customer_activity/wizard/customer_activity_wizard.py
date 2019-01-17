@@ -316,32 +316,29 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         sheet_order = [
             'Riepilogo', 
-            'Interventi', 'Consegne', 'DDT', 'Fatture', 'Commesse',
+            'Interventi', 
+            'Consegne', 
+            'DDT', 
+            'Fatture', 
+            'Commesse',
             ]
-        format_load = False # To update only first sheet creation:        
+
+        # -------------------------------------------------------------
+        # Format list:
+        # -------------------------------------------------------------
+        f_number = excel_pool.get_format('number')
+        f_title = excel_pool.get_format('title')
+        f_header = excel_pool.get_format('header')
+        f_text = excel_pool.get_format('text')
+        
         for ws_name in sheet_order:
             sheet = sheets[ws_name]
             
-            if not sheet['data']:
-                continue # No sheet creation
+            #if not sheet['data']:
+            #    continue # No sheet creation
 
             # Create sheet:
             excel_pool.create_worksheet(ws_name)
-
-            # -----------------------------------------------------------------
-            # Get used format:
-            # -----------------------------------------------------------------
-            if not format_load:
-                format_load = True
-                excel_pool.get_format()
-                
-                # -------------------------------------------------------------
-                # Format list:
-                # -------------------------------------------------------------
-                f_title = excel_pool.get_format('title')
-                f_header = excel_pool.get_format('header')
-                f_text = excel_pool.get_format('text')
-                f_number = excel_pool.get_format('number')
 
             # Setup columns
             excel_pool.column_width(ws_name, sheet['width'])
@@ -349,9 +346,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Print header
             excel_pool.write_xls_line(
                 ws_name, sheet['row'], sheet['header'], 
-                default_format=f_header)
+                default_format=f_header
+                )
             sheet['row'] += 1    
-        
+
         # ---------------------------------------------------------------------
         # A. STOCK MATERIAL:
         # ---------------------------------------------------------------------
@@ -399,7 +397,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             total[account_id] += subtotal
                             excel_pool.write_xls_line(
                                 ws_name, sheet['row'], data,
-                                default_format=f_text)
+                                default_format=f_text
+                                )
                             sheet['row'] += 1
 
                     else: # Picking no movements:
@@ -420,7 +419,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         
                         excel_pool.write_xls_line(
                             ws_name, sheet['row'], data,
-                            default_format=f_text)
+                            default_format=f_text
+                            )
                         sheet['row'] += 1
                         
                 # Summary data (picking):         
@@ -482,7 +482,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 
                                 excel_pool.write_xls_line(
                                     ws_name, sheet['row'], data,
-                                    default_format=f_text)
+                                    default_format=f_text,
+                                    )
                                 sheet['row'] += 1
 
                         else: # Picking no movements:
@@ -502,7 +503,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             
                             excel_pool.write_xls_line(
                                 ws_name, sheet['row'], data,
-                                default_format=f_text)
+                                default_format=f_text
+                                )
                             sheet['row'] += 1
                 else: # no 
                     data = [
@@ -521,7 +523,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     
                     excel_pool.write_xls_line(
                         ws_name, sheet['row'], data,
-                        default_format=f_text)
+                        default_format=f_text
+                        )
                     sheet['row'] += 1
 
                 # Summary data (DDT):         
@@ -596,7 +599,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     
                     excel_pool.write_xls_line(
                         ws_name, sheet['row'], data,
-                        default_format=f_text)
+                        default_format=f_text
+                        )
                     sheet['row'] += 1
 
                 # Summary data (Invoice):         
@@ -673,7 +677,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], data,
-                    default_format=f_text)
+                    default_format=f_text
+                    )
                 sheet['row'] += 1
 
                 # Summary data (Intervent):   
@@ -683,7 +688,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 summary_data[block_key].append((
                     account.name, 
                     intervent.ref, 
-                    (document_total, f_number), 
+                    document_total, #(document_total, f_number), 
                     (0.0, f_number), # TODO
                     ))
 
@@ -710,20 +715,23 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], data,
-                    default_format=f_text)
+                    default_format=f_text
+                    )
                 sheet['row'] += 1
 
         
         # Block account used:
         sheet['row'] += 2
         excel_pool.write_xls_line(
-            ws_name, sheet['row'], ['Commesse toccate nel periodo:'],
-            default_format=f_title)
+            ws_name, sheet['row'], [u'Commesse toccate nel periodo:', ],
+            default_format=f_title
+            )
 
         sheet['row'] += 1
         excel_pool.write_xls_line(
             ws_name, sheet['row'], sheet['header'],
-            default_format=f_header)
+            default_format=f_header
+            )
 
         sheet['row'] += 1
         for account in account_used:   
@@ -742,7 +750,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             
             excel_pool.write_xls_line(
                 ws_name, sheet['row'], data,
-                default_format=f_text)
+                default_format=f_text
+                )
             sheet['row'] += 1
 
         # ---------------------------------------------------------------------
@@ -756,19 +765,22 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             excel_pool.write_xls_line(
                 ws_name, sheet['row'], ['Blocco: %s' % block],
-                default_format=f_title)
+                default_format=f_title
+                )
             sheet['row'] += 1
 
             excel_pool.write_xls_line(
                 ws_name, sheet['row'], block_record['header'],
-                default_format=f_header)
+                default_format=f_header
+                )
             sheet['row'] += 1
             
             for key in block_record['data']:                
                 for record in block_record['data'][key]:
                     excel_pool.write_xls_line(
                         ws_name, sheet['row'], record,
-                        default_format=f_text)
+                        default_format=f_text
+                        )
                     sheet['row'] += 1
 
             sheet['row'] += 1
