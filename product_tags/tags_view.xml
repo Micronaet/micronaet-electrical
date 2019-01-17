@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>        
+        <record model="ir.ui.view" id="view_product_product_form">
+            <field name="name">product.product.form</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field name="arch" type="xml">
+                <field name="type" position="before">
+                    <field name="tags_ids" widget="many2many_tags" placeholder="Tags..."/>
+                </field>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="view_product_product_search">
+            <field name="name">product.product.search</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_search_form_view"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="tags_ids" />
+                </field>
+            </field>
+        </record>
+        
+    </data>
+</openerp>
+
