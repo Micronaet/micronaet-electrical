@@ -52,7 +52,7 @@ class ProductProductTags(orm.Model):
     _order = 'name'
     
     _columns = {
-        'name': fields.char('Tag name', size=80),
+        'name': fields.char('Tag name', size=80, required=True),
         }
 
 class ProductProduct(orm.Model):
