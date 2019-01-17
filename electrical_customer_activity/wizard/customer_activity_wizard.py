@@ -397,7 +397,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             # Total per account:                            
                             document_total += subtotal
                             total[account_id] += subtotal
-                            
                             excel_pool.write_xls_line(
                                 ws_name, sheet['row'], data,
                                 default_format=f_text)
