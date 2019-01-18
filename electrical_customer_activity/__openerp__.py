@@ -22,7 +22,7 @@
 ###############################################################################
 
 {
-    'name': 'Electricat customer activity',
+    'name': 'Electrical customer activity',
     'version': '0.1',
     'category': 'Report',
     'description': '''  

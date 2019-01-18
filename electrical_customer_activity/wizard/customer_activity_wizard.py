@@ -50,6 +50,129 @@ class ResPartnerActivityWizard(orm.TransientModel):
     # -------------------------------------------------------------------------
     # Wizard button event:
     # -------------------------------------------------------------------------
+    def action_print_touched(self, cr, uid, ids, context=None):
+        ''' List of partner touched in that period
+        '''
+        wiz_browse = self.browse(cr, uid, ids, context=context)[0]
+        from_date = wiz_browse.from_date
+        to_date = wiz_browse.to_date
+        
+        # ---------------------------------------------------------------------
+        # Pool used:
+        # ---------------------------------------------------------------------
+        excel_pool = self.pool.get('excel.writer')
+
+        partner_pool = self.pool.get('res.partner')        
+        picking_pool = self.pool.get('stock.picking')
+        ddt_pool = self.pool.get('stock.ddt')
+        invoice_pool = self.pool.get('account.invoice')
+        account_pool = self.pool.get('account.analytic.account')
+        intervent_pool = self.pool.get('hr.analytic.timesheet')
+
+        partner_set = set()
+        # ---------------------------------------------------------------------
+        # A. Picking partner:
+        # ---------------------------------------------------------------------
+        domain = [
+            ('min_date', '>=', '%s 00:00:00' % from_date),
+            ('min_date', '<=', '%s 23:59:59' % to_date),
+            ('ddt_id', '=', False), # Not DDT
+            ]
+        picking_ids = picking_pool.search(cr, uid, domain, context=context)
+        picking_partner_ids = [item.partner_id.id for item in \
+            picking_pool.browse(
+                cr, uid, picking_ids, context=context)]
+        partner_set.update(set(tuple(picking_partner_ids)))
+    
+        # ---------------------------------------------------------------------
+        # B. DDT:
+        # ---------------------------------------------------------------------
+        domain = [
+            ('delivery_date', '>=', '%s 00:00:00' % from_date),
+            ('delivery_date', '<=', '%s 23:59:59' % to_date),
+            ('invoice_id', '=', False), # Not Invoiced
+            ]
+        ddt_ids = ddt_pool.search(cr, uid, domain, context=context)
+        ddt_partner_ids = [item.partner_id.id for item in ddt_pool.browse(
+            cr, uid, ddt_ids, context=context)]
+        partner_set.update(set(tuple(ddt_partner_ids)))   
+
+        # ---------------------------------------------------------------------
+        # C. Invoice:
+        # ---------------------------------------------------------------------
+        domain = [
+            ('date_invoice', '>=', from_date),
+            ('date_invoice', '<=', to_date),
+            ]
+        invoice_ids = invoice_pool.search(cr, uid, domain, context=context)
+        invoice_partner_ids = [item.partner_id.id for item in \
+            invoice_pool.browse(
+                cr, uid, invoice_ids, context=context)]
+        partner_set.update(set(tuple(invoice_partner_ids)))      
+
+        # ---------------------------------------------------------------------
+        # D. Intervent:
+        # ---------------------------------------------------------------------
+        domain = [
+            ('date_start', '>=', from_date),
+            ('date_start', '<=', to_date),
+            #('account_id.is_extra_report', '=', False),
+            ]
+        intervent_ids = intervent_pool.search(cr, uid, domain, context=context)
+        intervent_partner_ids = [item.intervent_partner_id.id for item in \
+            intervent_pool.browse(
+                cr, uid, intervent_ids, context=context)]
+        partner_set.update(set(tuple(intervent_partner_ids)))
+
+        # ---------------------------------------------------------------------
+        #                         Excel report:
+        # ---------------------------------------------------------------------
+        ws_name = 'Partner'
+        row = 0
+        header = ['Partner', 'Consegne', 'DDT', 'Fatture', 'Interventi']
+        width = [35, 10, 10, 10, 10]
+
+        excel_pool.create_worksheet(ws_name)
+
+        # Load formats:
+        f_title = excel_pool.get_format('title')
+        f_header = excel_pool.get_format('header')
+        f_text = excel_pool.get_format('text')
+        f_number = excel_pool.get_format('number')
+
+        # Setup columns
+        excel_pool.column_width(ws_name, width)
+            
+        # Print header
+        excel_pool.write_xls_line(
+            ws_name, row, header, default_format=f_header)
+        row += 1    
+        
+        partner_ids = tuple(partner_set)
+        for partner in sorted(partner_pool.browse(
+                cr, uid, partner_ids, context=context),
+                key = lambda p: p.name,
+                ):
+
+            partner_id = partner.id
+            data = [
+                partner.name,
+                partner_id in picking_partner_ids,
+                partner_id in ddt_partner_ids,
+                partner_id in invoice_partner_ids,
+                partner_id in intervent_partner_ids,
+                ]
+            
+            excel_pool.write_xls_line(
+                ws_name, row, data,
+                default_format=f_text
+                )
+            row += 1
+
+        return excel_pool.return_attachment(
+            cr, uid, 'partner_moved')
+
+
     def action_print(self, cr, uid, ids, context=None):
         ''' Event for button done
         '''
@@ -794,8 +917,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
             cr, uid, 'partner_activity')
 
     _columns = {
+        'mode': fields.selection([
+            ('partner', 'Partners list'),
+            ('report', 'Partner report'),
+            ], 'Mode'),
+            
         'partner_id': fields.many2one(
-            'res.partner', 'Partner', required=True),
+            'res.partner', 'Partner'),
         'account_id': fields.many2one(
             'account.analytic.account', 'Account'),
         'from_date': fields.date('From date >= ', required=True),
@@ -805,6 +933,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         }
         
     _defaults = {
+        'mode': lambda *x: 'report',
         'float_time': lambda *x: True,
         'from_date': lambda *x: datetime.now().strftime('%Y-%m-01'),
         'to_date': lambda *x: (

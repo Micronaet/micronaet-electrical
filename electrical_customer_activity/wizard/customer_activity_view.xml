@@ -8,18 +8,24 @@
             <field name="arch" type="xml">
                 <form string="Stats report" version="7.0">
                    <header>
-                       <button name="action_print" string="Print" type="object" icon="gtk-print" class="oe_highlight" />
+                       <button name="action_print" string="Print partner activity" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('mode','!=','report')]}"/>
+                       <button name="action_print_touched" string="Print partner touched" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('mode','!=','partner')]}"/>
                        Or 
                        <button string="Cancel" class="oe_link" special="cancel" />
                    </header>                   
                    <group colspan="4" col="4">
+                        <separator string="Mode" colspan="4"/>
+                        <field name="mode" />
+                        <newline/>
+                        
                         <separator string="Period" colspan="4"/>
                         <field name="from_date" />
                         <field name="to_date" />
                    
                         <separator string="Relation" colspan="4"/>
-                        <field name="partner_id" domain="[('is_company', '=', True)]" />                        
-                            <field name="account_id" domain="[('type','in',['normal','contract']),'|',('partner_id','=',False),('partner_id','=',partner_id)]"/><!--('state', '&lt;&gt;', 'close')/>-->
+                        <field name="partner_id" domain="[('is_company', '=', True)]" attrs="{'required': [('mode','=','report')], 'invisible': [('mode','!=','report')]}" />
+                        <field name="account_id" domain="[('type','in',['normal','contract']),'|',('partner_id','=',False),('partner_id','=',partner_id)]" attrs="{'invisible': [('mode','!=','report')]}" /><!--('state', '&lt;&gt;', 'close')/>-->
+                        
                         <field name="float_time" />
                    </group>
                 </form>
