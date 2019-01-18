@@ -173,7 +173,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
         return excel_pool.return_attachment(
             cr, uid, 'partner_moved')
 
-
     def action_print(self, cr, uid, ids, context=None):
         ''' Event for button done
         '''
