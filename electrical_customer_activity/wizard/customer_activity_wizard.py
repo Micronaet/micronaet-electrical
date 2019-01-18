@@ -326,11 +326,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # -------------------------------------------------------------
         # Format list:
         # -------------------------------------------------------------
-        f_number = excel_pool.get_format('number')
-        f_title = excel_pool.get_format('title')
-        f_header = excel_pool.get_format('header')
-        f_text = excel_pool.get_format('text')
-        
+        load_format = True
         for ws_name in sheet_order:
             sheet = sheets[ws_name]
             
@@ -339,6 +335,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             # Create sheet:
             excel_pool.create_worksheet(ws_name)
+
+            # Load formats:
+            if load_format:
+                f_number = excel_pool.get_format('number')
+                f_title = excel_pool.get_format('title')
+                f_header = excel_pool.get_format('header')
+                f_text = excel_pool.get_format('text')
+                load_format = False # once!
 
             # Setup columns
             excel_pool.column_width(ws_name, sheet['width'])
