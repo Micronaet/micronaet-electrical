@@ -77,6 +77,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('min_date', '>=', '%s 00:00:00' % from_date),
             ('min_date', '<=', '%s 23:59:59' % to_date),
             ('ddt_id', '=', False), # Not DDT
+            ('pick_move', '=', 'out'), # Only out movement
             ]
         picking_ids = picking_pool.search(cr, uid, domain, context=context)
         picking_partner_ids = [item.partner_id.id for item in \
@@ -213,6 +214,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('min_date', '>=', '%s 00:00:00' % from_date),
             ('min_date', '<=', '%s 23:59:59' % to_date),
             ('ddt_id', '=', False), # Not DDT
+            ('pick_move', '=', 'out'), # Only out movement
             ]
         if account_id:
             domain.append(('account_id', '=', account_id))
