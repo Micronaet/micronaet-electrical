@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="view_res_partner_sql_form">
+            <field name="name">res.partner.form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <field name="ref" position="after">
+                    <field name="sql_link" />
+                    <field name="sql_customer_code" attrs="{'invisible': [('sql_link', '=', False)]}"/>
+                    <field name="sql_supplier_code" attrs="{'invisible': [('sql_link', '=', False)]}" />
+                    <field name="sql_destination_code" attrs="{'invisible': [('sql_link', '=', False)]}" />
+                </field>
+            </field>
+        </record>
+
+    </data>
+</openerp>
+
