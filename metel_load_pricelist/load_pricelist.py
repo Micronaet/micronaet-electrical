@@ -288,8 +288,8 @@ class MetelBase(orm.Model):
                         # -----------------------------------------------------
                         product_ids = product_pool.search(cr, uid, [
                              ('default_code','=', default_code),
-                             ('metel_producer_code', '=', producer_code),
-                             #('metel_brand_code', '=', brand_code),
+                             #('metel_producer_code', '=', producer_code),
+                             ('metel_brand_code', '=', brand_code),
                              ], context=context)
 
                         if product_ids: 
