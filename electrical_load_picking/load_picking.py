@@ -321,14 +321,14 @@ class StockPickingFile(orm.Model):
                         # -----------------------------------------------------
                         # Insert also brand code for update with METEL import:
                         # -----------------------------------------------------
-                        brand_code = create_code[:3].upper()
-                        if '-' in brand_code:
-                            brand_code = False # Internal code
+                        #brand_code = create_code[:3].upper()
+                        #if '-' in brand_code:
+                        #    brand_code = False # Internal code
 
                         product_id = product_pool.create(cr, uid, {
                             # METEL Brand (needed for sync with import proc.)
-                            'metel_brand_code': brand_code,
-                            'metel_producer_code': brand_code,
+                            #'metel_brand_code': brand_code,
+                            #'metel_producer_code': brand_code,
 
                             'name': line.name,
                             'default_code': create_code,
