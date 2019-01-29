@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<openerp>
+    <data noupdate="1">
+        <record model="decimal.precision" id="decimal_precision_stock_move_price">
+            <field name="name">Stock move price</field>
+            <field name="digits" eval="4" />
+        </record>
+    </data>
+</openerp>
+
