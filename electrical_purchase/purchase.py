@@ -121,7 +121,7 @@ class PurchaseOrder(orm.Model):
                 purchase = line.order_id
             product = line.product_id
             move_pool.create(cr, uid, {
-                'electrical_line_id': line.id,
+                'electrical_line_id': line.id,                
 
                 'name': product.name,
                 'product_uom': product.uom_id.id,

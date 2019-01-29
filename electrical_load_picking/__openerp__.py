@@ -39,6 +39,7 @@
         'analytic',
         'purchase',
         'fast_stock_move', # Fast management for load document in
+        'metel_base',
         ],
     'init_xml': [],
     'demo': [],
