@@ -68,6 +68,27 @@
                 </tree>
             </field>
         </record>
+        
+        <record model="ir.ui.view" id="view_stock_picking_search_filter_form">
+            <field name="name">stock.picking.extra.search</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+            <field name="arch" type="xml">
+                 <field name="name" position="after">
+                      <filter name="account_id_empty" string="Without Account" domain="[('account_id','=',False)]"/>
+                 </field>
+                 <filter string="Origin" position="after">
+
+                        <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
+                        <!--<filter name="group_address" string="Address" context="{'group_by': 'location_dest_id'}"/> -->
+                        <filter name="group_ddt" string="DDT" context="{'group_by': 'ddt_id'}"/>                      
+                        <filter name="group_account" string="Account" context="{'group_by': 'account_id'}"/>                      
+                        <!--<filter name="group_mode" string="Type" context="{'group_by': 'mode'}"/>                      
+                        <filter name="group_type" string="Type" context="{'group_by': 'picking_type_id'}"/>                      
+                        <filter name="group_pick_state" string="Pick state" context="{'group_by': 'pick_state'}"/>-->
+                 </filter>
+            </field>
+        </record>
         <record model="ir.ui.view" id="view_stock_picking_input_file_form">
             <field name="name">stock.picking.input.file.form</field>
             <field name="model">stock.picking.input.file</field>
