@@ -50,7 +50,7 @@ class DdTCreateInvoice(models.TransientModel):
         domain = [
             ('partner_id', '!=', False), # with partner
             ('invoice_id', '=', False), # not direct invoiced
-            ('pick_move', '=', 'out'), # only out document
+            #('pick_move', '=', 'out'), # only out document
             ]
         
         partner_id = self.partner_id.id
