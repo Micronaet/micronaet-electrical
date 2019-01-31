@@ -50,6 +50,7 @@ class DdTCreateInvoice(models.TransientModel):
         domain = [
             ('partner_id', '!=', False), # with partner
             ('invoice_id', '=', False), # not direct invoiced
+            ('pick_move', '=', 'out'), # only out document
             ]
         
         partner_id = self.partner_id.id
@@ -82,57 +83,49 @@ class DdTCreateInvoice(models.TransientModel):
         default_carrier_id = False
         
         for ddt in ddts:
-            if (
-                carriage_condition_id and
+            if (carriage_condition_id and
                 ddt.carriage_condition_id.id != carriage_condition_id
-            ):
+                ):
                 raise Warning(
                     _('Selected DDTs have different Carriage Conditions'))
-            if (
-                goods_description_id and
+            if (goods_description_id and
                 ddt.goods_description_id.id != goods_description_id
-            ):
+                ):
                 raise Warning(
                     _('Selected DDTs have different Descriptions of Goods'))
-            if (
-                transportation_reason_id and
+            if (transportation_reason_id and
                 ddt.transportation_reason_id.id != transportation_reason_id
-            ):
+                ):
                 raise Warning(
                     _('Selected DDTs have different '
                       'Reasons for Transportation'))
-            if (
-                transportation_method_id and
+            if (transportation_method_id and
                 ddt.transportation_method_id.id != transportation_method_id
-            ):
+                ):
                 raise Warning(
                     _('Selected DDTs have different '
                       'Methods of Transportation'))
-            if (
-                parcels and
+            if (parcels and
                 ddt.parcels != parcels
-            ):
+                ):
                 raise Warning(
                     _('Selected DDTs have different parcels'))
 
 
-            if (
-                payment_term_id and
+            if (payment_term_id and
                     ddt.payment_term_id.id != payment_term_id):
                 raise Warning(
                     _('Selected DDTs have different '
                       'Payment terms'))
-            if (
-                used_bank_id and
+            if (used_bank_id and
                 ddt.used_bank_id.id != used_bank_id
-            ):
+                ):
                 raise Warning(
                     _('Selected DDTs have different '
                       'Bank account'))
-            if (
-                default_carrier_id and
+            if (default_carrier_id and
                 ddt.default_carrier_id.id != default_carrier_id
-            ):
+                ):
                 raise Warning(
                     _('Selected DDTs have different '
                       'Carrier'))
@@ -191,7 +184,6 @@ class DdTCreateInvoice(models.TransientModel):
 
             # Create sheet:
             excel_pool.create_worksheet(ws_name)
-            
 
             # -----------------------------------------------------------------
             # Get used format:
@@ -230,11 +222,7 @@ class DdTCreateInvoice(models.TransientModel):
                 'NON PRESENTI',
                 
                 # Stock move:
-                '',
-                '',
-                '',
-                '',
-                '',
+                '', '', '', '', '',
                 
                 # Total,
                 0.0,
