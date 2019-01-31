@@ -58,7 +58,7 @@ class DdTFromPickings(models.TransientModel):
             ('partner_id', '!=', False), # with partner
             ('ddt_id', '=', False), # not DDT
             ('invoice_id', '=', False), # not direct invoiced
-            ('pick_move', '=', 'out'), # only out
+            #('pick_move', '=', 'out'), # only out
             ]
         
         partner_id = self.partner_id.id
