@@ -7,7 +7,11 @@
             <field name="model">account.invoice</field>
             <field name="inherit_id" ref="account.invoice_form"/>
             <field name="arch" type="xml">
+                <!--<field name="partner_id" position="attributes">
+                    <attribute name="on_change">onchange_invoice_partner_filter(partner_id, account_no_parent)</attribute>
+                </field>-->
                 <field name="partner_id" position="after">
+                    <!--<field name="account_no_parent" on_change="onchange_invoice_partner_filter(partner_id, account_no_parent)" />-->
                     <field name="analytic_id" />
                 </field>
                 <xpath expr="//page[@string='Other Info']" position="after">

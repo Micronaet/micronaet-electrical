@@ -28,7 +28,30 @@ class account_invoice(orm.Model):
 
     _inherit = 'account.invoice'
 
+    # -------------------------------------------------------------------------
+    # On change
+    # -------------------------------------------------------------------------
+    def onchange_invoice_partner_filter(self, cr, uid, ids, 
+            partner_id, account_no_parent, context=None):
+        ''' On change partner and check box
+        '''
+        if account_no_parent:
+            domain = [
+                ('type', 'in', ['normal', 'contract']),
+                ('state', '!=', 'close'),
+                ('partner_id', '=', False),
+                ]
+        else:        
+            domain = [
+                ('type', 'in', ['normal', 'contract']),
+                ('state', '!=', 'close'),
+                ('partner_id', '=', partner_id)
+                ]
+        return {'domain': {'account_id': domain, }}
+
     _columns = {
+        'account_no_parent': fields.boolean('Account without partner'),
+
         'analytic_id': fields.many2one(
             'account.analytic.account', string='Account', required=False),
 

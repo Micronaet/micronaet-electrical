@@ -82,12 +82,13 @@
                                 <field name="sequence" 
                                     domain="[('code', '=', 'stock.ddt')]"
                                     widget="selection"/>
-                                <field name="partner_id"/>
+                                <field name="partner_id" on_change="onchange_ddt_partner_filter(partner_id, account_no_parent)" />
                                 <field name="delivery_address_id"/>
                             </group>
                             <group>
                                 <field name="date"/>
                                 <field name="delivery_date"/>
+                                <field name="account_no_parent" on_change="onchange_ddt_partner_filter(partner_id, account_no_parent)" />
                                 <field name="account_id"/>
                             </group>
                         </group>

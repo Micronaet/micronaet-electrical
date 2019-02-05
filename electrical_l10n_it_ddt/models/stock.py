@@ -86,6 +86,27 @@ class StockDdT(models.Model):
     _description = 'DdT'
 
     # -------------------------------------------------------------------------
+    # Button
+    # -------------------------------------------------------------------------
+    def onchange_ddt_partner_filter(self, cr, uid, ids, 
+            partner_id, account_no_parent, context=None):
+        ''' On change partner and check box
+        '''
+        if account_no_parent:
+            domain = [
+                ('type', 'in', ['normal', 'contract']),
+                ('state', '!=', 'close'),
+                ('partner_id', '=', False),
+                ]
+        else:        
+            domain = [
+                ('type', 'in', ['normal', 'contract']),
+                ('state', '!=', 'close'),
+                ('partner_id', '=', partner_id)
+                ]
+        return {'domain': {'analytic_id': domain, }}
+
+    # -------------------------------------------------------------------------
     # Button event:
     # -------------------------------------------------------------------------
     @api.one
@@ -121,6 +142,8 @@ class StockDdT(models.Model):
         #default=fields.Datetime.now(),
         #default=datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT),
         )
+
+    account_no_parent = fields.Boolean('Account without partner')
     delivery_date = fields.Datetime()
     sequence = fields.Many2one(
         'ir.sequence', string='Sequence',
