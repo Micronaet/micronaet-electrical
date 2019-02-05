@@ -85,8 +85,9 @@ class StockDdT(models.Model):
     _name = 'stock.ddt'
     _description = 'DdT'
 
+
     # -------------------------------------------------------------------------
-    # Button
+    # Onchange
     # -------------------------------------------------------------------------
     def onchange_ddt_partner_filter(self, cr, uid, ids, 
             partner_id, account_no_parent, context=None):
@@ -104,9 +105,9 @@ class StockDdT(models.Model):
                 ('state', '!=', 'close'),
                 ('partner_id', '=', partner_id)
                 ]
-        return {'domain': {'analytic_id': domain, }}
-
-    # -------------------------------------------------------------------------
+        return {'domain': {'account_id': domain, }}
+        
+            # -------------------------------------------------------------------------
     # Button event:
     # -------------------------------------------------------------------------
     @api.one
@@ -332,4 +333,4 @@ class AccountInvoice(models.Model):
         
     ddt_ids = fields.One2many(
         'stock.ddt', 'invoice_id', string='DDT', readonly=True)
-        
+
