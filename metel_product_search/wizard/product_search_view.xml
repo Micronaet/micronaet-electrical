@@ -42,5 +42,12 @@
           action="action_metel_product_search_wizard_view"
           sequence="10"
           />
+      <menuitem 
+          parent="stock.menu_stock_products_menu" 
+          id="menu_action_openerp_model_product_tree" 
+          action="action_metel_product_search_wizard_view"
+          sequence="10"
+          />
+          
     </data>
 </openerp>
