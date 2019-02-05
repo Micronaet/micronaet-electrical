@@ -177,6 +177,8 @@ class StockDdT(models.Model):
         'res.partner', string='Carrier')
     parcels = fields.Integer()
     note = fields.Text('Note')
+    note_pre = fields.Text('Note pre')
+    note_post = fields.Text('Note post')
     state = fields.Selection(
         [('draft', 'Draft'),
          ('confirmed', 'Confirmed'),
