@@ -41,7 +41,7 @@
 
                     <filter name="to_invoice" string="To invoice" domain="[('not_invoiced', '=', False),('invoice_id','=',False)]"/>
                     <filter name="invoiced" string="Invoiced" domain="['|',('is_invoiced'),('invoice_id','!=',False)]"/>
-                    <filter name="not_invoiced" string="Not invoiced" domain="[('is_invoice_id','=',False)]"/>
+                    <filter name="not_invoiced" string="Not invoiced" domain="[('is_invoiced','=',False)]"/>
                     
                     <group expand="0" string="Group By">
                         <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
