@@ -154,6 +154,8 @@ class StockDdT(models.Model):
     ddt_lines = fields.One2many(
         'stock.move', 'ddt_id', string='DdT Line', readonly=True,
         compute='_get_lines')
+    # External invoiced:
+    is_invoiced = fields.Boolean('Is invoiced')    
     invoice_id = fields.Many2one(
         'account.invoice', string='Invoice', required=False)
     account_id = fields.Many2one(
