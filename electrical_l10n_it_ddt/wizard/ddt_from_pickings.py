@@ -37,6 +37,7 @@ class DdTFromPickings(models.TransientModel):
     #                                 COLUMNS:
     # -------------------------------------------------------------------------
     partner_id = fields.Many2one('res.partner', 'Partner')
+    contact_id = fields.Many2one('res.partner', 'Contact')
     account_id = fields.Many2one('account.analytic.account', 'Account')
     from_date = fields.Date('From date')
     to_date = fields.Date('To date')
@@ -55,7 +56,7 @@ class DdTFromPickings(models.TransientModel):
         # Start: 
         domain = [
             ('pick_state', '=', 'delivered'), # only delivered
-            ('partner_id', '!=', False), # with partner
+            #('partner_id', '!=', False), # with partner
             ('ddt_id', '=', False), # not DDT
             ('invoice_id', '=', False), # not direct invoiced
             ('pick_move', '=', 'out'), # only out
