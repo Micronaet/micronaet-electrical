@@ -49,31 +49,39 @@ class DdTFromPickings(models.TransientModel):
     # -------------------------------------------------------------------------
     #                                 UTILITY:
     # -------------------------------------------------------------------------
-    @api.model
-    def filter_domain(self):
+    def filter_domain(self, cr, uid, ids, context=None):
         ''' Generate domain list
         '''
+        wiz_proxy = self.browse(cr, uid, ids, context=context)[0]
+
         # Start: 
         domain = [
             ('pick_state', '=', 'delivered'), # only delivered
-            #('partner_id', '!=', False), # with partner
             ('ddt_id', '=', False), # not DDT
             ('invoice_id', '=', False), # not direct invoiced
             ('pick_move', '=', 'out'), # only out
             ]
         
-        partner_id = self.partner_id.id
+        partner_id = wiz_proxy.partner_id.id
         if partner_id:
             domain.append(('partner_id', '=', partner_id))
+        else:    
+            domain.append(('partner_id', '!=', False))
 
-        account_id = self.account_id.id
+        contact_id = wiz_proxy.contact_id.id
+        if contact_id:
+            domain.append(('contact_id', '=', contact_id))
+        else:    
+            domain.append(('contact_id', '!=', False))
+
+        account_id = wiz_proxy.account_id.id
         if account_id:
             domain.append(('account_id', '=', account_id))
 
-        from_date = self.from_date
+        from_date = wiz_proxy.from_date
         if from_date:
             domain.append(('min_date', '>=', '%s 00:00:00' % from_date))
-        to_date = self.to_date
+        to_date = wiz_proxy.to_date
         if to_date:
             domain.append(('min_date', '<=', '%s 23:59:59' % to_date))
         return domain        
@@ -88,7 +96,7 @@ class DdTFromPickings(models.TransientModel):
         excel_pool = self.pool.get('excel.writer')
         picking_pool = self.pool.get('stock.picking')
         
-        domain = self.filter_domain(cr, uid, context=context)
+        domain = self.filter_domain(cr, uid, ids, context=context)
         
         picking_ids = picking_pool.search(cr, uid, domain, context=context)
         if not picking_ids:
@@ -98,7 +106,7 @@ class DdTFromPickings(models.TransientModel):
         picking_db = {}
         for picking in picking_pool.browse(
                 cr, uid, picking_ids, context=context):
-            key = (picking.partner_id, picking.account_id)
+            key = (picking.partner_id, picking.contact_id, picking.account_id)
             if key not in picking_db:
                 picking_db[key] = []
             picking_db[key].append(picking)
@@ -110,15 +118,15 @@ class DdTFromPickings(models.TransientModel):
         ws_names = [
             [
                 'DDT', 
-                [35, 15, 30, 15, 15, ], 
-                ['Partner', 'DDT', 'Conto analitico', 'Picking'], 
+                [35, 30, 30, 15, 15], 
+                ['Partner', 'Contatto', 'Conto analitico', 'DDT', 'Picking'], 
                 0,
                 ],
                 
             [
                 'Dettaglio', 
-                [35, 15, 30, 15, 15, 10, 10,], 
-                ['Partner', 'DDT', 'Conto analitico', 'Picking', 
+                [35, 30, 30, 15, 15, 15, 10, 10], 
+                ['Partner', 'Contatto', 'Conto analitico', 'DDT', 'Picking', 
                     'Prodotto', 'Q.', 'UM.', 
                     #'Subtotale',
                     ], 
@@ -162,12 +170,13 @@ class DdTFromPickings(models.TransientModel):
         i = 0
         for key in picking_db:
             i += 1
-            partner, account = key
+            partner, contact, account = key
             data = [
-                # Invoice:
+                # Header:
                 partner.name,
-                '# %s' % i,
+                contact.name,
                 account.name,
+                '# %s' % i,
 
                 # Picking:
                 '',
@@ -177,25 +186,25 @@ class DdTFromPickings(models.TransientModel):
                 ]
             
             for picking in picking_db[key]:
-                data[3] = picking.name
+                data[4] = picking.name or ''
                 
                 # ---------------------------------------------------------
                 # Detail: 
                 # ---------------------------------------------------------
                 if picking.move_lines:
                     for move in picking.move_lines:
-                        data[4] = move.product_id.default_code
-                        data[5] = move.product_qty
-                        data[6] = move.product_uom.name
+                        data[5] = move.product_id.default_code
+                        data[6] = move.product_qty
+                        data[7] = move.product_uom.name
                         
                         excel_pool.write_xls_line(
                             ws_names[1][0], ws_names[1][3], data,
                             default_format=f_text)
                         ws_names[1][3] += 1
                 else: # No movement
-                    data[4] = 'NESSUN MOVIMENTO'
-                    data[5] = '/'
+                    data[5] = 'NESSUN MOVIMENTO'
                     data[6] = '/'
+                    data[7] = '/'
                     
                     excel_pool.write_xls_line(
                         ws_names[1][0], ws_names[1][3], data,
@@ -207,7 +216,7 @@ class DdTFromPickings(models.TransientModel):
                 # Summary:
                 # ---------------------------------------------------------
                 excel_pool.write_xls_line(
-                    ws_names[0][0], ws_names[0][3], data[:4], 
+                    ws_names[0][0], ws_names[0][3], data[:5], 
                     default_format=f_text)
                 ws_names[0][3] += 1
                
@@ -237,14 +246,14 @@ class DdTFromPickings(models.TransientModel):
         
         picking_db = {}
         for picking in pickings:
-            key = (picking.partner_id, picking.account_id)
+            key = (picking.partner_id, picking.contact_id, picking.account_id)
             if key not in picking_db:
                 picking_db[key] = []
             picking_db[key].append(picking)
 
         ddt_ids = []
         for key in picking_db:
-            partner, account = key
+            partner, contact, account = key
             
             # Create new DDT:                     
             values = {
@@ -252,6 +261,7 @@ class DdTFromPickings(models.TransientModel):
                 'delivery_date': 
                     fields.Datetime.from_string(fields.Datetime.now()),
                 'partner_id': partner.id,
+                'contact_id': contact.id or False,
                 'parcels': 0,
                 'carriage_condition_id': partner.carriage_condition_id.id,
                 'goods_description_id': partner.goods_description_id.id,

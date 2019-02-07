@@ -35,6 +35,7 @@ class DdTCreateInvoice(models.TransientModel):
     # COLUMNS:
     # -------------------------------------------------------------------------
     partner_id = fields.Many2one('res.partner', 'Partner')
+    contact_id = fields.Many2one('res.partner', 'Contact')
     account_id = fields.Many2one('account.analytic.account', 'Account')
     from_date = fields.Date('From date')
     to_date = fields.Date('To date')

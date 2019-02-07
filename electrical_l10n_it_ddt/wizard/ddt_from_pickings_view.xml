@@ -16,7 +16,9 @@
                         <group colspan="4" col="4">                    
                             <separator string="Picking" colspan="4"/>
                             <field name="partner_id" />
+                            <field name="contact_id" />
                             <field name="account_id" domain="[('type','in',['normal','contract']),('state', '&lt;&gt;', 'close'),'|',('partner_id','=',False),('partner_id','=',partner_id)]"/>
+                            <newline/>
                             
                             <field name="from_date" />
                             <field name="to_date" />

@@ -37,11 +37,11 @@
                     <field name="transportation_reason_id" />
                     <field name="transportation_method_id" />
                     <field name="partner_id" filter_domain="[('partner_id.name','ilike',self)]"/>
-                    <field name="contact_id" filter_domain="[('partner_id.name','ilike',self)]"/>
-                    <field name="invoice_id" filter_domain="[('contact_id','=',self)]"/>
+                    <field name="contact_id" filter_domain="[('contact_id.name','ilike',self)]"/>
+                    <!--<field name="invoice_id" filter_domain="[('invoice_id','=',self)]"/>-->
                     <field name="invoice_number" />
 
-                    <filter name="to_invoice" string="To invoice" domain="[('not_invoiced', '=', False),('invoice_id','=',False)]"/>
+                    <!--<filter name="to_invoice" string="To invoice" domain="[('not_invoiced', '=', False),('invoice_id','=',False)]"/>-->
                     <filter name="invoiced" string="Invoiced" domain="['|',('is_invoiced'),('invoice_id','!=',False)]"/>
                     <filter name="not_invoiced" string="Not invoiced" domain="[('is_invoiced','=',False)]"/>
                     
