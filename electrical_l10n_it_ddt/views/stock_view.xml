@@ -37,7 +37,9 @@
                     <field name="transportation_reason_id" />
                     <field name="transportation_method_id" />
                     <field name="partner_id" filter_domain="[('partner_id.name','ilike',self)]"/>
-                    <field name="invoice_id" filter_domain="[('partner_id','=',self)]"/>
+                    <field name="contact_id" filter_domain="[('partner_id.name','ilike',self)]"/>
+                    <field name="invoice_id" filter_domain="[('contact_id','=',self)]"/>
+                    <field name="invoice_number" />
 
                     <filter name="to_invoice" string="To invoice" domain="[('not_invoiced', '=', False),('invoice_id','=',False)]"/>
                     <filter name="invoiced" string="Invoiced" domain="['|',('is_invoiced'),('invoice_id','!=',False)]"/>
@@ -45,7 +47,9 @@
                     
                     <group expand="0" string="Group By">
                         <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
-                        <filter name="group_invoice" string="Invoice" context="{'group_by': 'invoice_id'}"/>
+                        <filter name="group_contact" string="Contact" context="{'group_by': 'contact_id'}"/>
+                        <filter name="group_invoice" string="Invoice" context="{'group_by': 'invoice_number'}"/>
+                        <!--<filter name="group_invoice" string="Invoice" context="{'group_by': 'invoice_id'}"/>-->
                         <filter name="group_account" string="Account" context="{'group_by': 'account_id'}"/>
                         <filter name="group_date" string="Date" context="{'group_by': 'date'}"/>
                         <filter name="group_delivery" string="Delivery" context="{'group_by': 'delivery_date'}"/>
@@ -85,6 +89,7 @@
                                     widget="selection"/>
                                 <field name="partner_id" on_change="onchange_ddt_partner_filter(partner_id, account_no_parent)" />
                                 <field name="delivery_address_id"/>
+                                <field name="contact_id" />
                             </group>
                             <group>
                                 <field name="date"/>
@@ -92,6 +97,7 @@
                                 <field name="account_no_parent" on_change="onchange_ddt_partner_filter(partner_id, account_no_parent)" />
                                 <field name="account_id"/>
                                 <field name="is_invoiced" />
+                                <field name="invoice_number" attrs="{'invisible': [('is_invoiced','=',False)]}"/>
                             </group>
                         </group>
                         <notebook>
@@ -145,9 +151,11 @@
                     <field name="date"/>
                     <field name="delivery_date"/>
                     <field name="partner_id"/>
+                    <field name="contact_id"/>
                     <field name="account_id"/>
                     <field name="invoice_id"/>
                     <field name="not_invoiced" invisible="1"/>
+                    <field name="invoice_number" />
                     <field name="state"/>
                     <button name="set_not_invoiced_true" string="Not invoiced" type="object" icon="star-off" attrs="{'invisible': [('not_invoiced','=',True)]}"/>
                     <button name="set_not_invoiced_false" string="To be invoiced" type="object" icon="star-on" attrs="{'invisible': [('not_invoiced','=',False)]}"/>
