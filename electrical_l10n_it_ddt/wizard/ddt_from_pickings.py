@@ -71,8 +71,6 @@ class DdTFromPickings(models.TransientModel):
         contact_id = wiz_proxy.contact_id.id
         if contact_id:
             domain.append(('contact_id', '=', contact_id))
-        else:    
-            domain.append(('contact_id', '!=', False))
 
         account_id = wiz_proxy.account_id.id
         if account_id:
