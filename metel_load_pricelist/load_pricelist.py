@@ -292,6 +292,9 @@ class MetelBase(orm.Model):
                              ], context=context)
 
                         if product_ids: 
+                            #`TODO update forced UM:
+                            #update_force_uom_id(
+                            #    cr, uid, ids, uom_id, context=context)
                             try:
                                 product_pool.write(
                                     cr, uid, product_ids, data, 

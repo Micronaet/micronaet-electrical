@@ -156,8 +156,8 @@
                 </field>
                 <xpath expr="//page[1]" position="after">                
                     <page string="METEL" name="metel" attrs="{'invisible': [('is_metel','=',False)]}">
-                       <group colspan="4" col="4">                            
-                            <separator string="Information:" colspan="1"/>
+                       <group colspan="4" col="5">                            
+                            <separator string="Information:" colspan="2"/>
                             <button name="open_producer_product_web_link" string="Open producer site" type="object" attrs="{'invisible': [('metel_weblink','=',False)]}" icon="gtk-info" colspan="1"/>
                             <button name="open_producer_product_web_link_image" string="Open producer site image" type="object" attrs="{'invisible': [('metel_weblink_image','=',False)]}" icon="color-picker" colspan="1"/>
                             <button name="open_producer_product_web_link_pdf" string="Open producer site PDF" type="object" attrs="{'invisible': [('metel_weblink_pdf','=',False)]}" icon="terp-graph" colspan="1"/>
@@ -168,37 +168,47 @@
                             <newline/>
 
                             <field name="metel_electrocod" readonly="1"/>
-                            <field name="metel_state" readonly="1" /> 
+                            <field name="metel_state" readonly="1" />
+                            <newline/> 
                             
                             <field name="metel_producer_id" readonly="1" />
                             <field name="metel_brand_id" readonly="1" />                                       
+                            <newline/>
                             
                             <field name="metel_producer_code" readonly="1" />
                             <field name="metel_brand_code" readonly="1" />
+                            <newline/>
 
                             <field name="metel_serie_id" readonly="1" />
                             <field name="metel_uom" readonly="1" />
+                            <button name="update_force_uom_button" string="" type="object" icon="gtk-refresh" colspan="1" help="Update UOM from METEL"/>
                             
                             <field name="metel_kit" readonly="1" />
                             <field name="metel_last_variation" readonly="1" />                                        
+                            <newline/>
 
                             <field name="metel_alternate_barcode" readonly="1" /> 
                             <field name="metel_alternate_barcode_type" readonly="1" /> 
+                            <newline/>
 
-                            <separator string="Order:" colspan="4"/>
+                            <separator string="Order:" colspan="5"/>
                             <field name="metel_list_price" readonly="1" />
                             <field name="metel_multi_price" readonly="1" />
+                            <newline/>
 
                             <field name="metel_q_x_pack" readonly="1" />
                             <field name="metel_order_lot" readonly="1" />                                        
+                            <newline/>
                             
                             <field name="metel_discount" readonly="1" />
                             <field name="metel_statistic" readonly="1" />
+                            <newline/>
                             
-                            <field name="metel_statistic_id" readonly="1" colspan="4"/>
+                            <field name="metel_statistic_id" readonly="1" colspan="5"/>
 
                             <field name="metel_order_min" readonly="1" />
                             <field name="metel_order_max" readonly="1" />
+                            <newline/>
 
                             <field name="metel_leadtime" readonly="1" />
                        </group>

@@ -307,8 +307,52 @@ class ProductProduct(orm.Model):
     _inherit = 'product.product'
 
     # -------------------------------------------------------------------------
+    # Utility:
+    # -------------------------------------------------------------------------
+        
+    def update_force_uom_id(self, cr, uid, ids, uom_id, context=None):
+        ''' Update forced UM
+            uom_id = new uom ID
+        '''        
+        if type(ids) == int:
+            active_id = ids
+        else:
+            active_id = ids[0]
+
+        return cr.execute('''
+            UPDATE product_template 
+            SET uom_id=%s, uos_id=%s, uom_po_id=%s
+            WHERE id in (
+                SELECT product_tmpl_id 
+                FROM product_product 
+                WHERE id=%s);            
+            ''', (uom_id, uom_id, uom_id, active_id))
+
+    # -------------------------------------------------------------------------
     # Button action:
     # -------------------------------------------------------------------------
+    def update_force_uom_button(self, cr, uid, ids, uom_id, context=None):
+        ''' Update button from METEL
+        '''
+        current_proxy = self.browse(cr, uid, ids, context=context)[0]
+        metel_uom = current_proxy.metel_uom
+        if not metel_uom:
+            raise osv.except_osv(
+                _('METEL error'), 
+                _('No UOM code in metel present!'),
+                )
+        uom_pool = self.pool.get('product.uom')        
+        uom_ids = uom_pool.search(cr, uid, [
+            ('metel_code', '=', metel_uom),
+            ], context=context)
+        if not uom_ids:
+            raise osv.except_osv(
+                _('METEL error'), 
+                _('No METEL code in UOM list: %s' % metel_uom),
+                )
+        return self.update_force_uom_id(
+            cr, uid, ids, uom_ids[0], context=context)       
+
     def open_producer_product_web_link(self, cr, uid, ids, context=None):
         ''' Open URL for producer link
         '''
