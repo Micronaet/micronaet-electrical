@@ -409,6 +409,7 @@ class ProductProduct(orm.Model):
         'metel_electrocod': fields.char('Electrocod', size=24),    
         'metel_brand_code': fields.char('Brand code', size=10),    
         'metel_producer_code': fields.char('Producer code', size=10),
+        'metel_uom': fields.char('Metel UOM', size=4, help='Metel uom text'),
         
         'metel_kit':fields.boolean('KIT'),
         'metel_last_variation': fields.date('Last variation'),

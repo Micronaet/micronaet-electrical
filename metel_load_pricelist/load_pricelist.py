@@ -188,7 +188,7 @@ class MetelBase(orm.Model):
                             line[119:125], logger)
                         currency = self.parse_text(
                             line[125:128], logger)
-                        uom = self.parse_text_number(
+                        uom = self.parse_text(
                             line[128:131], logger)
                         metel_kit = self.parse_text_boolean(
                             line[131:132], logger)     
@@ -216,7 +216,7 @@ class MetelBase(orm.Model):
                         if metel_multi_price > 1:
                             metel_list_price /= metel_multi_price
                             lst_price /= metel_multi_price
-                            
+
                         # TODO use currency    
                         
                         # Category with Electrocod:
@@ -238,6 +238,11 @@ class MetelBase(orm.Model):
                                     # name = code (modify in anagraphic)
                                     context=context)
 
+                        # UOM manage:
+                        uom_id = uom_db.get(uom, False)
+                        if not uom_id and uom not in uom_missed: # Log missed
+                            uom_missed.append(uom)
+
                         # -----------------------------------------------------
                         # Create record data:
                         # -----------------------------------------------------
@@ -250,7 +255,8 @@ class MetelBase(orm.Model):
                             'metel_brand_id': metel_brand_id,                                                
                             'metel_producer_code': file_producer_code,
                             'metel_brand_code': brand_code,
-                            
+                            'metel_uom': uom,
+
                             'ean13': ean13,
                             'name': name,
                             'categ_id': categ_id,
@@ -274,16 +280,8 @@ class MetelBase(orm.Model):
                             'metel_alternate_barcode_type': 
                                 metel_alternate_barcode_type,
                             }
-
-                        # Extra data: uom:
-                        uom_id = uom_db.get(uom, False)
-                        if uom_id:
-                            data['uom_id'] = uom_id
-                        elif uom not in uom_missed:
-                            uom_missed.append(uom)
-                        
-                        # TODO Extra data: discount management for price?    
                             
+                        # TODO Extra data: discount management for price?    
                         # -----------------------------------------------------
                         # Update database:
                         # -----------------------------------------------------
@@ -298,6 +296,7 @@ class MetelBase(orm.Model):
                                 product_pool.write(
                                     cr, uid, product_ids, data, 
                                     context=context)
+                                # XXX UOM not updated:
                             except:
                                 logger.append(
                                     _('Error updating: %s' % default_code))
@@ -307,6 +306,7 @@ class MetelBase(orm.Model):
                                 _logger.info('%s. Update %s' % (
                                     i, default_code))
                         else:        
+                            data['uom_id'] = uom_id
                             try:
                                 product_pool.create(
                                     cr, uid, data, context=context)
@@ -460,8 +460,7 @@ class MetelBase(orm.Model):
                         'File: %s record: %s [UPD %s NEW %s]' % (
                             filename, i, upd, new,
                             ))
-                    _logger.info('UOM missed [%s]' % (uom_missed, ))
-                    
+                    _logger.info('UOM missed [%s]' % (uom_missed, ))                    
             break # only files in first root folder            
         return True
         
