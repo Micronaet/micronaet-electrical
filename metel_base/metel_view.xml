@@ -177,7 +177,7 @@
                             <field name="metel_brand_code" readonly="1" />
 
                             <field name="metel_serie_id" readonly="1" />
-                            <newline/>
+                            <field name="metel_uom" readonly="1" />
                             
                             <field name="metel_kit" readonly="1" />
                             <field name="metel_last_variation" readonly="1" />                                        
