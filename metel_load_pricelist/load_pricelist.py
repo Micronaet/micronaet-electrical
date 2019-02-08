@@ -211,11 +211,12 @@ class MetelBase(orm.Model):
                         
                         # Code = PRODUCER || CODE
                         default_code = '%s%s' % (brand_code, default_code)
-                        # TODO manage multi price value:
-                        #if metel_multi_price:
-                        #    metel_list_price /= metel_multi_price
-                        #    lst_price /= metel_multi_price
                         
+                        # Manage multi price value:
+                        if metel_multi_price > 1:
+                            metel_list_price /= metel_multi_price
+                            lst_price /= metel_multi_price
+                            
                         # TODO use currency    
                         
                         # Category with Electrocod:
