@@ -153,7 +153,7 @@ msgstr "Terminato o che deve essere cancellato"
 #. module: metel_base
 #: model:ir.ui.menu,name:metel_base.menu_action_metel_root_group
 msgid "Group"
-msgstr "Groppo"
+msgstr "Gruppo"
 
 #. module: metel_base
 #: view:product.category:metel_base.view_product_category_discount_search
@@ -337,13 +337,13 @@ msgstr "Metel discount group"
 #: model:ir.actions.act_window,name:metel_base.action_metel_group_metel_brand
 #: model:ir.ui.menu,name:metel_base.menu_action_metel_group_metel_brand
 msgid "Metel group brand"
-msgstr "Metel group brand"
+msgstr "Metel gruppo marchio"
 
 #. module: metel_base
 #: model:ir.actions.act_window,name:metel_base.action_metel_group_metel_discount
 #: model:ir.ui.menu,name:metel_base.menu_action_metel_group_metel_discount
 msgid "Metel group discount category"
-msgstr "Metel group discount category"
+msgstr "Metel gruppo sconto"
 
 #. module: metel_base
 #: model:ir.actions.act_window,name:metel_base.action_metel_group_metel_electrocod
@@ -361,13 +361,13 @@ msgstr "Metel gruppo produttore"
 #: model:ir.actions.act_window,name:metel_base.action_metel_group_metel_serie
 #: model:ir.ui.menu,name:metel_base.menu_action_metel_group_metel_serie
 msgid "Metel group serie"
-msgstr "Metel gropo serie"
+msgstr "Metel gruppo serie"
 
 #. module: metel_base
 #: model:ir.actions.act_window,name:metel_base.action_metel_group_metel_statistic
 #: model:ir.ui.menu,name:metel_base.menu_action_metel_group_metel_statistic
 msgid "Metel group statistic category"
-msgstr "Metel groppo categoria statistica"
+msgstr "Metel gruppo categoria statistica"
 
 #. module: metel_base
 #: help:product.category,metel_description:0
