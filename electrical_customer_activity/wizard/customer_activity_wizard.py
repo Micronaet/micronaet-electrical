@@ -198,6 +198,17 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         # Interventi:
         intervent_pool = self.pool.get('hr.analytic.timesheet')
+        mode_pool = self.pool.get('hr.intervent.user.mode')
+
+        # ---------------------------------------------------------------------
+        # Startup:
+        # ---------------------------------------------------------------------
+        # Load mode pricelist (to get revenue):
+        mode_pricelist = {}
+        mode_ids = mode_pool.search(cr, uid, [], context=context)
+        for mode in mode_pool.browse(
+                cr, uid, mode_ids, context=context):
+            mode_pricelist[mode.id] = mode.list_price
         
         # ---------------------------------------------------------------------
         #                          COLLECT DATA:
@@ -355,14 +366,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'Utente', 'Durata', 'Totale', 'Reale', 
                     'Viaggio', 'H. Viaggio', 'Pausa', 'H. Pausa',  
                     'Richiesta', 'Intervento', 'Note',
-                    'Costo', 'Conteggio', 'Non usare', 'Stato'                                    
+                    'Costo', 'Ricavo', 'Conteggio', 'Non usare', 'Stato'                                    
                     ],
                 'width': [
                     35, 15, 20, 15, 20,
                     20, 10, 10, 10, 
                     3, 10, 3, 10,
                     30, 30, 30, 
-                    10, 10, 5, 15,
+                    10, 10, 10, 5, 15,
                     ],
                 'total': {},
                 'cost': {},
@@ -413,7 +424,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         summary = {
             'Interventi': {
-                'header': ['Commessa', 'Intervento', 'Costo', 'Totale'],
+                'header': ['Commessa', 'Intervento', 'Costo', 'Ricavo'],
                 'data': {},
                 },
 
@@ -749,22 +760,44 @@ class ResPartnerActivityWizard(orm.TransientModel):
         sheet = sheets[ws_name]
         summary_data = summary[ws_name]['data']
 
+        partner_forced = False # update first time!
+        
         total = sheet['total']
-        for key in intervent_db:        
+        for key in intervent_db:
             for intervent in intervent_db[key]:
-                document_total = 0.0
+                # Readability:
+                user = intervent.user_id
+                partner = intervent.intervent_partner_id
                 account = intervent.account_id
                 account_id = account.id
+                user_id = user.id
+                user_mode_id = intervent.user_mode_id.id
+                
+                # -------------------------------------------------------------
+                # Initial setup of mapping and forced price database:
+                # -------------------------------------------------------------
+                if partner_forced == False:
+                    partner_forced = {}
+                    for forced in partner.mode_revenue_ids:        
+                        partner_forced[forced.mode_id.id] = forced.list_price
+                # -------------------------------------------------------------
+
+                # Read revenue:        
+                if user_mode_id in partner_forced: # partner forced
+                    unit_revenue = partner_forced[user_mode_id]
+                else: # read for default list:
+                    unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
+
                 if account and account not in account_used:
                     account_used.append(account)
 
                 if account_id not in total:
                     total[account_id] = 0.0
                     cost[account_id] = 0.0
-
-                # TODO cost / revenue!!!
-                this_cost = 0.0
-                this_revenue = 0.0
+                
+                #document_total = 0.0
+                this_revenue = intervent.unit_amount * unit_revenue
+                this_cost = intervent.amount
 
                 data = [
                     account.name or 'NON ASSEGNATA',
@@ -791,7 +824,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     intervent.internal_note,
                     
                     # Revenue:
-                    intervent.amount,
+                    this_cost, # total cost
+                    this_revenue, # total revenue
+                    
                     intervent.to_invoice.name or '/',
                     'X' if intervent.not_in_report else '',
                     
@@ -816,8 +851,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 summary_data[block_key].append((
                     account.name, 
                     intervent.ref, 
-                    document_total, #(document_total, f_number), 
-                    (0.0, f_number), # TODO
+                    #document_total, #(document_total, f_number), 
+                    (this_cost, f_number),                    
+                    (this_revenue, f_number),
                     ))
 
         # ---------------------------------------------------------------------
