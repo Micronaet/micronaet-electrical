@@ -236,7 +236,7 @@ class ProductProduct(orm.Model):
                     100.0 - product.metel_net_force_perc) / 100.0
             # Priority 3: force statistic discount:
             elif product.metel_discount_id.metel_net_force_perc:
-                net_selection = 'statistic'
+                net_selection = 'group'
                 metel_net = lst_price * (
                     100.0 - product.metel_discount_id.metel_net_force_perc
                     ) / 100.0
@@ -267,7 +267,7 @@ class ProductProduct(orm.Model):
                     100.0 - product.metel_sale_force_perc) / 100.0
             # Priority 3: force statistic discount:
             elif product.metel_discount_id.metel_sale_force_perc:
-                sale_selection = 'statistic'
+                sale_selection = 'group'
                 metel_sale = lst_price * (
                     100.0 - product.metel_discount_id.metel_sale_force_perc
                     ) / 100.0
@@ -332,7 +332,8 @@ class ProductProduct(orm.Model):
             _get_metel_price_data, method=True, 
             type='selection', multi=True,
             selection = [
-                ('statistic', 'Statistic category'),
+                #('statistic', 'Statistic category'),
+                ('group', 'Discount group'),
                 ('brand', 'Brand'),
                 ('discount', 'Force discount'),
                 ('price', 'Force price'),
@@ -365,7 +366,8 @@ class ProductProduct(orm.Model):
             _get_metel_price_data, method=True, 
             type='selection', multi=True,
             selection = [
-                ('statistic', 'Statistic category'),
+                #('statistic', 'Statistic category'),
+                ('group', 'Discount group'),
                 ('brand', 'Brand'),
                 ('discount', 'Force discount'),
                 ('price', 'Force price'),
