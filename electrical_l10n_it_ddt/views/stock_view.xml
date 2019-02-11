@@ -88,7 +88,7 @@
                                     domain="[('code', '=', 'stock.ddt')]"
                                     widget="selection"/>
                                 <field name="partner_id" on_change="onchange_ddt_partner_filter(partner_id, account_no_parent)" />
-                                <field name="delivery_address_id"/>
+                                <field name="delivery_address_id" domain="[('parent_id', '=', partner_id)]"/>
                                 <field name="contact_id" />
                             </group>
                             <group>

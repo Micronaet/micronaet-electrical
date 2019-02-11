@@ -73,7 +73,8 @@
                                        
                                        <separator string="Rules:" colspan="4"/>
                                        <field name="metel_brand_id" readonly="1" context="{'form_view_ref': 'metel_pricelist.view_product_category_metel_discount_form'}"/> 
-                                       <field name="metel_statistic_id" readonly="1" colspan="4" context="{'form_view_ref': 'metel_pricelist.view_product_category_metel_discount_form'}"/>
+                                       <!--<field name="metel_statistic_id" readonly="1" colspan="4" context="{'form_view_ref': 'metel_pricelist.view_product_category_metel_discount_form'}"/>-->
+                                       <field name="metel_discount_id" readonly="1" colspan="4" context="{'form_view_ref': 'metel_pricelist.view_product_category_metel_discount_form'}"/>
                                        
                                        <separator string="Force rules:" colspan="4"/>
                                        <group colspan="2" col="2">

@@ -201,10 +201,12 @@
                             <newline/>
                             
                             <field name="metel_discount" readonly="1" />
-                            <field name="metel_statistic" readonly="1" />
+                            <field name="metel_discount_id" readonly="1" />
                             <newline/>
-                            
-                            <field name="metel_statistic_id" readonly="1" colspan="5"/>
+
+                            <field name="metel_statistic" readonly="1" />
+                            <field name="metel_statistic_id" readonly="1" />
+                            <newline/>
 
                             <field name="metel_order_min" readonly="1" />
                             <field name="metel_order_max" readonly="1" />
