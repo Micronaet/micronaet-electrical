@@ -204,7 +204,7 @@ class StockPickingFile(orm.Model):
             sorted_line = sorted(
                 open(filename, 'r'), 
                 key=lambda line: line[24:29], # sequence code
-                ))
+                )
 
             for line in sorted_line:
                 if not line.strip():
