@@ -196,9 +196,11 @@ class StockPickingFile(orm.Model):
                 os.path.expanduser(partner.electrical_path), 
                 current_proxy.name,
                 )
+            _logger.warning('Reading file: %s' % filename)    
 
             line_ids = []
             error = False
+            
             for line in open(filename, 'r'):
                 if not line.strip():
                     _logger.error('Empty line, not considered')
