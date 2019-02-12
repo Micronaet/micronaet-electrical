@@ -201,7 +201,12 @@ class StockPickingFile(orm.Model):
             line_ids = []
             error = False
             
-            for line in open(filename, 'r'):
+            sorted_line = sorted(
+                open(filename, 'r'), 
+                key=lambda line: line[24:29], # sequence code
+                ))
+
+            for line in sorted_line:
                 if not line.strip():
                     _logger.error('Empty line, not considered')
                     continue
