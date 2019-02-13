@@ -11,8 +11,9 @@
                         <group col="4" colspan="4">
                             <field name="electrical_address_code" />
                             <field name="electrical_extension" />
-                            
                             <field name="electrical_path" />
+                            <field name="load_file_id" attrs="{'required': [('electrical_path','!=',False)]}" widget="selection"/>
+
                             <button name="open_electrical_file_ids" string="File imported" type="object" colspan="1"/>
                             
                             <button name="electrical_load_picking_routine" string="Load new files" type="object" class="oe_highlight" collspan="1"/>
@@ -36,6 +37,7 @@
                     <field name="email" readonly="1" />
                     <field name="electrical_path" readonly="1" />
                     <field name="electrical_extension" readonly="1" />
+                    <field name="load_file_id" readonly="1" />
                     <button name="open_electrical_file_ids" string="Open imported files" type="object" />
                     <button name="electrical_load_picking_routine" string="Load new files" type="object" class="oe_highlight" />
                 </tree>

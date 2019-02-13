@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<openerp>
+    <data noupdate="1">
+    <!--stock.picking.input.file.mode -->
+    <record id="stock_picking_input_file_mode_c1" model="stock.picking.input.file.mode">
+        <field name="name">Company 1</field>
+        <field name="code">company1</field><!--Don't change this code in database-->
+    </record>             
+   </data>
+</openerp>   

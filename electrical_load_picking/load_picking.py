@@ -42,6 +42,20 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
+class StockPickingFileMode(orm.Model):
+    """ Model name: Stock picking input file
+    """
+    
+    _name = 'stock.picking.input.file.mode'
+    _description = 'Picking in file mode'
+    _rec_name = 'name'
+    _order = 'name'
+    
+    _columns = {
+        'code': fields.char('Code', size=64, required=True),
+        'name': fields.char('Trace mode', size=64, required=True),
+        }
+
 class StockPickingFile(orm.Model):
     """ Model name: Stock picking input file
     """
@@ -131,6 +145,13 @@ class StockPickingFile(orm.Model):
         return picking_pool.generate_pick_out_draft(
             cr, uid, [picking_id], context=context)
         
+    def extract_data_from_supplier_file(self, mode, filename):
+        ''' Override procedure to extract data from file
+        '''
+        origin = ''
+        rows = []
+        return origin, rows
+        
     def load_document(self, cr, uid, ids, context=None):
         ''' Load document of new file 
         '''
@@ -198,19 +219,25 @@ class StockPickingFile(orm.Model):
                 )
             _logger.warning('Reading file: %s' % filename)    
 
-            line_ids = []
+            line_ids = [] # File line created
             error = False
             
+            #origin, rows = self.extract_data_from_supplier_file(
+            #    partner.load_file_id.code, 
+            #    filename,
+            #    )
+
             sorted_line = sorted(
                 open(filename, 'r'), 
                 key=lambda line: line[24:29], # sequence code
                 )
-
+            
+            picking_update = True # Picking operation only once
             for line in sorted_line:
                 if not line.strip():
                     _logger.error('Empty line, not considered')
                     continue
-                    
+                
                 # -----------------------------------------------------------------
                 # Extract parameter from line:
                 # -----------------------------------------------------------------
@@ -255,9 +282,14 @@ class StockPickingFile(orm.Model):
                     }, context=context)
                 line_ids.append(line_id)
 
+                if not picking_update:
+                    continue
+                
                 # -------------------------------------------------------------
                 # Create new empty pick:
                 # -------------------------------------------------------------
+                picking_update = False # No more update     
+
                 # Parameter:
                 origin = 'DDT %s [%s] %s' % (
                     supplier_code,
@@ -630,5 +662,7 @@ class ResPartnerFolder(orm.Model):
             help='Address code used for input destination search'),
         'electric_file_ids': fields.one2many(
             'stock.picking.input.file', 'partner_id', 'Electric document'),
+        'load_file_id': fields.many2one(
+            'stock.picking.input.file.mode', 'Load file trace'),
         }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
