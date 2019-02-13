@@ -64,42 +64,6 @@ class StockPickingFile(orm.Model):
     _description = 'Picking in file'
     _rec_name = 'name'
     _order = 'name'
-
-    # -------------------------------------------------------------------------
-    # Utility:    
-    # -------------------------------------------------------------------------
-    def _clean_string(self, value):
-        ''' Clean extra space
-        '''
-        value = value or ''        
-        return value.strip()
-
-    def _clean_mode(self, value):
-        ''' Clean mode
-        '''
-        value = value or ''        
-        if value.upper() == 'D': # DDT
-            return 'in'
-        else: 
-            return 'out'
-        
-    def _clean_float(self, value, scale=1.0):
-        ''' Clean extra space, return float / scale value
-        '''
-        value = value or ''
-        if not scale:
-            return 0.0
-        return float(value) / scale
-    
-    def _clean_date(self, value):
-        ''' Return ODOO date format from ISO
-        '''
-        value = value or ''
-        return '%s-%s-%s' % (
-            value[:4],
-            value[4:6],
-            value[6:8],
-            )
             
     # -------------------------------------------------------------------------
     # Onchange
@@ -107,7 +71,7 @@ class StockPickingFile(orm.Model):
     def onchange_customer_id(
             self, cr, uid, ids, customer_id, context=None):
         ''' Change domain depend on partner
-        '''    
+        '''
         domain = [
             ('type', 'in', ('normal', 'contract')),
             ('state', '!=', 'close'),
@@ -145,7 +109,8 @@ class StockPickingFile(orm.Model):
         return picking_pool.generate_pick_out_draft(
             cr, uid, [picking_id], context=context)
         
-    def extract_data_from_supplier_file(self, partner, filename):
+    def extract_data_from_supplier_file(self, cr, uid, partner, filename, 
+            context=None):
         ''' Override procedure to extract data from file
         '''
         origin = ''
@@ -160,7 +125,6 @@ class StockPickingFile(orm.Model):
 
         # Pool used:
         company_pool = self.pool.get('res.company')
-        product_pool = self.pool.get('product.product')
         uom_pool = self.pool.get('product.uom')
         picking_pool = self.pool.get('stock.picking')
         type_pool = self.pool.get('stock.picking.type')
@@ -193,22 +157,6 @@ class StockPickingFile(orm.Model):
         picking_id = current_proxy.picking_id.id or False
         partner = current_proxy.partner_id
 
-        # Remove picking if present:
-        #if state == 'load' and picking_id:
-        #    # Remove quants:
-        #    context['force_unlink'] = True
-        #    quant_ids = quant_pool.search(cr, uid, [
-        #        ('stock_move_id.picking_id', '=', picking_id),
-        #        ], context=context)
-        #    quant_pool.unlink(cr, uid, quant_ids, context=context)    
-
-        #    # Remove movements:
-        #    move_ids = move_pool.search(cr, uid, [
-        #        ('picking_id', '=', picking_id),
-        #        ], context=context)
-        #    move_pool.unlink(cr, uid, move_ids, context=context)                
-        #    # XXX NO: Remove picking: 
-        
         # ---------------------------------------------------------------------
         # Read file:
         # ---------------------------------------------------------------------
@@ -219,107 +167,46 @@ class StockPickingFile(orm.Model):
                 )
             _logger.warning('Reading file: %s' % filename)    
 
+            # Load data depend on partner:
+            origin, rows = self.extract_data_from_supplier_file(
+                cr, uid, partner, filename, context=context)
+            
+            # -----------------------------------------------------------------
+            # Create new empty pick:
+            # -----------------------------------------------------------------
+            # Data:
+            data = {
+                'partner_id': partner.id,
+                'date': now,
+                'min_date': now,
+                'origin': origin,                    
+                'picking_type_id': picking_type.id,
+                'pick_move': 'in', # XXX dept to add!
+                'pick_state': 'delivered',
+                #'state': 'delivered', # XXX not real!
+                }
+            if picking_id:
+                picking_pool.write(
+                    cr, uid, picking_id, data, context=context)
+            else:
+                picking_id = picking_pool.create(
+                    cr, uid, data, context=context)
+
+            # -----------------------------------------------------------------
+            # Add lines:
+            # -----------------------------------------------------------------
             line_ids = [] # File line created
             error = False
-            
-            origin, rows = self.extract_data_from_supplier_file(
-                partner, 
-                filename,
-                )
-
-            sorted_line = sorted(
-                open(filename, 'r'), 
-                key=lambda line: line[24:29], # sequence code
-                )
-            
-            picking_update = True # Picking operation only once
-            for line in sorted_line:
-                if not line.strip():
-                    _logger.error('Empty line, not considered')
-                    continue
-                
-                # -------------------------------------------------------------
-                # Extract parameter from line:
-                # -------------------------------------------------------------
-                address_code = self._clean_string(line[:3]) # ID Company
-                mode = self._clean_mode(line[3:5]) # Causal
-                year = self._clean_string(line[5:9]) # Year
-                supplier_code = self._clean_string(line[9:16]) # DDT
-                supplier_date = self._clean_date(line[16:24]) # DDT date ISO
-                sequence = self._clean_string(line[24:29]) # Seq.
-                protocol = self._clean_string(line[29:38]) # 
-                default_code = self._clean_string(line[38:58])
-                name = self._clean_string(line[58:118])
-                uom = self._clean_string(line[118:120])
-                product_qty = self._clean_float(line[120:131], 1000.0)
-                price = self._clean_float(line[131:144], 100000.0)
-                company_ref = self._clean_string(line[144:159]) # Order
-                company_date = self._clean_date(line[160:168])#XXX jump 1 char
-                company_number = self._clean_string(line[168:175])
-
-                product_ids = product_pool.search(cr, uid, [
-                    ('default_code', '=', default_code),
-                    ], context=context)
-                product_id = product_ids[0] if product_ids else False
-                
+            for row in rows:
                 # Error management:
+                product_id = row['product_id']
                 if not product_id:
                     error = True
 
                 # Create line not linked (done after):
-                line_id = line_pool.create(cr, uid, {
-                    'sequence': sequence,
-                    'name': name,
-                    'uom': uom,
-                    'original_code': default_code,
-                    'create_code': default_code,
-                    'product_id': product_id,
-                    'original_id': product_id,
-                    #'order_id': current_proxy.id,
-                    #'create_new': False,
-                    'product_qty': product_qty,
-                    'standard_price': price,
-                    }, context=context)
+                line_id = line_pool.create(cr, uid, row, context=context)
                 line_ids.append(line_id)
 
-                if not picking_update:
-                    continue
-                
-                # -------------------------------------------------------------
-                # Create new empty pick:
-                # -------------------------------------------------------------
-                picking_update = False # No more update     
-
-                # Parameter:
-                origin = 'DDT %s [%s] %s' % (
-                    supplier_code,
-                    supplier_date,
-                    '',
-                    #company_number,
-                    #company_date,
-                    #company_ref,
-                    )
-
-                # Data:
-                data = {
-                    'partner_id': partner.id,
-                    'date': now,
-                    'min_date': now,
-                    'origin': origin,
-                    
-                    'picking_type_id': picking_type.id,
-
-                    'pick_move': 'in', # XXX dept to add!
-                    'pick_state': 'delivered',
-                    #'state': 'delivered', # XXX not real!
-                    }
-                if picking_id:
-                    picking_pool.write(
-                        cr, uid, picking_id, data, context=context)
-                else:
-                    picking_id = picking_pool.create(
-                        cr, uid, data, context=context)
-            
             # -----------------------------------------------------------------
             # Update document file:
             # -----------------------------------------------------------------
