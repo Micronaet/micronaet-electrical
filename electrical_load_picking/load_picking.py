@@ -145,7 +145,7 @@ class StockPickingFile(orm.Model):
         return picking_pool.generate_pick_out_draft(
             cr, uid, [picking_id], context=context)
         
-    def extract_data_from_supplier_file(self, mode, filename):
+    def extract_data_from_supplier_file(self, partner, filename):
         ''' Override procedure to extract data from file
         '''
         origin = ''
@@ -222,10 +222,10 @@ class StockPickingFile(orm.Model):
             line_ids = [] # File line created
             error = False
             
-            #origin, rows = self.extract_data_from_supplier_file(
-            #    partner.load_file_id.code, 
-            #    filename,
-            #    )
+            origin, rows = self.extract_data_from_supplier_file(
+                partner, 
+                filename,
+                )
 
             sorted_line = sorted(
                 open(filename, 'r'), 
@@ -238,9 +238,9 @@ class StockPickingFile(orm.Model):
                     _logger.error('Empty line, not considered')
                     continue
                 
-                # -----------------------------------------------------------------
+                # -------------------------------------------------------------
                 # Extract parameter from line:
-                # -----------------------------------------------------------------
+                # -------------------------------------------------------------
                 address_code = self._clean_string(line[:3]) # ID Company
                 mode = self._clean_mode(line[3:5]) # Causal
                 year = self._clean_string(line[5:9]) # Year

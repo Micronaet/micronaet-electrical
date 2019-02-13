@@ -48,10 +48,11 @@ class StockPickingFile(orm.Model):
     
     _inherit = 'stock.picking.input.file'
     
-    def extract_data_from_supplier_file(self, mode, filename):
+    def extract_data_from_supplier_file(self, partner, filename):
         ''' Override procedure to extract data from file
         '''
-        if mode != 'company1':
+        code = partner.load_file_id.code
+        if code != 'company1':
             # Go in parent overrided procedure: 
             return super(
                 StockPickingFile, self).extract_data_from_supplier_file(
