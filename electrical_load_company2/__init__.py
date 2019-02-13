@@ -21,27 +21,7 @@
 #
 ###############################################################################
 
-{
-    'name': 'Electrical load picking',
-    'version': '0.1',
-    'category': 'Purchase',
-    'description': '''        
-        Load purchase electrical order 
-        Company 1 management
-        ''',
-    'author': 'Micronaet S.r.l. - Nicola Riolini',
-    'website': 'http://www.micronaet.it',
-    'license': 'AGPL-3',
-    'depends': [
-        'base',
-        'electrical_load_picking',
-        ],
-    'init_xml': [],
-    'demo': [],
-    'data': [
-        'data/load_company.xml',
-        ],
-    'active': False,
-    'installable': True,
-    'auto_install': False,
-    }
+from . import load_company2
+
+
+# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

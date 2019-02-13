@@ -27,7 +27,7 @@
     'category': 'Purchase',
     'description': '''        
         Load purchase electrical order 
-        Company 1 management
+        Company 2 management
         ''',
     'author': 'Micronaet S.r.l. - Nicola Riolini',
     'website': 'http://www.micronaet.it',

@@ -61,15 +61,6 @@ class StockPickingFile(orm.Model):
             value = value or ''        
             return value.strip()
 
-        def _clean_mode( value):
-            ''' Clean mode
-            '''
-            value = value or ''        
-            if value.upper() == 'D': # DDT
-                return 'in'
-            else: 
-                return 'out'
-            
         def _clean_float(value, scale=1.0):
             ''' Clean extra space, return float / scale value
             '''
@@ -89,7 +80,7 @@ class StockPickingFile(orm.Model):
                 )
 
         code = partner.load_file_id.code
-        if code != 'company1':
+        if code != 'company2':
             # Go in parent overrided procedure: 
             return super(
                 StockPickingFile, self).extract_data_from_supplier_file(
@@ -100,38 +91,37 @@ class StockPickingFile(orm.Model):
         # ---------------------------------------------------------------------
         product_pool = self.pool.get('product.product')
 
+        separator = ';'
         origin = ''
         rows = []
 
-        sorted_line = sorted(
-            open(filename, 'r'), 
-            key=lambda line: line[24:29], # sequence code
-            )
-        
-        for line in sorted_line:
+        i = 0
+        for line in open(filename, 'r'):
+            i += 1
+            if i == 1:
+                continue # jump header
+
             if not line.strip():
                 _logger.error('Empty line, not considered')
                 continue
-            
+            row = line.split(separator)
+
             # -------------------------------------------------------------
             # Extract parameter from line:
             # -------------------------------------------------------------
-            address_code = _clean_string(line[:3]) # ID Company
-            mode = _clean_mode(line[3:5]) # Causal
-            year = _clean_string(line[5:9]) # Year
-            supplier_code = _clean_string(line[9:16]) # DDT
-            supplier_date = _clean_date(line[16:24]) # DDT date ISO
-            sequence = _clean_string(line[24:29]) # Seq.
-            protocol = _clean_string(line[29:38]) # 
-            default_code = _clean_string(line[38:58])
-            name = _clean_string(line[58:118])
-            uom = _clean_string(line[118:120])
-            product_qty = _clean_float(line[120:131], 1000.0)
-            price = _clean_float(line[131:144], 100000.0)
-            company_ref = _clean_string(line[144:159]) # Order
-            company_date = _clean_date(line[160:168])#XXX jump 1 char
-            company_number = _clean_string(line[168:175])
+            company_ref = row[0] # Order number
+            sequence = row[1] # Seq.
+            default_code = '%s%s' % ( # 2 part
+                _clean_string(row[2]),
+                _clean_string(row[3]),
+                )
+            name = _clean_string(row[4])
+            uom = '' # XXX
+            product_qty = _clean_float(row[5])
+            price = \
+                (_clean_float(row[6]) / product_qty) if product_qty else 0.0
 
+            # Search product:
             product_ids = product_pool.search(cr, uid, [
                 ('default_code', '=', default_code),
                 ], context=context)
@@ -153,14 +143,15 @@ class StockPickingFile(orm.Model):
                 
             if not origin: # update only first time:
                 # Parameter:
-                origin = 'DDT %s [%s] %s' % (
-                    supplier_code,
-                    supplier_date,
-                    '',
-                    #company_number,
-                    #company_date,
-                    #company_ref,
-                    )                
+                origin = 'Ordine: %s' % (
+                    company_ref,
+                    ) 
+
+        # Sorted lined:            
+        rows = sorted(
+            rows, 
+            key=lambda row: row['sequence'],
+            )
         return origin, rows
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

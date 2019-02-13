@@ -128,6 +128,7 @@ class StockPickingFile(orm.Model):
         uom_pool = self.pool.get('product.uom')
         picking_pool = self.pool.get('stock.picking')
         type_pool = self.pool.get('stock.picking.type')
+        product_pool = self.pool.get('product.product')
         move_pool = self.pool.get('stock.move')
         quant_pool = self.pool.get('stock.quant')
         line_pool = self.pool.get('stock.picking.input.file.line')
