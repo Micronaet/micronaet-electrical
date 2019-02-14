@@ -21,6 +21,14 @@
                             </group>-->
                         </group>
                     </page>
+                    <page string="Note">
+                        <group colspan="4" col="4">
+                            <separator string="Note pre" colspan="4" col="4"/>
+                            <field name="note_pre" colspan="4" col="4" nolabel="1"/>
+                            <separator string="Note post" colspan="4" col="4"/>
+                            <field name="note_post" colspan="4" col="4" nolabel="1" />
+                        </group>
+                    </page>
                 </xpath>    
             </field>
         </record>
