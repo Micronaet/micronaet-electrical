@@ -85,7 +85,7 @@ class StockPickingFile(orm.Model):
             # Go in parent overrided procedure: 
             return super(
                 StockPickingFile, self).extract_data_from_supplier_file(
-                    cr, uid, ids, partner, filename, context=context)
+                    cr, uid, partner, filename, context=context)
 
         # ---------------------------------------------------------------------
         # Company 1 Procedure:
