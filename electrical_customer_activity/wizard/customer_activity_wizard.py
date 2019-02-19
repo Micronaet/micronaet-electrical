@@ -303,8 +303,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('date_start', '<=', to_date),
             #('account_id.is_extra_report', '=', False),
             ]
-        if account_id:
-            domain.append(('account_id', '=', account_id))
+        #if account_id:
+        #    domain.append(('account_id', '=', account_id))
         intervent_ids = intervent_pool.search(cr, uid, domain, context=context)
         intervent_proxy = intervent_pool.browse(
             cr, uid, intervent_ids, context=context)
@@ -326,8 +326,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         domain = [
             ('partner_id', '=', partner_id),
             ]
-        if account_id:
-            domain.append(('account_id', '=', account_id))
+        #if account_id:
+        #    domain.append(('account_id', '=', account_id))
         account_ids = account_pool.search(cr, uid, domain, context=context)
         account_proxy = account_pool.browse(
             cr, uid, account_ids, context=context)
