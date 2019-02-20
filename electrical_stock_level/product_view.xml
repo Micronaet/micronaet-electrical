@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="view_product_stock_level_form">
+            <field name="name">product.product.form</field>
+            <field name="model">product.product</field>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='standard_price']/separator" position="before">
+                    <separator string="Stock level:" colspan="4"/>
+                    <field name="min_stock_level" />
+                    <field name="max_stock_level" />
+                    <newline/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>
+
