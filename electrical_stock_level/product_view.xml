@@ -4,12 +4,16 @@
         <record model="ir.ui.view" id="view_product_stock_level_form">
             <field name="name">product.product.form</field>
             <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='standard_price']/separator" position="before">
-                    <separator string="Stock level:" colspan="4"/>
-                    <field name="min_stock_level" />
-                    <field name="max_stock_level" />
-                    <newline/>
+                <!--<xpath expr="//field[@name='standard_price']" position="before">-->
+                <xpath expr="//separator[@string='Suppliers']" position="before">
+                    <group col="2" colspan="4">
+                        <separator string="Stock level:" colspan="2"/>
+                        <field name="min_stock_level" />
+                        <field name="max_stock_level" />
+                        <newline/>
+                    </group>    
                 </xpath>
             </field>
         </record>
