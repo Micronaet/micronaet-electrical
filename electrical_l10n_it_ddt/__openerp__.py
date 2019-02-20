@@ -44,6 +44,7 @@ to guarantee compatibility.
         'analytic',
         ],
     'data': [
+        'security/ddt_group.xml',
         'security/ir.model.access.csv',
         'data/stock_data.xml',
         'views/account_view.xml',

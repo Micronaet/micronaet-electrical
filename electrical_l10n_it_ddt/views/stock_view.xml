@@ -73,10 +73,10 @@
             <field name="arch" type="xml">
                 <form string="DdT">
                     <header>
-                        <button name="ddt_confirm" states="draft" string="Confirm" class="oe_highlight"/>
-                        <button name="ddt_draft_cancel" states="draft" string="Cancel"/>
-                        <button name="ddt_confirmed_cancel" states="confirmed" string="Cancel"/>
-                        <button name="action_reopen" states="cancelled" string="Reopen" type="object"/>
+                        <button name="ddt_confirm" states="draft" string="Confirm" class="oe_highlight" groups="electrical_l10n_it_ddt.group_ddt_manager"/>
+                        <button name="ddt_draft_cancel" states="draft" string="Cancel" groups="electrical_l10n_it_ddt.group_ddt_manager"/>
+                        <button name="ddt_confirmed_cancel" states="confirmed" string="Cancel" groups="electrical_l10n_it_ddt.group_ddt_manager"/>
+                        <button name="action_reopen" states="cancelled" string="Reopen" type="object" groups="electrical_l10n_it_ddt.group_ddt_manager"/>
                         <field name="state" widget="statusbar" nolabel="1" statusbar_visible="draft,confirmed,cancelled"/>
                     </header>
                     <sheet>
