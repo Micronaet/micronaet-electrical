@@ -6,7 +6,6 @@
             <field name="model">product.product</field>
             <field name="inherit_id" ref="product.product_normal_form_view"/>
             <field name="arch" type="xml">
-                <!--<xpath expr="//field[@name='standard_price']" position="before">-->
                 <xpath expr="//separator[@string='Suppliers']" position="before">
                     <group col="2" colspan="4">
                         <separator string="Stock level:" colspan="2"/>
