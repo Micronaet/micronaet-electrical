@@ -102,6 +102,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         # C. Invoice:
         # ---------------------------------------------------------------------
+        '''
         domain = [
             ('date_invoice', '>=', from_date),
             ('date_invoice', '<=', to_date),
@@ -110,7 +111,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         invoice_partner_ids = [item.partner_id.id for item in \
             invoice_pool.browse(
                 cr, uid, invoice_ids, context=context)]
-        partner_set.update(set(tuple(invoice_partner_ids)))      
+        partner_set.update(set(tuple(invoice_partner_ids)))
+        '''
 
         # ---------------------------------------------------------------------
         # D. Intervent:
@@ -131,8 +133,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         ws_name = 'Partner'
         row = 0
-        header = ['Partner', 'Consegne', 'DDT', 'Fatture', 'Interventi']
-        width = [35, 10, 10, 10, 10]
+        header = [
+            'Partner', 'Consegne', 'DDT', 
+            #'Fatture', 
+            'Interventi',
+            ]
+        width = [35, 10, 10, 10]
 
         excel_pool.create_worksheet(ws_name)
 
@@ -161,7 +167,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 partner.name,
                 partner_id in picking_partner_ids,
                 partner_id in ddt_partner_ids,
-                partner_id in invoice_partner_ids,
+                #partner_id in invoice_partner_ids,
                 partner_id in intervent_partner_ids,
                 ]
             
