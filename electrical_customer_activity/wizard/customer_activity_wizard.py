@@ -433,13 +433,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'header': ['Commessa', 'Intervento', 'Costo', 'Ricavo'],
                 'data': {},
                 'total_cost': 0.0, 
-                'total_revenue': 0.0, 
+                #'total_discount': 0.0, 
+                'total_revenue': 0.0,
                 },
 
             'Consegne': {
                 'header': ['Commessa', 'Picking', 'Costo', 'Ricavo'],
                 'data': {},
                 'total_cost': 0.0, 
+                'total_discount': 0.0, 
                 'total_revenue': 0.0, 
                 },
 
@@ -447,6 +449,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'header': ['Commessa', 'DDT', 'Costo', 'Ricavo'],
                 'data': {},
                 'total_cost': 0.0, 
+                'total_discount': 0.0, 
                 'total_revenue': 0.0, 
                 },
 
@@ -454,6 +457,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'header': ['Commessa', 'Fattura', 'Costo', 'Totale'],
                 'data': {},
                 'total_cost': 0.0, 
+                'total_discount': 0.0, 
                 'total_revenue': 0.0, 
                 },
 
@@ -461,6 +465,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'header': ['Commessa', 'Cliente'],
                 'data': {},
                 'total_cost': 0.0, 
+                #'total_discount': 0.0, 
                 'total_revenue': 0.0, 
                 },                
             }
@@ -561,14 +566,24 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 (subtotal3, f_number),
                                 ]
 
-                            # Total per account:                            
-                            document_total += subtotal3
-                            total[account_id] += subtotal3
                             excel_pool.write_xls_line(
                                 ws_name, sheet['row'], data,
                                 default_format=f_text
                                 )
                             sheet['row'] += 1
+
+                            # -------------------------------------------------
+                            #                    TOTALS:
+                            # -------------------------------------------------
+                            # A. Total per account:                            
+                            document_total += subtotal3
+                            total[account_id] += subtotal3
+
+                            # B. Line total in same sheet:
+                            summary[ws_name]['total_cost'] += subtotal1
+                            summary[ws_name]['total_discount'] += subtotal2
+                            summary[ws_name]['total_revenue'] += subtotal3
+                            
 
                     else: # Picking no movements:
                         data = [
@@ -608,6 +623,17 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     picking.name, 
                     (document_total, f_number),
                     )) 
+
+            # -----------------------------------------------------------------
+            # Total line at the end of the block:
+            # -----------------------------------------------------------------
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], [
+                    (summary[ws_name]['total_cost'], f_number),
+                    (summary[ws_name]['total_discount'], f_number),
+                    (summary[ws_name]['total_revenue'], f_number),
+                    ], default_format=f_text, col=11)
+
                     
                     
         # ---------------------------------------------------------------------
