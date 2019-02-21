@@ -91,7 +91,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         domain = [
             ('delivery_date', '>=', '%s 00:00:00' % from_date),
             ('delivery_date', '<=', '%s 23:59:59' % to_date),
-            ('is_invoice', '=', False), # Not Invoiced
+            ('is_invoiced', '=', False), # Not Invoiced
             #('invoice_id', '=', False), # Not Invoiced
             ]
         ddt_ids = ddt_pool.search(cr, uid, domain, context=context)
@@ -251,7 +251,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('partner_id', '=', partner_id),
             ('delivery_date', '>=', '%s 00:00:00' % from_date),
             ('delivery_date', '<=', '%s 23:59:59' % to_date),
-            ('is_invoice', '=', False), # Not Invoiced
+            ('is_invoiced', '=', False), # Not Invoiced
             #('invoice_id', '=', False), # Not Invoiced
             ]
         if account_id:
