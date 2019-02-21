@@ -431,6 +431,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'header': ['Fatturazione', 'Codice', 'Commessa', 'Padre', 
                     'Data', 'Posizione fiscale', 'Ore', 'Stato'],
                 'width': [25, 10, 30, 20, 15, 20, 10, 10],
+                'total': {},
                 'data': account_db, 
                 },                
             }
