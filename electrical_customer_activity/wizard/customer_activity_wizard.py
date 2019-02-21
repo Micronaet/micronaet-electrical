@@ -525,7 +525,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         summary_data = summary[ws_name]['data']
 
         total = sheet['total']
-        for key in picking_db:            
+        for key in picking_db:  
             for picking in picking_db[key]:
                 #document_total = 0.0
                 account = picking.account_id
@@ -539,6 +539,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 pick_total1 = 0.0    
                 pick_total2 = 0.0    
                 pick_total3 = 0.0    
+                pick_error = False
                 if picking.move_lines:
                     if picking.move_lines:
                         for move in picking.move_lines:
@@ -560,6 +561,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             if not subtotal1 or not subtotal3:
                                 f_number_color = f_number_red
                                 f_text_color = f_text_red
+                                pick_error = True
                             else:    
                                 f_number_color = f_number
                                 f_text_color = f_text
@@ -640,13 +642,23 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 block_key = (picking.pick_state, account)
                 if block_key not in summary_data:
                     summary_data[block_key] = []
-                summary_data[block_key].append((
-                    account.name, 
-                    picking.name, 
                     
-                    (pick_total1, f_number),
-                    (pick_total2, f_number),
-                    (pick_total3, f_number),
+                # Summary color:    
+                if pick_error:    
+                    f_number_color = f_number_red
+                    f_text_color = f_text_red
+                else:    
+                    f_number_color = f_number
+                    f_text_color = f_text
+                                
+                    
+                summary_data[block_key].append((
+                    (account.name, f_text_color), 
+                    (picking.name, f_text_color), 
+                    
+                    (pick_total1, f_number_color),
+                    (pick_total2, f_number_color),
+                    (pick_total3, f_number_color),
                     )) 
 
             # -----------------------------------------------------------------
@@ -1045,7 +1057,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             sheet['row'] += 1
             
             for key in block_record['data']:                
-                for record in block_record['data'][key]:
+                for record in block_record['data'][key]: 
                     excel_pool.write_xls_line(
                         ws_name, sheet['row'], record,
                         default_format=f_text
