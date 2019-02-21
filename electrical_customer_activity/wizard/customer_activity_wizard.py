@@ -725,7 +725,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 else:    
                                     f_number_color = f_number
                                     f_text_color = f_text
-
                                 
                                 data = [  
                                     # Header
@@ -968,6 +967,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 this_revenue = intervent.unit_amount * unit_revenue
                 this_cost = intervent.amount
 
+                if not this_revenue or not this_cost:
+                    f_number_color = f_number_red
+                    f_text_color = f_text_red
+                    ddt_error = True
+                else:    
+                    f_number_color = f_number
+                    f_text_color = f_text
+
                 data = [
                     account.name or 'NON ASSEGNATA',
                     intervent.ref or 'BOZZA',
@@ -993,8 +1000,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     intervent.internal_note,
                     
                     # Revenue:
-                    (this_cost, f_number), # total cost
-                    (this_revenue, f_number), # total revenue
+                    (this_cost, f_number_color), # total cost
+                    (this_revenue, f_number_color), # total revenue
                     
                     intervent.to_invoice.name or '/',
                     'X' if intervent.not_in_report else '',
@@ -1002,11 +1009,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     intervent.state,
                     ]
 
-                #TODO document_total += subtotal
-                
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], data,
-                    default_format=f_text
+                    default_format=f_text_color
                     )
                 sheet['row'] += 1
 
@@ -1015,11 +1020,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 if block_key not in summary_data:
                     summary_data[block_key] = []
                 summary_data[block_key].append((
-                    account.name, 
-                    intervent.ref, 
-                    #document_total, #(document_total, f_number), 
-                    (this_cost, f_number),                    
-                    (this_revenue, f_number),
+                    (account.name, f_text_color), 
+                    (intervent.ref, f_text_color), 
+
+                    (this_cost, f_number_color),                    
+                    (this_revenue, f_number_color),
                     ))
 
                 # -------------------------------------------------------------
