@@ -759,7 +759,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                                 excel_pool.write_xls_line(
                                     ws_name, sheet['row'], data,
-                                    default_format=f_text,
+                                    default_format=f_text_color,
                                     )
                                 sheet['row'] += 1
 
