@@ -191,6 +191,17 @@ class ResPartnerActivityWizard(orm.TransientModel):
         account_id = wiz_browse.account_id.id
         from_date = wiz_browse.from_date
         to_date = wiz_browse.to_date
+        
+        filter_text = \
+            'Interventi del periodo: [%s - %s], Cliente: %s, Commessa: %s' % (
+                from_date or '...',
+                to_date or '...',
+                wiz_browse.partner_id.name,
+                '[%s] %s' % (
+                    wiz_browse.account_id.code or '/', 
+                    wiz_browse.account_id.name,  
+                    ) if account_id else 'Tutte',
+                )
 
         # ---------------------------------------------------------------------
         # Pool used:
@@ -358,7 +369,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Summary sheet:
             # -----------------------------------------------------------------
             'Riepilogo': { # Summary
-                'row': 0,
+                'row': 1,
                 'header': [],
                 'width': [40, 25, 15, 15, 15],
                 'data': True, # Create sheet
@@ -1125,6 +1136,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
         ws_name = 'Riepilogo'
         sheet = sheets[ws_name]
 
+        # Filter text:
+        excel_pool.write_xls_line(ws_name, 0, [
+            filter_text,
+            ],default_format=f_title)
+        
         for block in sheet_order[1:-1]: # Jump TODO commesse?!?
             block_record = summary[block]
 
