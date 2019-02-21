@@ -498,9 +498,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Load formats:
             if load_format:
                 f_number = excel_pool.get_format('number')
+                f_number = excel_pool.get_format('number_red')
+                
                 f_title = excel_pool.get_format('title')
                 f_header = excel_pool.get_format('header')
+                
                 f_text = excel_pool.get_format('text')
+                f_text_red = excel_pool.get_format('text_red')
                 load_format = False # once!
 
             # Setup columns
@@ -553,6 +557,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             pick_total2 += subtotal2
                             pick_total3 += subtotal3
                             
+                            if not subtotal1 or not subtotal3:
+                                f_number_color = f_number_red
+                                f_text_color = f_text_red
+                            else:    
+                                f_number_color = f_number
+                                f_text_color = f_text
+                                
                             data = [  
                                 # Header
                                 picking.account_id.name or 'NON ASSEGNATA',
@@ -564,22 +575,22 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 move.product_id.default_code,
                                 move.product_id.name,
                                 move.product_uom.name,
-                                (move.product_qty, f_number),
+                                (move.product_qty, f_number_color),
                                 
                                 # Unit price:
-                                (standard_price, f_number),
-                                (discount_price, f_number),
-                                (list_price, f_number),
+                                (standard_price, f_number_color),
+                                (discount_price, f_number_color),
+                                (list_price, f_number_color),
                                 
                                 # Total price:
-                                (subtotal1, f_number),
-                                (subtotal2, f_number),
-                                (subtotal3, f_number),
+                                (subtotal1, f_number_color),
+                                (subtotal2, f_number_color),
+                                (subtotal3, f_number_color),
                                 ]
 
                             excel_pool.write_xls_line(
                                 ws_name, sheet['row'], data,
-                                default_format=f_text
+                                default_format=f_text_color
                                 )
                             sheet['row'] += 1
 
