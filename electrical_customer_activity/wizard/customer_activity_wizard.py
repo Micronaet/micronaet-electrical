@@ -377,15 +377,21 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     ],
                 'total': {},
                 'cost': {},
-                'data': intervent_db, 
+                'data': intervent_db,
                 },   
 
             'Consegne': { # Picking to delivery
                 'row': 0,
                 'header': [
-                    'Commessa', 'Picking', 'Data', 'Stato', 'Codice', 'UM', 
-                    'Q.', 'Prezzo', 'Subtotale'],
-                'width': [35, 15, 25, 20, 20, 15, 10, 10, 15, ],
+                    'Commessa', 'Picking', 'Data', 'Stato', 
+                    'Codice', 'UM', 'Descrizione',
+                    'Q.', 'Costo ultimo', 'Scontato', 'METEL', 
+                    'Sub. ultimo', 'Sub. scontato', 'Sub. METEL'],
+                'width': [
+                    35, 15, 25, 20, 
+                    20, 35, 15,
+                    10, 10, 10, 10, 
+                    15, 15, 15, ],
                 'total': {},
                 'data': picking_db, 
                 },   
@@ -426,26 +432,36 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Interventi': {
                 'header': ['Commessa', 'Intervento', 'Costo', 'Ricavo'],
                 'data': {},
+                'total_cost': 0.0, 
+                'total_revenue': 0.0, 
                 },
 
             'Consegne': {
-                'header': ['Commessa', 'Picking', 'Totale'],
+                'header': ['Commessa', 'Picking', 'Costo', 'Ricavo'],
                 'data': {},
+                'total_cost': 0.0, 
+                'total_revenue': 0.0, 
                 },
 
             'DDT': {
-                'header': ['Commessa', 'DDT', 'Totale'],
+                'header': ['Commessa', 'DDT', 'Costo', 'Ricavo'],
                 'data': {},
+                'total_cost': 0.0, 
+                'total_revenue': 0.0, 
                 },
 
             'Fatture': {
                 'header': ['Commessa', 'Fattura', 'Costo', 'Totale'],
                 'data': {},
+                'total_cost': 0.0, 
+                'total_revenue': 0.0, 
                 },
 
             'Commesse': {
                 'header': ['Commessa', 'Cliente'],
                 'data': {},
+                'total_cost': 0.0, 
+                'total_revenue': 0.0, 
                 },                
             }
 
@@ -510,12 +526,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 if picking.move_lines:
                     if picking.move_lines:
                         for move in picking.move_lines:
-                            try:
-                                list_price = \
-                                    move.product_id.metel_list_price
-                            except:
-                                list_price = 0.0    
-                            subtotal = list_price * move.product_qty
+                            product = move.product_id
+                            
+                            #metel_list_price:
+                            standard_price = product.standard_price 
+                            discount_price = product.metel_sale
+                            list_price = product.lst_price
+                            
+                            subtotal1 = standard_price * move.product_qty
+                            subtotal2 = discount_price * move.product_qty
+                            subtotal3 = list_price * move.product_qty
                             
                             data = [  
                                 # Header
@@ -526,14 +546,24 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 
                                 # Move:
                                 move.product_id.default_code,
+                                move.product_id.name,
                                 move.product_uom.name,
                                 (move.product_qty, f_number),
+                                
+                                # Unit price:
+                                (standard_price, f_number),
+                                (discount_price, f_number),
                                 (list_price, f_number),
-                                (subtotal, f_number),
+                                
+                                # Total price:
+                                (subtotal1, f_number),
+                                (subtotal2, f_number),
+                                (subtotal3, f_number),
                                 ]
+
                             # Total per account:                            
-                            document_total += subtotal
-                            total[account_id] += subtotal
+                            document_total += subtotal3
+                            total[account_id] += subtotal3
                             excel_pool.write_xls_line(
                                 ws_name, sheet['row'], data,
                                 default_format=f_text
@@ -551,6 +581,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             # Move:
                             'NESSUN MOVIMENTO',
                             '/',
+                            '/',
+                            (0.0, f_number),
+
+                            (0.0, f_number),
+                            (0.0, f_number),
+                            (0.0, f_number),
+                            
                             (0.0, f_number),
                             (0.0, f_number),
                             (0.0, f_number),
@@ -824,8 +861,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     intervent.internal_note,
                     
                     # Revenue:
-                    this_cost, # total cost
-                    this_revenue, # total revenue
+                    (this_cost, f_number), # total cost
+                    (this_revenue, f_number), # total revenue
                     
                     intervent.to_invoice.name or '/',
                     'X' if intervent.not_in_report else '',
@@ -833,9 +870,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     intervent.state,
                     ]
 
-                # Total per account:                            
-                cost[account_id] += this_cost
-                total[account_id] += this_revenue
                 #TODO document_total += subtotal
                 
                 excel_pool.write_xls_line(
@@ -855,6 +889,26 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     (this_cost, f_number),                    
                     (this_revenue, f_number),
                     ))
+
+                # -------------------------------------------------------------
+                # Totals:
+                # -------------------------------------------------------------
+                # A. Total per account:                            
+                cost[account_id] += this_cost
+                total[account_id] += this_revenue
+                
+                # B. Line total in same sheet:
+                summary[ws_name]['total_cost'] += this_cost
+                summary[ws_name]['total_revenue'] += this_revenue
+
+            # -----------------------------------------------------------------
+            # Total line at the end of the block:
+            # -----------------------------------------------------------------
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], [
+                    (summary[ws_name]['total_cost'], f_number),
+                    (summary[ws_name]['total_revenue'], f_number),
+                    ], default_format=f_text, col=16)
 
         # ---------------------------------------------------------------------
         # E. ACCOUNT:
@@ -946,7 +1000,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         default_format=f_text
                         )
                     sheet['row'] += 1
-
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], [
+                    (summary[block]['total_cost'], f_number),
+                    (summary[block]['total_revenue'], f_number),
+                    ], default_format=f_text, col=2)                    
             sheet['row'] += 1
             # TODO account total        
         
