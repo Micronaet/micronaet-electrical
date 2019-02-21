@@ -386,7 +386,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'Commessa', 'Picking', 'Data', 'Stato', 
                     'Codice', 'UM', 'Descrizione',
                     'Q.', 'Costo ultimo', 'Scontato', 'METEL', 
-                    'Sub. ultimo', 'Sub. scontato', 'Sub. METEL'],
+                    'Sub. ultimo', 'Sub. scontato', 'Sub. METEL',
+                    ],
                 'width': [
                     35, 15, 25, 20, 
                     20, 35, 15,
@@ -399,25 +400,31 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'DDT': { # DDT not invoiced
                 'row': 0,
                 'header': [
-                    'Commessa', 'DDT', 'Data', 'Codice', 'UM', 'Q.', 'Prezzo', 
-                    'Subtotale'],
-                'width': [35, 15, 20, 25, 10, 15, 15, 20, ],
+                    'Commessa', 'DDT', 'Data', 'Codice', 'Descrizione', 'UM', 
+                    'Q.', 'Costo ultimo', 'Scontato', 'METEL', 
+                    'Sub. ultimo', 'Sub. scontato', 'Sub. METEL',
+                    ],
+                'width': [
+                    35, 15, 20, 25, 35, 10, 
+                    15, 15, 15, 15,
+                    20, 20, 20,
+                    ],
                 'total': {},
                 'data': ddt_db, 
                 },
 
-            'Fatture': { # Invoiced document
-                'row': 0,
-                'header': [
-                    'Commessa', 'Fattura', 'Data', 'Posizione', 'Articolo', 
-                    'UM', 'Q.', 'Prezzo', 'Sconto', 'Subtotale', 
-                    #'Costo',
-                    ],
-                'width': [35, 15, 15, 20, 20, 10, 10, 10, 10, 15, ],
-                'total': {},
-                'cost': {},
-                'data': invoice_db, 
-                },
+            #'Fatture': { # Invoiced document
+            #    'row': 0,
+            #    'header': [
+            #        'Commessa', 'Fattura', 'Data', 'Posizione', 'Articolo', 
+            #        'UM', 'Q.', 'Prezzo', 'Sconto', 'Subtotale', 
+            #        #'Costo',
+            #        ],
+            #    'width': [35, 15, 15, 20, 20, 10, 10, 10, 10, 15, ],
+            #    'total': {},
+            #    'cost': {},
+            #    'data': invoice_db, 
+            #    },
 
             'Commesse': { # Account
                 'row': 0,
@@ -455,14 +462,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'total_revenue': 0.0, 
                 },
 
-            'Fatture': {
-                'header': ['Commessa', 'Fattura', 'Costo', 'Scontato', 
-                    'Totale'],
-                'data': {},
-                'total_cost': 0.0, 
-                'total_discount': 0.0, 
-                'total_revenue': 0.0, 
-                },
+            #'Fatture': {
+            #    'header': ['Commessa', 'Fattura', 'Costo', 'Scontato', 
+            #        'Totale'],
+            #    'data': {},
+            #    'total_cost': 0.0, 
+            #    'total_discount': 0.0, 
+            #    'total_revenue': 0.0, 
+            #    },
 
             'Commesse': {
                 'header': ['Commessa', 'Cliente'],
@@ -478,7 +485,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Interventi', 
             'Consegne', 
             'DDT', 
-            'Fatture', 
+            #'Fatture', 
             'Commesse',
             ]
 
@@ -536,7 +543,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 if account_id not in total:
                     total[account_id] = 0.0
                 
-                pick_total1 = 0.0    
+                pick_total1 = 0.0
                 pick_total2 = 0.0    
                 pick_total3 = 0.0    
                 pick_error = False
@@ -650,7 +657,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 else:    
                     f_number_color = f_number
                     f_text_color = f_text
-                                
                     
                 summary_data[block_key].append((
                     (account.name, f_text_color), 
@@ -670,8 +676,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     (summary[ws_name]['total_discount'], f_number),
                     (summary[ws_name]['total_revenue'], f_number),
                     ], default_format=f_text, col=11)
-
-                    
                     
         # ---------------------------------------------------------------------
         # B. DDT MATERIAL:
@@ -681,9 +685,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
         summary_data = summary[ws_name]['data']
 
         total = sheet['total']
-        for key in ddt_db:
+        for key in ddt_db:        
             for ddt in ddt_db[key]:
-                document_total = 0.0
+                ddt_total1 = 0.0
+                ddt_total2 = 0.0
+                ddt_total3 = 0.0
+                ddt_error = False
+
                 account = ddt.account_id
                 account_id = account.id
                 if account not in account_used:
@@ -694,12 +702,29 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     for picking in ddt.picking_ids:
                         if picking.move_lines:
                             for move in picking.move_lines:
-                                try:
-                                    list_price = \
-                                        move.product_id.metel_list_price
-                                except:
-                                    list_price = 0.0    
-                                subtotal = list_price * move.product_qty
+                                product = move.product_id
+                                
+                                #metel_list_price:
+                                standard_price = product.standard_price 
+                                discount_price = product.metel_sale
+                                list_price = product.lst_price
+                                
+                                subtotal1 = standard_price * move.product_qty
+                                subtotal2 = discount_price * move.product_qty
+                                subtotal3 = list_price * move.product_qty
+                                
+                                ddt_total1 += subtotal1
+                                ddt_total2 += subtotal2
+                                ddt_total3 += subtotal3
+                                
+                                if not subtotal1 or not subtotal3:
+                                    f_number_color = f_number_red
+                                    f_text_color = f_text_red
+                                    ddt_error = True
+                                else:    
+                                    f_number_color = f_number
+                                    f_text_color = f_text
+
                                 
                                 data = [  
                                     # Header
@@ -708,22 +733,39 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     ddt.delivery_date,
                                     
                                     # Move:
-                                    move.product_id.default_code,
+                                    product.default_code,
+                                    product.name,
                                     move.product_uom.name,
                                     (move.product_qty, f_number),
-                                    (list_price, f_number),
-                                    (subtotal, f_number),
+
+                                    # Unit price:
+                                    (standard_price, f_number_color),
+                                    (discount_price, f_number_color),
+                                    (list_price, f_number_color),
+                                    
+                                    # Total price:
+                                    (subtotal1, f_number_color),
+                                    (subtotal2, f_number_color),
+                                    (subtotal3, f_number_color),
                                     ]
 
-                                # Total per account:    
-                                document_total += subtotal
-                                total[account_id] += subtotal
-                                
                                 excel_pool.write_xls_line(
                                     ws_name, sheet['row'], data,
                                     default_format=f_text,
                                     )
                                 sheet['row'] += 1
+
+                                # ---------------------------------------------
+                                #                    TOTALS:
+                                # ---------------------------------------------
+                                # A. Total per account:    
+                                total[account_id] += subtotal3 # XXX
+                                
+                                # B. Line total in same sheet:
+                                summary[ws_name]['total_cost'] += subtotal1
+                                summary[ws_name]['total_discount'] += subtotal2
+                                summary[ws_name]['total_revenue'] += subtotal3
+
 
                         else: # Picking no movements:
                             data = [
@@ -766,20 +808,44 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         )
                     sheet['row'] += 1
 
-                # Summary data (DDT):         
+                # Summary data (picking):         
                 block_key = (account.name, ddt.name)
                 if block_key not in summary_data:
                     summary_data[block_key] = []
+                    
+                # Summary color:    
+                if ddt_error:    
+                    f_number_color = f_number_red
+                    f_text_color = f_text_red
+                else:    
+                    f_number_color = f_number
+                    f_text_color = f_text
+                    
                 summary_data[block_key].append((
-                    account.name, 
-                    ddt.name, 
-                    (document_total, f_number),
+                    (account.name, f_text_color), 
+                    (ddt.name, f_text_color), 
+                    
+                    (ddt_total1, f_number_color),
+                    (ddt_total2, f_number_color),
+                    (ddt_total3, f_number_color),
                     )) 
+
+        # ---------------------------------------------------------------------
+        # Total line at the end of the block:
+        # ---------------------------------------------------------------------
+        excel_pool.write_xls_line(
+            ws_name, sheet['row'], [
+                (summary[ws_name]['total_cost'], f_number),
+                (summary[ws_name]['total_discount'], f_number),
+                (summary[ws_name]['total_revenue'], f_number),
+                ], default_format=f_text, col=10)
+
+
 
         # ---------------------------------------------------------------------
         # C. INVOICED MATERIAL:
         # ---------------------------------------------------------------------
-        ws_name = 'Fatture'
+        """ws_name = 'Fatture'
         sheet = sheets[ws_name]
         summary_data = summary[ws_name]['data']
 
@@ -852,6 +918,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     (document_total, f_number),
                     (0.0, f_number), # TODO
                     )) 
+        """
 
         # ---------------------------------------------------------------------
         # D. INTERVENT:
