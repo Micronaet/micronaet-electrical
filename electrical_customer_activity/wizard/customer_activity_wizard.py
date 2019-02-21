@@ -961,7 +961,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                 if account_id not in total:
                     total[account_id] = 0.0
-                    cost[account_id] = 0.0
+                    #cost[account_id] = 0.0
                 
                 #document_total = 0.0
                 this_revenue = intervent.unit_amount * unit_revenue
