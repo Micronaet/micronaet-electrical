@@ -744,7 +744,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     product.default_code,
                                     product.name,
                                     move.product_uom.name,
-                                    (move.product_qty, f_number),
+                                    (move.product_qty, f_number_color),
 
                                     # Unit price:
                                     (standard_price, f_number_color),
