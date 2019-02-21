@@ -352,7 +352,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Riepilogo': { # Summary
                 'row': 0,
                 'header': [],
-                'width': [40, 25, 15, 15],
+                'width': [40, 25, 15, 15, 15],
                 'data': True, # Create sheet
                 },
 
@@ -438,7 +438,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 },
 
             'Consegne': {
-                'header': ['Commessa', 'Picking', 'Costo', 'Ricavo'],
+                'header': ['Commessa', 'Picking', 'Costo', 'Scontato', 
+                    'Ricavo'],
                 'data': {},
                 'total_cost': 0.0, 
                 'total_discount': 0.0, 
@@ -446,7 +447,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 },
 
             'DDT': {
-                'header': ['Commessa', 'DDT', 'Costo', 'Ricavo'],
+                'header': ['Commessa', 'DDT', 'Costo', 'Scontato', 
+                    'Ricavo'],
                 'data': {},
                 'total_cost': 0.0, 
                 'total_discount': 0.0, 
@@ -454,7 +456,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 },
 
             'Fatture': {
-                'header': ['Commessa', 'Fattura', 'Costo', 'Totale'],
+                'header': ['Commessa', 'Fattura', 'Costo', 'Scontato', 
+                    'Totale'],
                 'data': {},
                 'total_cost': 0.0, 
                 'total_discount': 0.0, 
@@ -520,7 +523,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         total = sheet['total']
         for key in picking_db:            
             for picking in picking_db[key]:
-                document_total = 0.0
+                #document_total = 0.0
                 account = picking.account_id
                 account_id = account.id
                 if account not in account_used:
@@ -528,6 +531,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                 if account_id not in total:
                     total[account_id] = 0.0
+                
+                pick_total1 = 0.0    
+                pick_total2 = 0.0    
+                pick_total3 = 0.0    
                 if picking.move_lines:
                     if picking.move_lines:
                         for move in picking.move_lines:
@@ -541,6 +548,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             subtotal1 = standard_price * move.product_qty
                             subtotal2 = discount_price * move.product_qty
                             subtotal3 = list_price * move.product_qty
+                            
+                            pick_total1 += subtotal1
+                            pick_total2 += subtotal2
+                            pick_total3 += subtotal3
                             
                             data = [  
                                 # Header
@@ -576,7 +587,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             #                    TOTALS:
                             # -------------------------------------------------
                             # A. Total per account:                            
-                            document_total += subtotal3
+                            #document_total += subtotal3
                             total[account_id] += subtotal3
 
                             # B. Line total in same sheet:
@@ -621,7 +632,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 summary_data[block_key].append((
                     account.name, 
                     picking.name, 
-                    (document_total, f_number),
+                    
+                    (pick_total1, f_number),
+                    (pick_total2, f_number),
+                    (pick_total3, f_number),
                     )) 
 
             # -----------------------------------------------------------------
@@ -1026,13 +1040,24 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         default_format=f_text
                         )
                     sheet['row'] += 1
-            excel_pool.write_xls_line(
-                ws_name, sheet['row'], [
+            # -----------------------------------------------------------------                    
+            # Total line:        
+            # -----------------------------------------------------------------                    
+            if 'total_discount' in summary[block]:
+                data = [
+                    (summary[block]['total_cost'], f_number),
+                    (summary[block]['total_discount'], f_number),
+                    (summary[block]['total_revenue'], f_number),
+                    ]
+            else:        
+                data = [
                     (summary[block]['total_cost'], f_number),
                     (summary[block]['total_revenue'], f_number),
-                    ], default_format=f_text, col=2)                    
+                    ]
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], data, default_format=f_text, col=2)                    
+
             sheet['row'] += 1
-            # TODO account total        
         
         return excel_pool.return_attachment(
             cr, uid, 'partner_activity')
