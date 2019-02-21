@@ -498,13 +498,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Load formats:
             if load_format:
                 f_number = excel_pool.get_format('number')
-                f_number = excel_pool.get_format('number_red')
+                f_number_red = excel_pool.get_format('bg_red_number')
                 
                 f_title = excel_pool.get_format('title')
                 f_header = excel_pool.get_format('header')
                 
                 f_text = excel_pool.get_format('text')
-                f_text_red = excel_pool.get_format('text_red')
+                f_text_red = excel_pool.get_format('bg_red')
                 load_format = False # once!
 
             # Setup columns
