@@ -202,6 +202,8 @@ class ProductCategory(orm.Model):
         statistic_ids = self.search(cr, uid, [
             ('metel_serie_id', '=', serie_id),
             ], context=context)
+        _logger.warning(
+            'Update %s statistic with series data' % len(statistic_ids))
             
         if not statistic_ids:            
             raise osv.except_osv(
@@ -215,7 +217,7 @@ class ProductCategory(orm.Model):
             # Nothing if add this:
             #('metel_serie_id', '!=', serie_id), # Update only different
             ], context=context)
-        _logger.warning('Update %s product with series data')
+        _logger.warning('Update %s product with series data' % len(product_ids))
 
         if not product_ids:            
             raise osv.except_osv(
