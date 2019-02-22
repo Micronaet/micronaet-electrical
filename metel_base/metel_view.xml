@@ -57,8 +57,16 @@
                     <field name="name" />
                     <field name="metel_statistic" readonly="1" />
                     <field name="parent_id" readonly="1" string="Statistic category"/>
-                    <field name="metel_serie_id" context="{'default_parent_id': parent_id, 'default_metel_mode': 'serie'}" domain="[('parent_id', '=', parent_id),('metel_mode', '=', 'serie')]" />
+                    <field name="metel_serie_id" 
+                        context="{'default_parent_id': parent_id, 'default_metel_mode': 'serie'}" 
+                        domain="[('parent_id', '=', parent_id),('metel_mode', '=', 'serie')]" 
+                        attrs="{'readonly': [('metel_mode','!=','statistic')]}"
+                        />
                     <field name="metel_mode" readonly="1" />
+                    <button name="update_force_serie_button" string="" type="object" icon="gtk-refresh" colspan="1" 
+                        help="Update product that has the statisti category linked to the serie"
+                        attrs="{'invisible': [('metel_mode','!=','serie')]}"                        
+                        />
                 </tree>
             </field>
         </record>

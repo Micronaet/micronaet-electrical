@@ -188,6 +188,45 @@ class ProductCategory(orm.Model):
     """
     _inherit = 'product.category'
     
+    
+    # -------------------------------------------------------------------------
+    # Button events:
+    # -------------------------------------------------------------------------
+    def update_force_serie_button(self, cr, uid, ids, context=None):
+        ''' Udpate product with statistic category thas has this series
+            Note: Not used related field because can be setup with serie but
+            not with statistica category
+        '''
+        assert len(ids) == 1, 'Works only with one record a time'
+        serie_id = ids[0]
+        statistic_ids = self.search(cr, uid, [
+            ('metel_serie_id', '=', serie_id),
+            ], context=context)
+            
+        if not statistic_ids:            
+            raise osv.except_osv(
+                _('Error'), 
+                _('No statistic category for this series to update'),
+                )
+
+        product_pool = self.pool.get('product.product')
+        product_ids = product_pool.search(cr, uid, [
+            ('metel_statistic_id', 'in', statistic_ids),
+            # Nothing if add this:
+            #('metel_serie_id', '!=', serie_id), # Update only different
+            ], context=context)
+        _logger.warning('Update %s product with series data')
+
+        if not product_ids:            
+            raise osv.except_osv(
+                _('Error'), 
+                _('Nothing to update'),
+                )
+
+        return product_pool.write(cr, uid, product_ids, {
+            'metel_serie_id': serie_id,
+            }, context=context)
+        
     # -------------------------------------------------------------------------
     # Utility:
     # -------------------------------------------------------------------------
