@@ -21,13 +21,16 @@
         </record>
 
         <!-- product.product-->
-        <record model="ir.ui.view" id="view_product_product_metel_page_form">
+        <record model="ir.ui.view" id="view_product_product_metel_page_update_discount_form">
             <field name="name">product.product.metel.form</field>
             <field name="model">product.product</field>
             <field name="inherit_id" ref="metel_base.view_product_product_metel_page_form"/>
             <field name="arch" type="xml">
                 <field name="metel_discount_id" position="after">
-                     <button name="update_force_uom_button" string="" type="object" icon="gtk-refresh" colspan="1" help="Update Discount Group" attrs="{'invisible': [('metel_discount_id', '!=', False)]}"/>
+                     <button name="update_force_uom_button" string="" 
+                         type="object" icon="gtk-refresh" colspan="1" 
+                         help="Update Discount Group" 
+                         attrs="{'invisible': [('metel_discount_id', '!=', False)]}"/>
                 </field>                            
             </field>
         </record>    
