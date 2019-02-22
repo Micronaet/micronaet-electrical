@@ -584,7 +584,6 @@ class ProductProduct(orm.Model):
         ''' Create statistic category from discount code 
             Update all product with that code
         '''
-        import pdb; pdb.set_trace()
         category_pool = self.pool.get('product.category')
         product = self.browse(cr, uid, ids, context=context)[0]
 
