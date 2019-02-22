@@ -501,12 +501,11 @@ class ProductProduct(orm.Model):
             Update all product with that code
         '''
         category_pool = self.pool.get('product.category')
-        product_proxy = self.browse(cr, uid, ids, context=context)[0]
+        product = self.browse(cr, uid, ids, context=context)[0]
 
         # Parameter product:
         producer_code = product.metel_producer_code
         brand_code = product.metel_brand_code
-        #metel_statistic = product.metel_statistic
         metel_discount = product.metel_discount
 
         # ---------------------------------------------------------------------
@@ -545,32 +544,31 @@ class ProductProduct(orm.Model):
             metel_brand_id = product.metel_brand_id.id
             
         # Search discount category:    
-        category_ids = category_pool.search([
+        category_ids = category_pool.search(cr, uid, [
             ('parent_id', '=', metel_brand_id),
             ('metel_discount', '=', metel_discount), # code
             ('metel_mode', '=', 'discount'),
-            ])
+            ], context=context)
 
         if category_ids:
             metel_discount_id = category_ids[0]
         else:
-            metel_discount_id = category_pool.create({
+            metel_discount_id = category_pool.create(cr, uid, {
                 'parent_id': metel_brand_id,
                 'metel_discount': metel_discount,
                 'name': metel_discount,
                 'metel_mode': 'discount',
-                })
+                }, context=context)
         # ---------------------------------------------------------------------        
         # Update all product
         # ---------------------------------------------------------------------        
-
         product_ids = self.search(cr, uid, [
-            ('metel_brand_code', '=', metel_brand_code),
+            ('metel_brand_code', '=', brand_code),
             ('metel_discount', '=', metel_discount),
             ('metel_discount_id', '=', False),
             ], context=context)
 
-        product_pool.write(cr, uid, product_ids, {
+        self.write(cr, uid, product_ids, {
             'metel_discount_id': metel_discount_id,
             }, context=context)
         _logger.warning('Updating %s product with discount: %s' % (
@@ -579,5 +577,87 @@ class ProductProduct(orm.Model):
             ))
         return True    
         
-    
+    # -------------------------------------------------------------------------
+    # Button event:    
+    # -------------------------------------------------------------------------
+    def update_metel_statistic_all_product(self, cr, uid, ids, context=None):
+        ''' Create statistic category from discount code 
+            Update all product with that code
+        '''
+        import pdb; pdb.set_trace()
+        category_pool = self.pool.get('product.category')
+        product = self.browse(cr, uid, ids, context=context)[0]
+
+        # Parameter product:
+        producer_code = product.metel_producer_code
+        brand_code = product.metel_brand_code
+        metel_statistic = product.metel_statistic
+
+        # ---------------------------------------------------------------------
+        # Check availability:        
+        # ---------------------------------------------------------------------
+        # Producer ID
+        if not product.metel_producer_id:
+            raise osv.except_osv(
+                _('Error'), 
+                _('Product without producer group'),
+                )
+
+        # Brand code:
+        if not product.metel_brand_code:
+            raise osv.except_osv(
+                _('Error'), 
+                _('Product without brand code'),
+                )
+
+        # Statistic code:
+        if not metel_statistic:
+            raise osv.except_osv(
+                _('Error'), 
+                _('Product without metel statistic code'),
+                )
+
+        # ---------------------------------------------------------------------        
+        # Create statistic group:
+        # ---------------------------------------------------------------------        
+        if not product.metel_brand_id: # Metel brand not yet created
+            metel_brand_id = category_pool.get_create_brand_group(
+                producer_code, brand_code, brand_code)
+        else:
+            metel_brand_id = product.metel_brand_id.id
+            
+        # Search statistic category:    
+        category_ids = category_pool.search(cr, uid, [
+            ('parent_id', '=', metel_brand_id),
+            ('metel_statistic', '=', metel_statistic), # code
+            ('metel_mode', '=', 'statistic'),
+            ], context=context)
+
+        if category_ids:
+            metel_statistic_id = category_ids[0]
+        else:
+            metel_statistic_id = category_pool.create(cr, uid, {
+                'parent_id': metel_brand_id,
+                'metel_statistic': metel_statistic,
+                'name': metel_statistic,
+                'metel_mode': 'statistic',
+                }, context=context)
+        # ---------------------------------------------------------------------        
+        # Update all product
+        # ---------------------------------------------------------------------        
+        product_ids = self.search(cr, uid, [
+            ('metel_brand_code', '=', brand_code),
+            ('metel_statistic', '=', metel_statistic),
+            ('metel_statistic_id', '=', False),
+            ], context=context)
+
+        self.write(cr, uid, product_ids, {
+            'metel_statistic_id': metel_statistic_id,
+            }, context=context)
+        _logger.warning('Updating %s product with statistic: %s' % (
+            len(product_ids),
+            metel_statistic,
+            ))
+        return True    
+            
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

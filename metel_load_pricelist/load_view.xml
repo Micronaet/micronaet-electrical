@@ -26,11 +26,17 @@
             <field name="model">product.product</field>
             <field name="inherit_id" ref="metel_base.view_product_product_metel_page_form"/>
             <field name="arch" type="xml">
+                <field name="metel_statistic_id" position="after">
+                     <button name="update_metel_statistic_all_product" string="" 
+                         type="object" icon="gtk-refresh" colspan="1" 
+                         help="Update statistic Group" 
+                         attrs="{'invisible': ['|',('metel_statistic', '=', False),('metel_statistic_id', '!=', False)]}"/>
+                </field>                            
                 <field name="metel_discount_id" position="after">
-                     <button name="update_force_uom_button" string="" 
+                     <button name="update_metel_discount_all_product" string="" 
                          type="object" icon="gtk-refresh" colspan="1" 
                          help="Update Discount Group" 
-                         attrs="{'invisible': [('metel_discount_id', '!=', False)]}"/>
+                         attrs="{'invisible': ['|',('metel_discount', '=', False),('metel_discount_id', '!=', False)]}"/>
                 </field>                            
             </field>
         </record>    
