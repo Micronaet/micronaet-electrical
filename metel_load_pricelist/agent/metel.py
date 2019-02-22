@@ -76,7 +76,7 @@ for product in product_pool.browse(product_ids):
             (producer_code, brand_code)]
     else:
         metel_brand_id = category_pool.get_create_brand_group(
-            producer_code, brand_code, brand_code, context=context)
+            producer_code, brand_code, brand_code)
     
     # -------------------------------------------------------------------------
     # Crete or get discount category:            
@@ -87,7 +87,7 @@ for product in product_pool.browse(product_ids):
             ('parent_id', '=', metel_brand_id),
             ('metel_discount', '=', metel_discount),
             ('metel_mode', '=', 'discount'),
-            ], context=context)
+            ])
             
         data = {
             'parent_id': metel_brand_id,
@@ -98,8 +98,7 @@ for product in product_pool.browse(product_ids):
         if category_ids:
             discount_group[key] = category_ids[0]
         else:
-            discount_group[key] = category_pool.create(
-                cr, uid, data, context=context)
+            discount_group[key] = category_pool.create(data)
                                 
     product_pool.write(product.id, {
         'metel_discount_id': discount_group[key],
