@@ -60,7 +60,6 @@ print 'Found %s product' % len(product_ids)
 i = 0
 created_group = []
 discount_group = {}
-import pdb; pdb.set_trace()
 for product in product_pool.browse(product_ids):
     i += 1
     producer_code = product.metel_producer_code
