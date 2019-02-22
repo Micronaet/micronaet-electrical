@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <record model="ir.actions.act_window" id="action_stock_picking_form">
+            <field name="name">Stock picking for account</field>
+            <field name="res_model">stock.picking</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{}</field>
+            <field name="domain">[('account_id', '=', active_id)]</field>
+        </record>
+        <record model="ir.actions.act_window" id="action_stock_move_form">
+            <field name="name">Stock move for account</field>
+            <field name="res_model">stock.move</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{}</field>
+            <field name="domain">[('picking_id.account_id', '=', active_id)]</field>
+        </record>
+        <record model="ir.actions.act_window" id="action_intervent_form">
+            <field name="name">Intervent account</field>
+            <field name="res_model">hr.analytic.timesheet</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{}</field>
+            <field name="domain">[('account_id', '=', active_id)]</field>
+        </record>
+
+        <record model="ir.ui.view" id="view_account_analytic_account_form">
+            <field name="name">account.analytic.account.form</field>
+            <field name="model">account.analytic.account</field>
+            <field name="inherit_id" ref="analytic.view_account_analytic_account_form"/>
+            <field name="arch" type="xml">
+                <div name="buttons" position="inside">
+                    <button class="oe_inline oe_stat_button" name="%(electrical_account_stats.action_intervent_form)d" type="action" icon="fa-pencil-square-o">
+                        <field string="Intervent" name="statinfo_intervent" widget="statinfo" />
+                    </button>
+                    <newline/>
+                    <button class="oe_inline oe_stat_button" name="%(electrical_account_stats.action_stock_picking_form)d" type="action" icon="fa-sitemap">
+                        <field string="Picking" name="statinfo_picking" widget="statinfo" />
+                    </button>
+                    <button class="oe_inline oe_stat_button" name="%(electrical_account_stats.action_stock_move_form)d" type="action" icon="fa-list">
+                        <field string="Stock move" name="statinfo_move" widget="statinfo" />
+                    </button>
+                </div>
+            </field>
+        </record>
+
+    </data>
+</openerp>
+
