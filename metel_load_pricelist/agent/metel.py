@@ -81,7 +81,7 @@ for product in product_pool.browse(product_ids):
     # -------------------------------------------------------------------------
     # Crete or get discount category:            
     # -------------------------------------------------------------------------
-    key = (brand_code, discount_code) # XXX no producer
+    key = (brand_code, metel_discount) # XXX no producer
     if key not in discount_group:
         category_ids = category_pool.search([
             ('parent_id', '=', metel_brand_id),
