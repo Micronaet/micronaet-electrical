@@ -50,8 +50,6 @@ product_pool = odoo.model('product.product')
 category_pool = odoo.model('product.category')
 
 product_ids = product_pool.search([
-    #('metel_statistic', '!=', False),
-    #('metel_statistic_id', '=', False),
     ('metel_discount', 'not in', ('', False)),
     ('metel_discount_id', '=', False),
     ])

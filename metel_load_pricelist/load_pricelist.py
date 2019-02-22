@@ -485,5 +485,99 @@ class MetelBase(orm.Model):
     _defaults = {
         'electrocod_code': lambda *x: 'ELECTROCOD',
         'electrocod_start_char': lambda *x: 37,
-        }    
+        }
+
+class ProductProduct(orm.Model):
+    """ Model name: ProductProduct
+    """
+    
+    _inherit = 'product.product'
+
+    # -------------------------------------------------------------------------
+    # Button event:    
+    # -------------------------------------------------------------------------
+    def update_metel_discount_all_product(self, cr, uid, ids, context=None):
+        ''' Create discount category from discount code 
+            Update all product with that code
+        '''
+        category_pool = self.pool.get('product.category')
+        product_proxy = self.browse(cr, uid, ids, context=context)[0]
+
+        # Parameter product:
+        producer_code = product.metel_producer_code
+        brand_code = product.metel_brand_code
+        #metel_statistic = product.metel_statistic
+        metel_discount = product.metel_discount
+
+        # ---------------------------------------------------------------------
+        # Check availability:        
+        # ---------------------------------------------------------------------
+        # Producer ID
+        if not product.metel_producer_id:
+            raise osv.except_osv(
+                _('Error'), 
+                _('Product without producer group'),
+                )
+
+        # Brand code:
+        if not product.metel_brand_code:
+            raise osv.except_osv(
+                _('Error'), 
+                _('Product without brand code'),
+                )
+
+        # Discount code:
+        if not metel_discount:
+            raise osv.except_osv(
+                _('Error'), 
+                _('Product without metel discount code'),
+                )
+
+        # metel_discount_id is check on visibiliy (view)
+
+        # ---------------------------------------------------------------------        
+        # Create discount group:
+        # ---------------------------------------------------------------------        
+        if not product.metel_brand_id: # Metel brand not yet created
+            metel_brand_id = category_pool.get_create_brand_group(
+                producer_code, brand_code, brand_code)
+        else:
+            metel_brand_id = product.metel_brand_id.id
+            
+        # Search discount category:    
+        category_ids = category_pool.search([
+            ('parent_id', '=', metel_brand_id),
+            ('metel_discount', '=', metel_discount), # code
+            ('metel_mode', '=', 'discount'),
+            ])
+
+        if category_ids:
+            metel_discount_id = category_ids[0]
+        else:
+            metel_discount_id = category_pool.create({
+                'parent_id': metel_brand_id,
+                'metel_discount': metel_discount,
+                'name': metel_discount,
+                'metel_mode': 'discount',
+                })
+        # ---------------------------------------------------------------------        
+        # Update all product
+        # ---------------------------------------------------------------------        
+
+        product_ids = self.search(cr, uid, [
+            ('metel_brand_code', '=', metel_brand_code),
+            ('metel_discount', '=', metel_discount),
+            ('metel_discount_id', '=', False),
+            ], context=context)
+
+        product_pool.write(cr, uid, product_ids, {
+            'metel_discount_id': metel_discount_id,
+            }, context=context)
+        _logger.warning('Updating %s product with discount: %s' % (
+            len(product_ids),
+            metel_discount,
+            ))
+        return True    
+        
+    
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
