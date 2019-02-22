@@ -81,7 +81,10 @@ for product in product_pool.browse(product_ids):
     # -------------------------------------------------------------------------
     # Crete or get discount category:            
     # -------------------------------------------------------------------------
-    key = (brand_code, metel_discount) # XXX no producer
+    try:
+        key = (brand_code, metel_discount) # XXX no producer
+    except:
+        import pdb; pdb.set_trace()
     if key not in discount_group:
         category_ids = category_pool.search([
             ('parent_id', '=', metel_brand_id),
@@ -89,16 +92,15 @@ for product in product_pool.browse(product_ids):
             ('metel_mode', '=', 'discount'),
             ])
             
-        data = {
-            'parent_id': metel_brand_id,
-            'metel_discount': metel_discount,
-            'name': metel_discount,
-            'metel_mode': 'discount',
-            }
         if category_ids:
             discount_group[key] = category_ids[0]
         else:
-            discount_group[key] = category_pool.create(data)
+            discount_group[key] = category_pool.create({
+                'parent_id': metel_brand_id,
+                'metel_discount': metel_discount,
+                'name': metel_discount,
+                'metel_mode': 'discount',
+                }).id
                                 
     product_pool.write(product.id, {
         'metel_discount_id': discount_group[key],
