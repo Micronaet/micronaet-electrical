@@ -1,6 +1,23 @@
 <?xml version="1.0"?>
 <openerp>
     <data>
+        <record model="ir.ui.view" id="view_account_analytic_account_cost_form">
+            <field name="name">account.analytic.account.cost.form</field>
+            <field name="model">account.analytic.account</field>
+            <field name="priority" eval="40" />
+            <field name="arch" type="xml">
+                <form string="Analytic account cost" version="7.0">        
+                    <sheet>
+                        <group col="4" colspan="4">
+                            <field name="name" />
+                            <field name="partner_id" />
+                            <separator string="Detail:" colspan="4"/>
+                            <field name="statinfo_complete" colspan="4" nolabel="1" widget="html"/>
+                        </group>
+                    </sheet>        
+                </form>
+            </field>
+        </record>
         <record model="ir.actions.act_window" id="action_stock_picking_form">
             <field name="name">Stock picking for account</field>
             <field name="res_model">stock.picking</field>
@@ -42,6 +59,7 @@
                     <button class="oe_inline oe_stat_button" name="%(electrical_account_stats.action_stock_move_form)d" type="action" icon="fa-list">
                         <field string="Stock move" name="statinfo_move" widget="statinfo" />
                     </button>
+                    <button class="oe_inline oe_stat_button" name="get_detail_account_cost" string="Analytic total" type="object" icon="fa-usd"/>
                 </div>
             </field>
         </record>
