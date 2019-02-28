@@ -126,7 +126,7 @@ msgstr "Cliente"
 #. module: electrical_customer_activity
 #: selection:res.partner.activity.wizard,mode:0
 msgid "Partner report"
-msgstr "Stampa clienti"
+msgstr "Dettaglio clienti"
 
 #. module: electrical_customer_activity
 #: selection:res.partner.activity.wizard,mode:0

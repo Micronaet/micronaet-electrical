@@ -10,7 +10,7 @@
                    <header>
                        <button name="action_print" string="Print partner activity" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('mode','!=','report')]}"/>
                        <button name="action_print_touched" string="Print partner touched" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('mode','!=','partner')]}"/>
-                       Or 
+                       O
                        <button string="Cancel" class="oe_link" special="cancel" />
                    </header>                   
                    <group colspan="4" col="4">

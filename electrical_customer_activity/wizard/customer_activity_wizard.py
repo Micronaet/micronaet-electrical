@@ -1221,7 +1221,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         'mode': fields.selection([
             ('partner', 'Partners list'),
             ('report', 'Partner report'),
-            ], 'Mode'),
+            ], 'Mode', required=True),
             
         'partner_id': fields.many2one(
             'res.partner', 'Partner'),
