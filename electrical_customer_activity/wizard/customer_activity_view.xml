@@ -26,8 +26,8 @@
                         <field name="partner_id" domain="[('is_company', '=', True)]" attrs="{'required': [('mode','=','report')], 'invisible': [('mode','!=','report')]}" />
                         <field name="account_id" domain="[('type','in',['normal','contract']),'|',('partner_id','=',False),('partner_id','=',partner_id)]" attrs="{'invisible': [('mode','!=','report')]}" /><!--('state', '&lt;&gt;', 'close')/>-->
                         
-                        <separator string="Intervent management:" colspan="4" attrs="{'invisible': [('mode','!=','report')]}"/>
-                        <field name="intervent_mode" attrs="{'invisible': [('mode','!=','report')]}"/>
+                        <separator string="Intervent management:" colspan="4" />
+                        <field name="intervent_mode" />
                         <field name="mark_invoiced" attrs="{'invisible': ['|',('intervent_mode', '=', 'invoiced'),('mode','!=','report')]}"/>
                         
                         <separator string="Excel configuration:" colspan="4"/>

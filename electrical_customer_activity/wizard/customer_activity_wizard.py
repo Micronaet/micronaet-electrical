@@ -59,8 +59,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         # Intervent management:
         intervent_mode = wiz_browse.intervent_mode
-        mark_invoiced = wiz_browse.mark_invoiced
-        
+
         # ---------------------------------------------------------------------
         # Pool used:
         # ---------------------------------------------------------------------
@@ -126,16 +125,19 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('date_start', '<=', to_date),
             #('account_id.is_extra_report', '=', False),
             ]
+
+        # Manage filter on invoiced intervent:    
+        if intervent_mode == 'invoiced':
+            domain.append(('is_invoiced', '=', True))    
+        elif intervent_mode == 'pending':
+            domain.append(('is_invoiced', '=', False))    
+        # else all    
+            
         intervent_ids = intervent_pool.search(cr, uid, domain, context=context)
         intervent_partner_ids = [item.intervent_partner_id.id for item in \
             intervent_pool.browse(
                 cr, uid, intervent_ids, context=context)]
         partner_set.update(set(tuple(intervent_partner_ids)))
-
-        if mark_invoiced and intervent_ids:
-            intervent_pool.write(cr, uid, intervent_ids, {
-                'is_invoiced': True,
-                }, context=context)
 
         # ---------------------------------------------------------------------
         #                         Excel report:
@@ -200,6 +202,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         account_id = wiz_browse.account_id.id
         from_date = wiz_browse.from_date
         to_date = wiz_browse.to_date
+
+        # Intervent management:
+        intervent_mode = wiz_browse.intervent_mode
+        mark_invoiced = wiz_browse.mark_invoiced
         
         filter_text = \
             'Interventi del periodo: [%s - %s], Cliente: %s, Commessa: %s' % (
@@ -331,6 +337,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('date_start', '<=', to_date),
             #('account_id.is_extra_report', '=', False),
             ]
+
+        # Manage filter on invoiced intervent:    
+        if intervent_mode == 'invoiced':
+            domain.append(('is_invoiced', '=', True))    
+        elif intervent_mode == 'pending':
+            domain.append(('is_invoiced', '=', False))    
+        # else all    
+
         #if account_id:
         #    domain.append(('account_id', '=', account_id))
         intervent_ids = intervent_pool.search(cr, uid, domain, context=context)
@@ -346,6 +360,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
             if key not in intervent_db:
                 intervent_db[key] = []
             intervent_db[key].append(intervent)
+
+        if mark_invoiced and intervent_ids:
+            intervent_pool.write(cr, uid, intervent_ids, {
+                'is_invoiced': True,
+                }, context=context)
+            _logger.warning('Update as invoices %s intervent' % len(
+                intervent_ids))
 
         # ---------------------------------------------------------------------
         # E. ACCOUNT:
