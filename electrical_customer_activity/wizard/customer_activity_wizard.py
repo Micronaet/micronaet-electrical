@@ -606,8 +606,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             #metel_list_price:
                             standard_price = product.standard_price 
                             discount_price = product.metel_sale
-                            #list_price = product.lst_price
-                            list_price = move.price_unit
+                            list_price = product.lst_price
+                            #list_price = move.price_unit
                             
                             subtotal1 = standard_price * move.product_qty
                             subtotal2 = discount_price * move.product_qty
@@ -759,8 +759,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 #metel_list_price:
                                 standard_price = product.standard_price 
                                 discount_price = product.metel_sale
-                                #list_price = product.lst_price
-                                list_price = move.price_unit
+                                list_price = product.lst_price
+                                #list_price = move.price_unit
                                 
                                 subtotal1 = standard_price * move.product_qty
                                 subtotal2 = discount_price * move.product_qty
