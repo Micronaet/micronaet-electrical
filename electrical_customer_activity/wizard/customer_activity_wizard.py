@@ -56,6 +56,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
         from_date = wiz_browse.from_date
         to_date = wiz_browse.to_date
+
+        # Intervent management:
+        intervent_mode = wiz_browse.intervent_mode
+        mark_invoiced = wiz_browse.mark_invoiced
         
         # ---------------------------------------------------------------------
         # Pool used:
@@ -127,6 +131,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
             intervent_pool.browse(
                 cr, uid, intervent_ids, context=context)]
         partner_set.update(set(tuple(intervent_partner_ids)))
+
+        if mark_invoiced and intervent_ids:
+            intervent_pool.write(cr, uid, intervent_ids, {
+                'is_invoiced': True,
+                }, context=context)
 
         # ---------------------------------------------------------------------
         #                         Excel report:
@@ -385,14 +394,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'Utente', 'Durata', 'Totale', 'Reale', 
                     'Viaggio', 'H. Viaggio', 'Pausa', 'H. Pausa',  
                     'Richiesta', 'Intervento', 'Note',
-                    'Costo', 'Ricavo', 'Conteggio', 'Non usare', 'Stato'                                    
+                    'Costo', 'Ricavo', 'Conteggio', 'Non usare', 'Stato',
+                    'Fatt.',                                 
                     ],
                 'width': [
                     35, 15, 20, 15, 20,
                     20, 10, 10, 10, 
                     3, 10, 3, 10,
                     30, 30, 30, 
-                    10, 10, 10, 5, 15,
+                    10, 10, 10, 5, 15, 5,
                     ],
                 'total': {},
                 'cost': {},
@@ -1028,6 +1038,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'X' if intervent.not_in_report else '',
                     
                     intervent.state,
+                    'X' if intervent.is_invoiced else '',
                     ]
 
                 excel_pool.write_xls_line(
@@ -1199,6 +1210,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
         'to_date': fields.date('To date <', required=True),
         'float_time': fields.boolean('Formatted hour', 
             help='If checked print hour in HH:MM format'),
+         
+        # Intervent management:
+        'intervent_mode': fields.selection([
+            ('pending', 'Pending'),
+            ('invoiced', 'Invoiced'),
+            ('all', 'All'),
+            ], 'Intervent mode', required=True,
+            help='Select intervent depend on invoice mode'),
+        'mark_invoiced': fields.boolean('Mark intervent as invoiced', 
+            help='All selected intervent will be marked as invoiced'),
         }
         
     _defaults = {
@@ -1207,6 +1228,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         'from_date': lambda *x: datetime.now().strftime('%Y-%m-01'),
         'to_date': lambda *x: (
             datetime.now() + relativedelta(months=1)).strftime('%Y-%m-01'),
+        'intervent_mode': lambda *x: 'pending',
         }
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

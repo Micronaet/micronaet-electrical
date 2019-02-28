@@ -14,18 +14,23 @@
                        <button string="Cancel" class="oe_link" special="cancel" />
                    </header>                   
                    <group colspan="4" col="4">
-                        <separator string="Mode" colspan="4"/>
+                        <separator string="Mode:" colspan="4"/>
                         <field name="mode" />
                         <newline/>
                         
-                        <separator string="Period" colspan="4"/>
+                        <separator string="Period:" colspan="4"/>
                         <field name="from_date" />
                         <field name="to_date" />
                    
-                        <separator string="Relation" colspan="4"/>
+                        <separator string="Relation:" colspan="4"/>
                         <field name="partner_id" domain="[('is_company', '=', True)]" attrs="{'required': [('mode','=','report')], 'invisible': [('mode','!=','report')]}" />
                         <field name="account_id" domain="[('type','in',['normal','contract']),'|',('partner_id','=',False),('partner_id','=',partner_id)]" attrs="{'invisible': [('mode','!=','report')]}" /><!--('state', '&lt;&gt;', 'close')/>-->
                         
+                        <separator string="Intervent management:" colspan="4" attrs="{'invisible': [('mode','!=','report')]}"/>
+                        <field name="intervent_mode" attrs="{'invisible': [('mode','!=','report')]}"/>
+                        <field name="mark_invoiced" attrs="{'invisible': ['|',('intervent_mode', '=', 'invoiced'),('mode','!=','report')]}"/>
+                        
+                        <separator string="Excel configuration:" colspan="4"/>
                         <field name="float_time" />
                    </group>
                 </form>
