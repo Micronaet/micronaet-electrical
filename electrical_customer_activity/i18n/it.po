@@ -1,0 +1,174 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* electrical_customer_activity
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 8.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-02-28 10:59+0000\n"
+"PO-Revision-Date: 2019-02-28 12:02+0100\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"Language: it\n"
+"X-Generator: Poedit 1.6.10\n"
+
+#. module: electrical_customer_activity
+#: field:res.partner.activity.wizard,account_id:0
+msgid "Account"
+msgstr "Conto analitico"
+
+#. module: electrical_customer_activity
+#: selection:res.partner.activity.wizard,intervent_mode:0
+msgid "All"
+msgstr "Tutti"
+
+#. module: electrical_customer_activity
+#: help:res.partner.activity.wizard,mark_invoiced:0
+msgid "All selected intervent will be marked as invoiced"
+msgstr "Tutti gli interventi selezionati vengono marcati come fatturati"
+
+#. module: electrical_customer_activity
+#: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
+msgid "Cancel"
+msgstr "Annulla"
+
+#. module: electrical_customer_activity
+#: field:res.partner.activity.wizard,create_uid:0
+msgid "Created by"
+msgstr "Creato da"
+
+#. module: electrical_customer_activity
+#: field:res.partner.activity.wizard,create_date:0
+msgid "Created on"
+msgstr "Creato il"
+
+#. module: electrical_customer_activity
+#: model:ir.actions.act_window,name:electrical_customer_activity.action_res_partner_activity_wizard_view
+#: model:ir.ui.menu,name:electrical_customer_activity.menu_res_partner_activity_wizard_view
+msgid "Customer activity"
+msgstr "Attività clienti"
+
+#. module: electrical_customer_activity
+#: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
+msgid "Excel configuration:"
+msgstr "Configurazione Excel:"
+
+#. module: electrical_customer_activity
+#: field:res.partner.activity.wizard,float_time:0
+msgid "Formatted hour"
+msgstr "Ora formattata"
+
+#. module: electrical_customer_activity
+#: field:res.partner.activity.wizard,from_date:0
+msgid "From date >= "
+msgstr "Dalla data >= "
+
+#. module: electrical_customer_activity
+#: field:res.partner.activity.wizard,id:0
+msgid "ID"
+msgstr "ID"
+
+#. module: electrical_customer_activity
+#: help:res.partner.activity.wizard,float_time:0
+msgid "If checked print hour in HH:MM format"
+msgstr "Se spuntato esporta l'orario nel formato HH:MM"
+
+#. module: electrical_customer_activity
+#: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
+msgid "Intervent management:"
+msgstr "Gestione interventi:"
+
+#. module: electrical_customer_activity
+#: field:res.partner.activity.wizard,intervent_mode:0
+msgid "Intervent mode"
+msgstr "Modalità intervento"
+
+#. module: electrical_customer_activity
+#: selection:res.partner.activity.wizard,intervent_mode:0
+msgid "Invoiced"
+msgstr "Fatturati"
+
+#. module: electrical_customer_activity
+#: field:res.partner.activity.wizard,write_uid:0
+msgid "Last Updated by"
+msgstr "Aggiornato da"
+
+#. module: electrical_customer_activity
+#: field:res.partner.activity.wizard,write_date:0
+msgid "Last Updated on"
+msgstr "Aggiornato il"
+
+#. module: electrical_customer_activity
+#: field:res.partner.activity.wizard,mark_invoiced:0
+msgid "Mark intervent as invoiced"
+msgstr "Segna tutti gli interventi selezionati come fatturati"
+
+#. module: electrical_customer_activity
+#: field:res.partner.activity.wizard,mode:0
+msgid "Mode"
+msgstr "Modalità"
+
+#. module: electrical_customer_activity
+#: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
+msgid "Mode:"
+msgstr "Modalità:"
+
+#. module: electrical_customer_activity
+#: field:res.partner.activity.wizard,partner_id:0
+msgid "Partner"
+msgstr "Cliente"
+
+#. module: electrical_customer_activity
+#: selection:res.partner.activity.wizard,mode:0
+msgid "Partner report"
+msgstr "Stampa clienti"
+
+#. module: electrical_customer_activity
+#: selection:res.partner.activity.wizard,mode:0
+msgid "Partners list"
+msgstr "Lista clienti"
+
+#. module: electrical_customer_activity
+#: selection:res.partner.activity.wizard,intervent_mode:0
+msgid "Pending"
+msgstr "Pendenti"
+
+#. module: electrical_customer_activity
+#: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
+msgid "Period:"
+msgstr "Periodo:"
+
+#. module: electrical_customer_activity
+#: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
+msgid "Print partner activity"
+msgstr "Stampa attività clienti"
+
+#. module: electrical_customer_activity
+#: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
+msgid "Print partner touched"
+msgstr "Stampa clienti movimentati"
+
+#. module: electrical_customer_activity
+#: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
+msgid "Relation:"
+msgstr "Relazioni:"
+
+#. module: electrical_customer_activity
+#: help:res.partner.activity.wizard,intervent_mode:0
+msgid "Select intervent depend on invoice mode"
+msgstr "Seleziona interventi dipendenti dalla modalità di fatturazione"
+
+#. module: electrical_customer_activity
+#: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
+msgid "Stats report"
+msgstr "Report statistico"
+
+#. module: electrical_customer_activity
+#: field:res.partner.activity.wizard,to_date:0
+msgid "To date <"
+msgstr "Alla data <"
