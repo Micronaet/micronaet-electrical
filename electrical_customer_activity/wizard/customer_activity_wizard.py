@@ -47,6 +47,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
     '''
     _name = 'res.partner.activity.wizard'
 
+    def data_mask_filter(self, data, mask):
+        ''' data = list of data
+            mask = bit list with 0 or 1 
+            Using mask return data with value if 1 in the mask
+        '''
+        if not mask:
+            return data    
+        return [data[i] for i in range(0, len(data)) if mask[i:i + 1] != '0']
+
     # -------------------------------------------------------------------------
     # Wizard button event:
     # -------------------------------------------------------------------------
@@ -268,6 +277,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         from_date = wiz_browse.from_date
         to_date = wiz_browse.to_date
         no_account = wiz_browse.no_account
+        report_mode = wiz_browse.mode
 
         # Intervent management:
         intervent_mode = wiz_browse.intervent_mode
@@ -288,6 +298,32 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ', Solo senza commessa' if no_account else '',
                 )
 
+        # Mask mode for 5 views:
+        mask = {
+            'Interventi': [True, ''],
+            'Consegne': [True, ''],
+            'DDT': [True, ''],
+            #'Fatture': [True, ''],
+            
+            #'Riepilogo': [True, ''],
+            'Commesse': [True, ''],
+            }
+
+        if report_mode in ('detail', 'summary'):
+            # Hide page:
+            #mask['Interventi'][0] = False
+            mask['DDT'][0] = False
+            mask['Commesse'][0] = False
+            
+            # Hide columns:
+            mask['Interventi'][1] = '011100010010000110010000'
+            mask['Consegne'][1] = '000001111001001'
+            mask['DDT'][1] = ''
+            #mask['Fatture'][1] = False
+            #mask['Riepilogo'][1] = False
+            #mask['Commesse'][1] = False
+            
+            
         # ---------------------------------------------------------------------
         # Pool used:
         # ---------------------------------------------------------------------
@@ -329,6 +365,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('ddt_id', '=', False), # Not DDT
             ('pick_move', '=', 'out'), # Only out movement
             ]
+            
         if contact_id:
             domain.append(('contact_id', '=', contact_id))
 
@@ -440,7 +477,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             domain.append(('is_invoiced', '=', True))    
         elif intervent_mode == 'pending':
             domain.append(('is_invoiced', '=', False))
-        # TODO summary, detailed
+        # TODO summary, detail
 
         intervent_ids = intervent_pool.search(cr, uid, domain, context=context)
         intervent_proxy = intervent_pool.browse(
@@ -505,22 +542,22 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             'Interventi': { # Invertent list
                 'row': 0,
-                'header': [
-                    'Commessa', 'Contatto', 'Data', 'Intervento', 'Oggetto', 'Modo', 
-                    'Operazione', 
+                'header': self.data_mask_filter([
+                    'Commessa', 'Contatto', 'Data', 'Intervento', 'Oggetto', 
+                    'Modo', 'Operazione', 
                     'Utente', 'Durata', 'Totale', 'Reale', 
                     'Viaggio', 'H. Viaggio', 'Pausa', 'H. Pausa',  
                     'Richiesta', 'Intervento', 'Note',
                     'Costo', 'Ricavo', 'Conteggio', 'Non usare', 'Stato',
                     'Fatt.',                                 
-                    ],
-                'width': [
+                    ], mask['Interventi'][1]),
+                'width': self.data_mask_filter([
                     35, 20, 15, 15, 20, 15, 20,
                     20, 10, 10, 10, 
                     3, 10, 3, 10,
                     30, 30, 30, 
                     10, 10, 10, 5, 15, 5,
-                    ],
+                    ], mask['Interventi'][1]),
                 'total': {},
                 'cost': {},
                 'data': intervent_db,
@@ -551,7 +588,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'Sub. ultimo', 'Sub. scontato', 'Sub. METEL',
                     ],
                 'width': [
-                    35, 20, s15, 20, 25, 35, 10, 
+                    35, 20, 15, 20, 25, 35, 10, 
                     15, 15, 15, 15,
                     20, 20, 20,
                     ],
@@ -1076,132 +1113,135 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         # D. INTERVENT:
         # ---------------------------------------------------------------------
-        ws_name = 'Interventi'
-        sheet = sheets[ws_name]
-        summary_data = summary[ws_name]['data']
+        if mask['Interventi'][0]: # Show / Hide page:
+            ws_name = 'Interventi'
+            sheet = sheets[ws_name]
+            summary_data = summary[ws_name]['data']
 
-        partner_forced = False # update first time!
-        
-        total = sheet['total']
-        cost = sheet['cost']
-        for key in intervent_db:
-            for intervent in intervent_db[key]:
-                # Readability:
-                user = intervent.user_id
-                partner = intervent.intervent_partner_id
-                account = intervent.account_id
-                account_id = account.id
-                user_id = user.id
-                user_mode_id = intervent.user_mode_id.id
-                
+            partner_forced = False # update first time!
+            
+            total = sheet['total']
+            cost = sheet['cost']
+
+            for key in intervent_db:
+                for intervent in intervent_db[key]:
+                    # Readability:
+                    user = intervent.user_id
+                    partner = intervent.intervent_partner_id
+                    account = intervent.account_id
+                    account_id = account.id
+                    user_id = user.id
+                    user_mode_id = intervent.user_mode_id.id
+                    
+                    # ---------------------------------------------------------
+                    # Initial setup of mapping and forced price database:
+                    # ---------------------------------------------------------
+                    if partner_forced == False:
+                        partner_forced = {}
+                        for forced in partner.mode_revenue_ids:        
+                            partner_forced[forced.mode_id.id] = \
+                                forced.list_price
+                    # ---------------------------------------------------------
+
+                    # Read revenue:        
+                    if user_mode_id in partner_forced: # partner forced
+                        unit_revenue = partner_forced[user_mode_id]
+                    else: # read for default list:
+                        unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
+
+                    if account and account not in account_used:
+                        account_used.append(account)
+
+                    if account_id not in total:
+                        total[account_id] = 0.0
+                        cost[account_id] = 0.0
+                    
+                    #document_total = 0.0
+                    this_revenue = intervent.unit_amount * unit_revenue
+                    this_cost = intervent.amount
+
+                    if not this_revenue or not this_cost:
+                        f_number_color = f_number_red
+                        f_text_color = f_text_red
+                        ddt_error = True
+                    else:    
+                        f_number_color = f_number
+                        f_text_color = f_text
+
+                    data = data_mask_filter([
+                        account.name or 'NON ASSEGNATA',
+                        intervent.intervent_contact_id.name or '/',
+                        intervent.date_start,
+                        intervent.ref or 'BOZZA',
+                        intervent.name,
+                        intervent.mode,
+                        intervent.operation_id.name or '',
+                        intervent.user_id.name,
+                        
+                        # Intervent:
+                        intervent.intervent_duration,
+                        intervent.intervent_total,
+                        intervent.unit_amount,
+
+                        # Extra hour:                    
+                        intervent.trip_require,
+                        intervent.trip_hour,                    
+                        intervent.break_require,
+                        intervent.break_hour,
+                        
+                        # Text:
+                        intervent.intervention_request,
+                        intervent.intervention or intervent.name,
+                        intervent.internal_note,
+                        
+                        # Revenue:
+                        (this_cost, f_number_color), # total cost
+                        (this_revenue, f_number_color), # total revenue
+                        
+                        intervent.to_invoice.name or '/',
+                        'X' if intervent.not_in_report else '',
+                        
+                        intervent.state,
+                        'X' if intervent.is_invoiced else '',
+                        ], mask['Interventi'][1]))
+
+                    excel_pool.write_xls_line(
+                        ws_name, sheet['row'], data,
+                        default_format=f_text_color
+                        )
+                    sheet['row'] += 1
+
+                    # Summary data (Intervent):   
+                    block_key = (account.name, intervent.ref)
+                    if block_key not in summary_data:
+                        summary_data[block_key] = []
+                    summary_data[block_key].append((
+                        (account.name, f_text_color), 
+                        (intervent.ref, f_text_color), 
+
+                        (this_cost, f_number_color),                    
+                        (this_revenue, f_number_color),
+                        ))
+
+                    # ---------------------------------------------------------
+                    # Totals:
+                    # ---------------------------------------------------------
+                    # A. Total per account:                            
+                    cost[account_id] += this_cost
+                    total[account_id] += this_revenue
+                    
+                    # B. Line total in same sheet:
+                    summary[ws_name]['total_cost'] += this_cost
+                    summary[ws_name]['total_revenue'] += this_revenue
+
                 # -------------------------------------------------------------
-                # Initial setup of mapping and forced price database:
+                # Total line at the end of the block:
                 # -------------------------------------------------------------
-                if partner_forced == False:
-                    partner_forced = {}
-                    for forced in partner.mode_revenue_ids:        
-                        partner_forced[forced.mode_id.id] = forced.list_price
-                # -------------------------------------------------------------
-
-                # Read revenue:        
-                if user_mode_id in partner_forced: # partner forced
-                    unit_revenue = partner_forced[user_mode_id]
-                else: # read for default list:
-                    unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
-
-                if account and account not in account_used:
-                    account_used.append(account)
-
-                if account_id not in total:
-                    total[account_id] = 0.0
-                    cost[account_id] = 0.0
-                
-                #document_total = 0.0
-                this_revenue = intervent.unit_amount * unit_revenue
-                this_cost = intervent.amount
-
-                if not this_revenue or not this_cost:
-                    f_number_color = f_number_red
-                    f_text_color = f_text_red
-                    ddt_error = True
-                else:    
-                    f_number_color = f_number
-                    f_text_color = f_text
-
-                data = [
-                    account.name or 'NON ASSEGNATA',
-                    intervent.intervent_contact_id.name or '/',
-                    intervent.date_start,
-                    intervent.ref or 'BOZZA',
-                    intervent.name,
-                    intervent.mode,
-                    intervent.operation_id.name or '',
-                    intervent.user_id.name,
-                    
-                    # Intervent:
-                    intervent.intervent_duration,
-                    intervent.intervent_total,
-                    intervent.unit_amount,
-
-                    # Extra hour:                    
-                    intervent.trip_require,
-                    intervent.trip_hour,                    
-                    intervent.break_require,
-                    intervent.break_hour,
-                    
-                    # Text:
-                    intervent.intervention_request,
-                    intervent.intervention,
-                    intervent.internal_note,
-                    
-                    # Revenue:
-                    (this_cost, f_number_color), # total cost
-                    (this_revenue, f_number_color), # total revenue
-                    
-                    intervent.to_invoice.name or '/',
-                    'X' if intervent.not_in_report else '',
-                    
-                    intervent.state,
-                    'X' if intervent.is_invoiced else '',
-                    ]
-
                 excel_pool.write_xls_line(
-                    ws_name, sheet['row'], data,
-                    default_format=f_text_color
-                    )
-                sheet['row'] += 1
-
-                # Summary data (Intervent):   
-                block_key = (account.name, intervent.ref)
-                if block_key not in summary_data:
-                    summary_data[block_key] = []
-                summary_data[block_key].append((
-                    (account.name, f_text_color), 
-                    (intervent.ref, f_text_color), 
-
-                    (this_cost, f_number_color),                    
-                    (this_revenue, f_number_color),
-                    ))
-
-                # -------------------------------------------------------------
-                # Totals:
-                # -------------------------------------------------------------
-                # A. Total per account:                            
-                cost[account_id] += this_cost
-                total[account_id] += this_revenue
-                
-                # B. Line total in same sheet:
-                summary[ws_name]['total_cost'] += this_cost
-                summary[ws_name]['total_revenue'] += this_revenue
-
-            # -----------------------------------------------------------------
-            # Total line at the end of the block:
-            # -----------------------------------------------------------------
-            excel_pool.write_xls_line(
-                ws_name, sheet['row'], [
-                    (summary[ws_name]['total_cost'], f_number),
-                    (summary[ws_name]['total_revenue'], f_number),
-                    ], default_format=f_text, col=18)
+                    ws_name, sheet['row'], [
+                        (summary[ws_name]['total_cost'], f_number),
+                        (summary[ws_name]['total_revenue'], f_number),
+                        ], default_format=f_text, col=18)
 
         # ---------------------------------------------------------------------
         # E. ACCOUNT:
