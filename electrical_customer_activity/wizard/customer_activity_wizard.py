@@ -274,11 +274,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
         mark_invoiced = wiz_browse.mark_invoiced
         
         filter_text = \
-            'Interventi del periodo: [%s - %s], Cliente: %s, Contatto: %s, Commessa: %%s' % (
+            'Interventi del periodo: [%s - %s], Cliente: %s, Contatto: %s, Commessa: %s%s' % (
                 from_date or '...',
                 to_date or '...',
+                
                 wiz_browse.partner_id.name,
                 wiz_browse.contact_id.name if wiz_browse.contact_id else '/',
+                
                 '[%s] %s' % (
                     wiz_browse.account_id.code or '/', 
                     wiz_browse.account_id.name,  
@@ -385,6 +387,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         # C. INVOICED MATERIAL:
         # ---------------------------------------------------------------------
+        """
         # Domain:
         domain = [
             ('partner_id', '=', partner_id),
@@ -395,7 +398,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             domain.append(('contact_id', '=', contact_id))
 
         if no_account:
-            domain.append(('account_id', '=', False))           
+            domain.append(('analytic_id', '=', False))           
         elif account_id:
             domain.append(('analytic_id', '=', account_id))
 
@@ -412,6 +415,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             if key not in invoice_db:
                 invoice_db[key] = []
             invoice_db[key].append(invoice)
+        """
 
         # ---------------------------------------------------------------------
         # D. INTERVENT:
@@ -525,7 +529,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'row': 0,
                 'header': [
                     'Commessa', 'Picking', 'Data', 'Stato', 
-                    'Codice', 'UM', 'Descrizione',
+                    'Codice', 'Descrizione', 'UM', 
                     'Q.', 'Costo ultimo', 'Scontato', 'METEL', 
                     'Sub. ultimo', 'Sub. scontato', 'Sub. METEL',
                     ],
