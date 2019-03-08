@@ -73,6 +73,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         intervent_pool = self.pool.get('hr.analytic.timesheet')
 
         partner_set = set()
+        contact_set = set()
+
         # ---------------------------------------------------------------------
         # A. Picking partner:
         # ---------------------------------------------------------------------
@@ -83,10 +85,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('pick_move', '=', 'out'), # Only out movement
             ]
         picking_ids = picking_pool.search(cr, uid, domain, context=context)
-        picking_partner_ids = [item.partner_id.id for item in \
-            picking_pool.browse(
-                cr, uid, picking_ids, context=context)]
+        picking_proxy = picking_pool.browse(
+            cr, uid, picking_ids, context=context)
+        
+        # Partner:
+        picking_partner_ids = [item.partner_id.id for item in picking_proxy]
         partner_set.update(set(tuple(picking_partner_ids)))
+        
+        # Contact:
+        picking_contact_ids = [item.contact_id.id for item in picking_proxy]
+        contact_set.update(set(tuple(picking_contact_ids)))
     
         # ---------------------------------------------------------------------
         # B. DDT:
@@ -98,9 +106,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
             #('invoice_id', '=', False), # Not Invoiced
             ]
         ddt_ids = ddt_pool.search(cr, uid, domain, context=context)
-        ddt_partner_ids = [item.partner_id.id for item in ddt_pool.browse(
-            cr, uid, ddt_ids, context=context)]
-        partner_set.update(set(tuple(ddt_partner_ids)))   
+        ddt_proxy = ddt_pool.browse(cr, uid, ddt_ids, context=context)
+        
+        # Partner:
+        ddt_partner_ids = [item.partner_id.id for item in ddt_proxy]
+        partner_set.update(set(tuple(ddt_partner_ids)))
+
+        # Contact:
+        ddt_contact_ids = [item.contact_id.id for item in ddt_proxy]
+        contact_set.update(set(tuple(ddt_contact_ids)))
 
         # ---------------------------------------------------------------------
         # C. Invoice:
@@ -134,14 +148,24 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # else all    
             
         intervent_ids = intervent_pool.search(cr, uid, domain, context=context)
+        intervent_proxy = intervent_pool.browse(
+                cr, uid, intervent_ids, context=context)
+        
+        # Partner
         intervent_partner_ids = [item.intervent_partner_id.id for item in \
-            intervent_pool.browse(
-                cr, uid, intervent_ids, context=context)]
+            intervent_proxy]
         partner_set.update(set(tuple(intervent_partner_ids)))
+
+        # Contact
+        intervent_contact_ids = [item.intervent_contact_id.id for item in \
+            intervent_proxy]
+        contact_set.update(set(tuple(intervent_contact_ids)))
+        
 
         # ---------------------------------------------------------------------
         #                         Excel report:
         # ---------------------------------------------------------------------
+        # Partner:
         ws_name = 'Partner'
         row = 0
         header = [
@@ -180,6 +204,46 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 partner_id in ddt_partner_ids,
                 #partner_id in invoice_partner_ids,
                 partner_id in intervent_partner_ids,
+                ]
+            
+            excel_pool.write_xls_line(
+                ws_name, row, data,
+                default_format=f_text
+                )
+            row += 1
+
+        ws_name = 'Contatti'
+        row = 0
+        header = [
+            'Contatti', 'Consegne', 'DDT', 
+            #'Fatture', 
+            'Interventi',
+            ]
+        width = [35, 10, 10, 10]
+
+        excel_pool.create_worksheet(ws_name)
+
+        # Setup columns
+        excel_pool.column_width(ws_name, width)
+            
+        # Print header
+        excel_pool.write_xls_line(
+            ws_name, row, header, default_format=f_header)
+        row += 1    
+        
+        contact_ids = tuple(contact_set)
+        for contact in sorted(partner_pool.browse(
+                cr, uid, contact_ids, context=context),
+                key = lambda p: p.name,
+                ):
+
+            contact_id = contact.id
+            data = [
+                contact.name,
+                contact_id in picking_contact_ids,
+                contact_id in ddt_contact_ids,
+                #partner_id in invoice_partner_ids,
+                contact_id in intervent_contact_ids,
                 ]
             
             excel_pool.write_xls_line(
