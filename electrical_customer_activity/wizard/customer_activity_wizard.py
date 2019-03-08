@@ -1203,7 +1203,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         
                         intervent.state,
                         'X' if intervent.is_invoiced else '',
-                        ], mask['Interventi'][1]))
+                        ], mask['Interventi'][1])
 
                     excel_pool.write_xls_line(
                         ws_name, sheet['row'], data,
