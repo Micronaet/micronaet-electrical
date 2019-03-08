@@ -506,7 +506,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Interventi': { # Invertent list
                 'row': 0,
                 'header': [
-                    'Commessa', 'Intervento', 'Oggetto', 'Modo', 'Operazione', 
+                    'Commessa', 'Data', 'Intervento', 'Oggetto', 'Modo', 
+                    'Operazione', 
                     'Utente', 'Durata', 'Totale', 'Reale', 
                     'Viaggio', 'H. Viaggio', 'Pausa', 'H. Pausa',  
                     'Richiesta', 'Intervento', 'Note',
@@ -514,7 +515,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'Fatt.',                                 
                     ],
                 'width': [
-                    35, 15, 20, 15, 20,
+                    35, 15, 15, 20, 15, 20,
                     20, 10, 10, 10, 
                     3, 10, 3, 10,
                     30, 30, 30, 
@@ -1124,6 +1125,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                 data = [
                     account.name or 'NON ASSEGNATA',
+                    intervent.date_start,
                     intervent.ref or 'BOZZA',
                     intervent.name,
                     intervent.mode,
@@ -1193,7 +1195,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ws_name, sheet['row'], [
                     (summary[ws_name]['total_cost'], f_number),
                     (summary[ws_name]['total_revenue'], f_number),
-                    ], default_format=f_text, col=16)
+                    ], default_format=f_text, col=17)
 
         # ---------------------------------------------------------------------
         # E. ACCOUNT:
