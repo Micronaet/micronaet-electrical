@@ -506,7 +506,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Interventi': { # Invertent list
                 'row': 0,
                 'header': [
-                    'Commessa', 'Data', 'Intervento', 'Oggetto', 'Modo', 
+                    'Commessa', 'Contatto', 'Data', 'Intervento', 'Oggetto', 'Modo', 
                     'Operazione', 
                     'Utente', 'Durata', 'Totale', 'Reale', 
                     'Viaggio', 'H. Viaggio', 'Pausa', 'H. Pausa',  
@@ -515,7 +515,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'Fatt.',                                 
                     ],
                 'width': [
-                    35, 15, 15, 20, 15, 20,
+                    35, 20, 15, 15, 20, 15, 20,
                     20, 10, 10, 10, 
                     3, 10, 3, 10,
                     30, 30, 30, 
@@ -529,13 +529,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Consegne': { # Picking to delivery
                 'row': 0,
                 'header': [
-                    'Commessa', 'Picking', 'Data', 'Stato', 
+                    'Commessa', 'Contatto', 'Picking', 'Data', 'Stato', 
                     'Codice', 'Descrizione', 'UM', 
                     'Q.', 'Costo ultimo', 'Scontato', 'METEL', 
                     'Sub. ultimo', 'Sub. scontato', 'Sub. METEL',
                     ],
                 'width': [
-                    35, 15, 25, 20, 
+                    35, 20, 15, 25, 20, 
                     20, 35, 15,
                     10, 10, 10, 10, 
                     15, 15, 15, ],
@@ -546,12 +546,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'DDT': { # DDT not invoiced
                 'row': 0,
                 'header': [
-                    'Commessa', 'DDT', 'Data', 'Codice', 'Descrizione', 'UM', 
+                    'Commessa', 'Contatto', 'DDT', 'Data', 'Codice', 'Descrizione', 'UM', 
                     'Q.', 'Costo ultimo', 'Scontato', 'METEL', 
                     'Sub. ultimo', 'Sub. scontato', 'Sub. METEL',
                     ],
                 'width': [
-                    35, 15, 20, 25, 35, 10, 
+                    35, 20, s15, 20, 25, 35, 10, 
                     15, 15, 15, 15,
                     20, 20, 20,
                     ],
@@ -724,6 +724,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             data = [  
                                 # Header
                                 picking.account_id.name or 'NON ASSEGNATA',
+                                picking.contact_id.name or '/',
                                 picking.name,
                                 picking.min_date,
                                 picking.pick_state,
@@ -768,6 +769,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         data = [
                             # Header
                             picking.account_id.name or 'NON ASSEGNATA',
+                            picking.contact_id.name or '/',
                             picking.name,
                             picking.min_date,
                             picking.pick_state,
@@ -823,7 +825,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     (summary[ws_name]['total_cost'], f_number),
                     (summary[ws_name]['total_discount'], f_number),
                     (summary[ws_name]['total_revenue'], f_number),
-                    ], default_format=f_text, col=11)
+                    ], default_format=f_text, col=12)
                     
         # ---------------------------------------------------------------------
         # B. DDT MATERIAL:
@@ -877,6 +879,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 data = [  
                                     # Header
                                     ddt.account_id.name,
+                                    ddt.contact_id.name or '/',
                                     ddt.name,
                                     ddt.delivery_date,
                                     
@@ -919,6 +922,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             data = [
                                 # Header
                                 ddt.account_id.name or 'NON ASSEGNATA',
+                                ddt.contact_id.name or '/',
                                 ddt.name,
                                 ddt.delivery_date,
                                 
@@ -939,6 +943,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     data = [
                         # Header
                         ddt.account_id.name or 'NON ASSEGNATA',
+                        ddt.contact_id.name or '/',
                         ddt.name,
                         ddt.delivery_date,
                         
@@ -986,7 +991,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 (summary[ws_name]['total_cost'], f_number),
                 (summary[ws_name]['total_discount'], f_number),
                 (summary[ws_name]['total_revenue'], f_number),
-                ], default_format=f_text, col=10)
+                ], default_format=f_text, col=11)
 
 
 
@@ -1125,6 +1130,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                 data = [
                     account.name or 'NON ASSEGNATA',
+                    intervent.intervent_contact_id.name or '/',
                     intervent.date_start,
                     intervent.ref or 'BOZZA',
                     intervent.name,
@@ -1195,7 +1201,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ws_name, sheet['row'], [
                     (summary[ws_name]['total_cost'], f_number),
                     (summary[ws_name]['total_revenue'], f_number),
-                    ], default_format=f_text, col=17)
+                    ], default_format=f_text, col=18)
 
         # ---------------------------------------------------------------------
         # E. ACCOUNT:
