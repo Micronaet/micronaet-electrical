@@ -199,23 +199,27 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
         partner_id = wiz_browse.partner_id.id # Mandatory:
+        contact_id = wiz_browse.contact_id.id
         account_id = wiz_browse.account_id.id
         from_date = wiz_browse.from_date
         to_date = wiz_browse.to_date
+        no_account = wiz_browse.no_account
 
         # Intervent management:
         intervent_mode = wiz_browse.intervent_mode
         mark_invoiced = wiz_browse.mark_invoiced
         
         filter_text = \
-            'Interventi del periodo: [%s - %s], Cliente: %s, Commessa: %s' % (
+            'Interventi del periodo: [%s - %s], Cliente: %s, Contatto: %s, Commessa: %%s' % (
                 from_date or '...',
                 to_date or '...',
                 wiz_browse.partner_id.name,
+                wiz_browse.contact_id.name if wiz_browse.contact_id else '/',
                 '[%s] %s' % (
                     wiz_browse.account_id.code or '/', 
                     wiz_browse.account_id.name,  
                     ) if account_id else 'Tutte',
+                ', Solo senza commessa' if no_account else '',
                 )
 
         # ---------------------------------------------------------------------
@@ -259,8 +263,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('ddt_id', '=', False), # Not DDT
             ('pick_move', '=', 'out'), # Only out movement
             ]
-        if account_id:
+        if contact_id:
+            domain.append(('contact_id', '=', contact_id))
+
+        if no_account:
+            domain.append(('account_id', '=', False))           
+        elif account_id:
             domain.append(('account_id', '=', account_id))
+            
         picking_ids = picking_pool.search(cr, uid, domain, context=context)
         picking_proxy = picking_pool.browse(
             cr, uid, picking_ids, context=context)
@@ -286,8 +296,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('is_invoiced', '=', False), # Not Invoiced
             #('invoice_id', '=', False), # Not Invoiced
             ]
-        if account_id:
+        if contact_id:
+            domain.append(('contact_id', '=', contact_id))
+
+        if no_account:
+            domain.append(('account_id', '=', False))           
+        elif account_id:
             domain.append(('account_id', '=', account_id))
+
         ddt_ids = ddt_pool.search(cr, uid, domain, context=context)
         ddt_proxy = ddt_pool.browse(
             cr, uid, ddt_ids, context=context)
@@ -311,8 +327,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('date_invoice', '>=', from_date),
             ('date_invoice', '<=', to_date),
             ]
-        if account_id:
+        if contact_id:
+            domain.append(('contact_id', '=', contact_id))
+
+        if no_account:
+            domain.append(('account_id', '=', False))           
+        elif account_id:
             domain.append(('analytic_id', '=', account_id))
+
         invoice_ids = invoice_pool.search(cr, uid, domain, context=context)
         invoice_proxy = invoice_pool.browse(
             cr, uid, invoice_ids, context=context)
@@ -337,16 +359,21 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('date_start', '<=', to_date),
             #('account_id.is_extra_report', '=', False),
             ]
+        if contact_id:
+            domain.append(('intervent_contact_id', '=', contact_id))
+
+        if no_account:
+            domain.append(('account_id', '=', False))           
+        elif account_id:
+            domain.append(('account_id', '=', account_id))
 
         # Manage filter on invoiced intervent:    
         if intervent_mode == 'invoiced':
             domain.append(('is_invoiced', '=', True))    
         elif intervent_mode == 'pending':
-            domain.append(('is_invoiced', '=', False))    
-        # else all    
+            domain.append(('is_invoiced', '=', False))
+        # TODO summary, detailed
 
-        #if account_id:
-        #    domain.append(('account_id', '=', account_id))
         intervent_ids = intervent_pool.search(cr, uid, domain, context=context)
         intervent_proxy = intervent_pool.browse(
             cr, uid, intervent_ids, context=context)
@@ -375,8 +402,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         domain = [
             ('partner_id', '=', partner_id),
             ]
-        #if account_id:
-        #    domain.append(('account_id', '=', account_id))
+        # XXX Note: Contacts dont' have account!
+    
         account_ids = account_pool.search(cr, uid, domain, context=context)
         account_proxy = account_pool.browse(
             cr, uid, account_ids, context=context)
@@ -1219,14 +1246,24 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
     _columns = {
         'mode': fields.selection([
-            ('partner', 'Partners list'),
-            ('report', 'Partner report'),
+            # Internal:
+            ('partner', 'Partners list'), # List custsomer touched
+            ('report', 'Partner report'), # Internal detail
+            
+            # Client:
+            ('detail', 'Customer detail'),
+            ('summary', 'Customer summary'),
             ], 'Mode', required=True),
             
         'partner_id': fields.many2one(
             'res.partner', 'Partner'),
+        'contact_id': fields.many2one(
+            'res.partner', 'Contact'),
+
         'account_id': fields.many2one(
             'account.analytic.account', 'Account'),
+        'no_account': fields.boolean('No account'),
+
         'from_date': fields.date('From date >= ', required=True),
         'to_date': fields.date('To date <', required=True),
         'float_time': fields.boolean('Formatted hour', 

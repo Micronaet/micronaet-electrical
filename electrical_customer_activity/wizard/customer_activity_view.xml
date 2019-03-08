@@ -24,7 +24,9 @@
                    
                         <separator string="Relation:" colspan="4"/>
                         <field name="partner_id" domain="[('is_company', '=', True)]" attrs="{'required': [('mode','=','report')], 'invisible': [('mode','!=','report')]}" />
-                        <field name="account_id" domain="[('type','in',['normal','contract']),'|',('partner_id','=',False),('partner_id','=',partner_id)]" attrs="{'invisible': [('mode','!=','report')]}" /><!--('state', '&lt;&gt;', 'close')/>-->
+                        <field name="contact_id" />
+                        <field name="account_id" domain="[('type','in',['normal','contract']),'|',('partner_id','=',False),('partner_id','=',partner_id)]" attrs="{'invisible': [('mode','!=','report')]}" colspan="2"/><!--('state', '&lt;&gt;', 'close')/>-->
+                        <field name="no_account" />
                         
                         <separator string="Intervent management:" colspan="4" />
                         <field name="intervent_mode" />
