@@ -301,15 +301,32 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # Mask mode for 5 views:
         mask = {
             # Sheet: Hide bloc, Col hide, Total hide, total position
+            #        Summary line mask
 
             #'Riepilogo': [True, '', '', 12],
 
-            'Interventi': [True, '', '', 18],
-            'Consegne': [True, '', '', 12],
-            'DDT': [True, '', '', 11],
+            'Interventi': [
+                True, '', # Hide block, Col Hide
+                '', 18, # Total line hide, Total position
+                '', '', 2, # Summary hide col.
+                ],
+            'Consegne': [
+                True, '', 
+                '', 12,
+                '', '', 2, # Summary hide col.
+                ],
+            'DDT': [
+                True, '', 
+                '', 11,
+                '', '', 2, # Summary hide col., Summary total
+                ],
             #'Fatture': [True, '', '', 12],
             
-            'Commesse': [True, '', '', 12],
+            'Commesse': [
+                True, '', 
+                '', 12,
+                '', '', 2, # Summary hide col.
+                ],
             }
 
         # Customer report different setup:
@@ -331,12 +348,43 @@ class ResPartnerActivityWizard(orm.TransientModel):
             #mask['Riepilogo'][1] = ''
             #mask['Commesse'][1] = ''            
 
+            # -----------------------------------------------------------------
             # Total block:            
+            # -----------------------------------------------------------------
             mask['Consegne'][2] = '001'
             mask['Consegne'][3] = 5
             
             mask['Interventi'][2] = '01'
             mask['Interventi'][3] = 7
+
+            # -----------------------------------------------------------------
+            # Summary mask
+            # -----------------------------------------------------------------
+            if report_mode == 'summary':
+                # Summary line:
+                mask['Interventi'][4] = '0001'
+                mask['Consegne'][4] = '00001'
+                mask['DDT'][4] = '00001'
+                
+                # Summary total:
+                mask['Interventi'][5] = '01'
+                mask['Consegne'][5] = '001'
+                mask['DDT'][5] = '001'
+
+                # Position total:
+                mask['Interventi'][6] = 0
+                mask['Consegne'][6] = 0
+                mask['DDT'][6] = 0
+            else:    
+                # Summary line:
+                mask['Interventi'][4] = '1101'
+                mask['Consegne'][4] = '11001'
+                mask['DDT'][4] = '11001'
+            
+                # Summary total:
+                mask['Interventi'][5] = '01'
+                mask['Consegne'][5] = '001'
+                mask['DDT'][5] = '001'
             
         # ---------------------------------------------------------------------
         # Pool used:
@@ -1368,35 +1416,42 @@ class ResPartnerActivityWizard(orm.TransientModel):
             sheet['row'] += 1
 
             excel_pool.write_xls_line(
-                ws_name, sheet['row'], block_record['header'],
+                ws_name, 
+                sheet['row'], 
+                self.data_mask_filter(block_record['header'], mask[block][4]),
                 default_format=f_header
                 )
             sheet['row'] += 1
             
-            for key in block_record['data']:                
-                for record in block_record['data'][key]: 
-                    excel_pool.write_xls_line(
-                        ws_name, sheet['row'], record,
-                        default_format=f_text
-                        )
-                    sheet['row'] += 1
+            for key in block_record['data']:
+                if report_mode != 'summary':
+                    for record in block_record['data'][key]: 
+                        excel_pool.write_xls_line(
+                            ws_name, 
+                            sheet['row'], 
+                            self.data_mask_filter(record, mask[block][4]),
+                            default_format=f_text,
+                            )
+                        sheet['row'] += 1
 
             # -----------------------------------------------------------------                    
             # Total line:        
             # -----------------------------------------------------------------                    
             if 'total_discount' in summary[block]:
-                data = [
+                data = self.data_mask_filter([
                     (summary[block]['total_cost'], f_number),
                     (summary[block]['total_discount'], f_number),
                     (summary[block]['total_revenue'], f_number),
-                    ]
+                    ], mask[block][5])
             else:        
-                data = [
+                data = self.data_mask_filter([
                     (summary[block]['total_cost'], f_number),
                     (summary[block]['total_revenue'], f_number),
-                    ]
+                    ], mask[block][5])
+
             excel_pool.write_xls_line(
-                ws_name, sheet['row'], data, default_format=f_text, col=2)                    
+                ws_name, sheet['row'], data, default_format=f_text, 
+                col=mask[block][6])
 
             sheet['row'] += 1
         
