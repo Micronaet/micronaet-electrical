@@ -52,4 +52,13 @@ class StockPicking(orm.Model):
         'corresponding': fields.boolean('Corresponding'),
         }
 
+class StockMove(orm.Model):
+    """ Model name: Stock Move
+    """
+    
+    _inherit = 'stock.move'
+    
+    _columns = {
+        'receipt_counter': fields.char('# Receipt', size=25),
+        }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

@@ -1,7 +1,35 @@
 <?xml version="1.0"?>
 <openerp>
     <data>
+        <record model="ir.actions.act_window" id="action_stock_picking_form">
+            <field name="name">Corresponding picking</field>
+            <field name="res_model">stock.picking</field>
+            <field name="view_mode">tree,form</field>
+            <!--<field name="view_id" ref="view_model_name_form"/>-->
+            <field name="context">{}</field>
+            <field name="domain">[('corresponding', '=', True)]</field>
+        </record>
 
+        <menuitem 
+            parent="stock.menu_stock_root" 
+            id="menu_corresponding_root" 
+            name="Corresponding"
+            groups="electrical_corresponding_daily.group_corresponding_manager,electrical_corresponding_daily.group_corresponding_user"
+            />
+        <menuitem 
+            parent="menu_corresponding_root" 
+            id="menu_new_receipt" 
+            action="action_new_receipt_wizard_view"
+            sequence="10"
+            />
+        <menuitem 
+            parent="menu_corresponding_root" 
+            id="menu_corresponding_picking" 
+            action="action_stock_picking_form"
+            sequence="20"
+            groups="electrical_corresponding_daily.group_corresponding_manager"
+            />
+                
     </data>
 </openerp>
 

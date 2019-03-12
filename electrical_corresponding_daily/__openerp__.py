@@ -43,8 +43,8 @@
     'data': [
         'security/corresponding_group.xml',
 
-        'corresponding_view.xml',
         'wizard/receipt_view.xml',
+        'corresponding_view.xml',
         ],
     'active': False,
     'installable': True,

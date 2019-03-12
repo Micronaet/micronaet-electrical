@@ -90,6 +90,20 @@ class NewReceiptLineWizard(orm.TransientModel):
     '''
     _name = 'new.receipt.line.wizard'
 
+    def onchange_product_id(self, cr, uid, ids, product_id, context=None):
+        ''' Change default price from product form
+        '''
+        res = {'value': {'price': 0.0}}
+        if not product_id:
+            return res
+            
+        product_pool = self.pool.get('product.product')    
+        product_proxy = product_pool.browse(
+            cr, uid, product_id, context=context)
+        # TODO change price?
+        res['value']['price'] = product_proxy.standard_price
+        return res
+
     _columns = {
         'wizard_id': fields.many2one('new.receipt.wizard', 'Wizard'),
         'product_id': fields.many2one('product.product', 'Product'),
