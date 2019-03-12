@@ -8,7 +8,7 @@
             <field name="arch" type="xml">
                 <form string="Stats report" version="7.0">
                    <header>
-                       <button name="action_print" string="Print partner activity" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('mode','!=','report')]}"/>
+                       <button name="action_print" string="Print partner activity" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('mode','=','partner')]}"/>
                        <button name="action_print_touched" string="Print partner touched" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('mode','!=','partner')]}"/>
                        O
                        <button string="Cancel" class="oe_link" special="cancel" />
@@ -22,18 +22,18 @@
                         <field name="from_date" />
                         <field name="to_date" />
                    
-                        <separator string="Relation:" colspan="4" attrs="{'invisible': [('mode','!=','report')]}"/>
-                        <field name="partner_id" domain="[('is_company', '=', True)]" attrs="{'required': [('mode','=','report')], 'invisible': [('mode','!=','report')]}" />
-                        <field name="contact_id" attrs="{'invisible': [('mode','!=','report')]}"/>
-                        <field name="account_id" domain="[('type','in',['normal','contract']),'|',('partner_id','=',False),('partner_id','=',partner_id)]" attrs="{'invisible': [('mode','!=','report')]}" colspan="2"/><!--('state', '&lt;&gt;', 'close')/>-->
-                        <field name="no_account" attrs="{'invisible': [('mode','!=','report')]}"/>
+                        <separator string="Relation:" colspan="4" attrs="{'invisible': [('mode','=','partner')]}"/>
+                        <field name="partner_id" domain="[('is_company', '=', True)]" attrs="{'required': [('mode','!=','partner')], 'invisible': [('mode','=','partner')]}" />
+                        <field name="contact_id" attrs="{'invisible': [('mode','=','partner')]}"/>
+                        <field name="account_id" domain="[('type','in',['normal','contract']),'|',('partner_id','=',False),('partner_id','=',partner_id)]" attrs="{'invisible': [('mode','=','partner')]}" colspan="2"/><!--('state', '&lt;&gt;', 'close')/>-->
+                        <field name="no_account" attrs="{'invisible': [('mode','=','partner')]}"/>
                         
                         <separator string="Intervent management:" colspan="4" />
                         <field name="intervent_mode" />
-                        <field name="mark_invoiced" attrs="{'invisible': ['|',('intervent_mode', '=', 'invoiced'),('mode','!=','report')]}"/>
+                        <field name="mark_invoiced" attrs="{'invisible': ['|',('intervent_mode', '=', 'invoiced'),('mode','=','partner')]}"/>
                         
-                        <separator string="Excel configuration:" colspan="4" attrs="{'invisible': [('mode','!=','report')]}"/>
-                        <field name="float_time" attrs="{'invisible': [('mode','!=','report')]}"/>
+                        <separator string="Excel configuration:" colspan="4" attrs="{'invisible': [('mode','=','partner')]}"/>
+                        <field name="float_time" attrs="{'invisible': [('mode','=','partner')]}"/>
                    </group>
                 </form>
             </field>

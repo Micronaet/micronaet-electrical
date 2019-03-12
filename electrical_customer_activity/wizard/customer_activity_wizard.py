@@ -309,20 +309,24 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Commesse': [True, ''],
             }
 
+        # Customer report different setup:
         if report_mode in ('detail', 'summary'):
+            # -----------------------------------------------------------------
             # Hide page:
+            # -----------------------------------------------------------------
             #mask['Interventi'][0] = False
             mask['DDT'][0] = False
             mask['Commesse'][0] = False
             
+            # -----------------------------------------------------------------
             # Hide columns:
+            # -----------------------------------------------------------------
             mask['Interventi'][1] = '011100010010000110010000'
             mask['Consegne'][1] = '000001111001001'
             mask['DDT'][1] = ''
             #mask['Fatture'][1] = False
             #mask['Riepilogo'][1] = False
-            #mask['Commesse'][1] = False
-            
+            #mask['Commesse'][1] = False            
             
         # ---------------------------------------------------------------------
         # Pool used:
@@ -545,10 +549,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'header': self.data_mask_filter([
                     'Commessa', 'Contatto', 'Data', 'Intervento', 'Oggetto', 
                     'Modo', 'Operazione', 
-                    'Utente', 'Durata', 'Totale', 'Reale', 
+                    'Utente', 'Durata', 'Indicate', 'Totale ore', 
                     'Viaggio', 'H. Viaggio', 'Pausa', 'H. Pausa',  
                     'Richiesta', 'Intervento', 'Note',
-                    'Costo', 'Ricavo', 'Conteggio', 'Non usare', 'Stato',
+                    'Costo', 'Prezzo totale', 'Conteggio', 'Non usare', 'Stato',
                     'Fatt.',                                 
                     ], mask['Interventi'][1]),
                 'width': self.data_mask_filter([
@@ -565,17 +569,17 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             'Consegne': { # Picking to delivery
                 'row': 0,
-                'header': [
+                'header': self.data_mask_filter([
                     'Commessa', 'Contatto', 'Picking', 'Data', 'Stato', 
                     'Codice', 'Descrizione', 'UM', 
-                    'Q.', 'Costo ultimo', 'Scontato', 'METEL', 
-                    'Sub. ultimo', 'Sub. scontato', 'Sub. METEL',
-                    ],
-                'width': [
+                    'Q.', 'Costo ultimo', 'Scontato', 'Prezzo unitario', 
+                    'Sub. ultimo', 'Sub. scontato', 'Totale',
+                    ], mask['Consegne'][1]),
+                'width': self.data_mask_filter([
                     35, 20, 15, 25, 20, 
                     20, 35, 15,
                     10, 10, 10, 10, 
-                    15, 15, 15, ],
+                    15, 15, 15, ], mask['Consegne'][1]),
                 'total': {},
                 'data': picking_db, 
                 },   
@@ -758,7 +762,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 f_number_color = f_number
                                 f_text_color = f_text
                                 
-                            data = [  
+                            data = self.data_mask_filter([  
                                 # Header
                                 picking.account_id.name or 'NON ASSEGNATA',
                                 picking.contact_id.name or '/',
@@ -781,7 +785,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 (subtotal1, f_number_color),
                                 (subtotal2, f_number_color),
                                 (subtotal3, f_number_color),
-                                ]
+                                ], mask['Consegne'][1])
 
                             excel_pool.write_xls_line(
                                 ws_name, sheet['row'], data,
@@ -1168,7 +1172,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         f_number_color = f_number
                         f_text_color = f_text
 
-                    data = data_mask_filter([
+                    data = self.data_mask_filter([
                         account.name or 'NON ASSEGNATA',
                         intervent.intervent_contact_id.name or '/',
                         intervent.date_start,
