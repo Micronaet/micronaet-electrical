@@ -300,13 +300,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         # Mask mode for 5 views:
         mask = {
-            'Interventi': [True, ''],
-            'Consegne': [True, ''],
-            'DDT': [True, ''],
-            #'Fatture': [True, ''],
+            # Sheet: Hide bloc, Col hide, Total hide, total position
+
+            #'Riepilogo': [True, '', '', 12],
+
+            'Interventi': [True, '', '', 18],
+            'Consegne': [True, '', '', 12],
+            'DDT': [True, '', '', 11],
+            #'Fatture': [True, '', '', 12],
             
-            #'Riepilogo': [True, ''],
-            'Commesse': [True, ''],
+            'Commesse': [True, '', '', 12],
             }
 
         # Customer report different setup:
@@ -324,9 +327,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
             mask['Interventi'][1] = '011100010010000110010000'
             mask['Consegne'][1] = '000001111001001'
             mask['DDT'][1] = ''
-            #mask['Fatture'][1] = False
-            #mask['Riepilogo'][1] = False
-            #mask['Commesse'][1] = False            
+            #mask['Fatture'][1] = ''
+            #mask['Riepilogo'][1] = ''
+            #mask['Commesse'][1] = ''            
+
+            # Total block:            
+            mask['Consegne'][2] = '001'
+            mask['Consegne'][3] = 5
+            
+            mask['Interventi'][2] = '01'
+            mask['Interventi'][3] = 7
             
         # ---------------------------------------------------------------------
         # Pool used:
@@ -552,7 +562,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'Utente', 'Durata', 'Indicate', 'Totale ore', 
                     'Viaggio', 'H. Viaggio', 'Pausa', 'H. Pausa',  
                     'Richiesta', 'Intervento', 'Note',
-                    'Costo', 'Prezzo totale', 'Conteggio', 'Non usare', 'Stato',
+                    'Costo', 'Prezzo totale', 'Conteggio', 'Non usare', 
+                    'Stato',
                     'Fatt.',                                 
                     ], mask['Interventi'][1]),
                 'width': self.data_mask_filter([
@@ -587,7 +598,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'DDT': { # DDT not invoiced
                 'row': 0,
                 'header': [
-                    'Commessa', 'Contatto', 'DDT', 'Data', 'Codice', 'Descrizione', 'UM', 
+                    'Commessa', 'Contatto', 'DDT', 'Data', 'Codice', 
+                    'Descrizione', 'UM', 
                     'Q.', 'Costo ultimo', 'Scontato', 'METEL', 
                     'Sub. ultimo', 'Sub. scontato', 'Sub. METEL',
                     ],
@@ -682,6 +694,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # -------------------------------------------------------------
         load_format = True
         for ws_name in sheet_order:
+            # Check if sheet must be created:
+            if ws_name in mask and not mask[ws_name][0]:
+                continue
+
             sheet = sheets[ws_name]
             
             #if not sheet['data']:
@@ -715,182 +731,28 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         # A. STOCK MATERIAL:
         # ---------------------------------------------------------------------
-        ws_name = 'Consegne'
-        sheet = sheets[ws_name]
-        summary_data = summary[ws_name]['data']
+        if mask['Consegne'][0]:
+            ws_name = 'Consegne'
+            sheet = sheets[ws_name]
+            summary_data = summary[ws_name]['data']
 
-        total = sheet['total']
-        for key in picking_db:  
-            for picking in picking_db[key]:
-                #document_total = 0.0
-                account = picking.account_id
-                account_id = account.id
-                if account not in account_used:
-                    account_used.append(account)
+            total = sheet['total']
+            for key in picking_db:  
+                for picking in picking_db[key]:
+                    #document_total = 0.0
+                    account = picking.account_id
+                    account_id = account.id
+                    if account not in account_used:
+                        account_used.append(account)
 
-                if account_id not in total:
-                    total[account_id] = 0.0
-                
-                pick_total1 = 0.0
-                pick_total2 = 0.0    
-                pick_total3 = 0.0    
-                pick_error = False
-                if picking.move_lines:
+                    if account_id not in total:
+                        total[account_id] = 0.0
+                    
+                    pick_total1 = 0.0
+                    pick_total2 = 0.0    
+                    pick_total3 = 0.0    
+                    pick_error = False
                     if picking.move_lines:
-                        for move in picking.move_lines:
-                            product = move.product_id
-                            
-                            #metel_list_price:
-                            standard_price = product.standard_price 
-                            discount_price = product.metel_sale
-                            list_price = product.lst_price
-                            #list_price = move.price_unit
-                            
-                            subtotal1 = standard_price * move.product_qty
-                            subtotal2 = discount_price * move.product_qty
-                            subtotal3 = list_price * move.product_qty
-                            
-                            pick_total1 += subtotal1
-                            pick_total2 += subtotal2
-                            pick_total3 += subtotal3
-                            
-                            if not subtotal1 or not subtotal3:
-                                f_number_color = f_number_red
-                                f_text_color = f_text_red
-                                pick_error = True
-                            else:    
-                                f_number_color = f_number
-                                f_text_color = f_text
-                                
-                            data = self.data_mask_filter([  
-                                # Header
-                                picking.account_id.name or 'NON ASSEGNATA',
-                                picking.contact_id.name or '/',
-                                picking.name,
-                                picking.min_date,
-                                picking.pick_state,
-                                
-                                # Move:
-                                move.product_id.default_code,
-                                move.product_id.name,
-                                move.product_uom.name,
-                                (move.product_qty, f_number_color),
-                                
-                                # Unit price:
-                                (standard_price, f_number_color),
-                                (discount_price, f_number_color),
-                                (list_price, f_number_color),
-                                
-                                # Total price:
-                                (subtotal1, f_number_color),
-                                (subtotal2, f_number_color),
-                                (subtotal3, f_number_color),
-                                ], mask['Consegne'][1])
-
-                            excel_pool.write_xls_line(
-                                ws_name, sheet['row'], data,
-                                default_format=f_text_color
-                                )
-                            sheet['row'] += 1
-
-                            # -------------------------------------------------
-                            #                    TOTALS:
-                            # -------------------------------------------------
-                            # A. Total per account:                            
-                            #document_total += subtotal3
-                            total[account_id] += subtotal3
-
-                            # B. Line total in same sheet:
-                            summary[ws_name]['total_cost'] += subtotal1
-                            summary[ws_name]['total_discount'] += subtotal2
-                            summary[ws_name]['total_revenue'] += subtotal3
-                            
-
-                    else: # Picking no movements:
-                        data = [
-                            # Header
-                            picking.account_id.name or 'NON ASSEGNATA',
-                            picking.contact_id.name or '/',
-                            picking.name,
-                            picking.min_date,
-                            picking.pick_state,
-                            
-                            # Move:
-                            'NESSUN MOVIMENTO',
-                            '/',
-                            '/',
-                            (0.0, f_number),
-
-                            (0.0, f_number),
-                            (0.0, f_number),
-                            (0.0, f_number),
-                            
-                            (0.0, f_number),
-                            (0.0, f_number),
-                            (0.0, f_number),
-                            ]
-                        
-                        excel_pool.write_xls_line(
-                            ws_name, sheet['row'], data,
-                            default_format=f_text
-                            )
-                        sheet['row'] += 1
-                        
-                # Summary data (picking):         
-                block_key = (picking.pick_state, account)
-                if block_key not in summary_data:
-                    summary_data[block_key] = []
-                    
-                # Summary color:    
-                if pick_error:    
-                    f_number_color = f_number_red
-                    f_text_color = f_text_red
-                else:    
-                    f_number_color = f_number
-                    f_text_color = f_text
-                    
-                summary_data[block_key].append((
-                    (account.name, f_text_color), 
-                    (picking.name, f_text_color), 
-                    
-                    (pick_total1, f_number_color),
-                    (pick_total2, f_number_color),
-                    (pick_total3, f_number_color),
-                    )) 
-
-            # -----------------------------------------------------------------
-            # Total line at the end of the block:
-            # -----------------------------------------------------------------
-            excel_pool.write_xls_line(
-                ws_name, sheet['row'], [
-                    (summary[ws_name]['total_cost'], f_number),
-                    (summary[ws_name]['total_discount'], f_number),
-                    (summary[ws_name]['total_revenue'], f_number),
-                    ], default_format=f_text, col=12)
-                    
-        # ---------------------------------------------------------------------
-        # B. DDT MATERIAL:
-        # ---------------------------------------------------------------------
-        ws_name = 'DDT'
-        sheet = sheets[ws_name]
-        summary_data = summary[ws_name]['data']
-
-        total = sheet['total']
-        for key in ddt_db:        
-            for ddt in ddt_db[key]:
-                ddt_total1 = 0.0
-                ddt_total2 = 0.0
-                ddt_total3 = 0.0
-                ddt_error = False
-
-                account = ddt.account_id
-                account_id = account.id
-                if account not in account_used:
-                    account_used.append(account)
-                if account_id not in total:
-                    total[account_id] = 0.0                
-                if ddt.picking_ids:
-                    for picking in ddt.picking_ids:
                         if picking.move_lines:
                             for move in picking.move_lines:
                                 product = move.product_id
@@ -905,31 +767,32 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 subtotal2 = discount_price * move.product_qty
                                 subtotal3 = list_price * move.product_qty
                                 
-                                ddt_total1 += subtotal1
-                                ddt_total2 += subtotal2
-                                ddt_total3 += subtotal3
+                                pick_total1 += subtotal1
+                                pick_total2 += subtotal2
+                                pick_total3 += subtotal3
                                 
                                 if not subtotal1 or not subtotal3:
                                     f_number_color = f_number_red
                                     f_text_color = f_text_red
-                                    ddt_error = True
+                                    pick_error = True
                                 else:    
                                     f_number_color = f_number
                                     f_text_color = f_text
-                                
-                                data = [  
+                                    
+                                data = self.data_mask_filter([  
                                     # Header
-                                    ddt.account_id.name,
-                                    ddt.contact_id.name or '/',
-                                    ddt.name,
-                                    ddt.delivery_date,
+                                    picking.account_id.name or 'NON ASSEGNATA',
+                                    picking.contact_id.name or '/',
+                                    picking.name,
+                                    picking.min_date,
+                                    picking.pick_state,
                                     
                                     # Move:
-                                    product.default_code,
-                                    product.name,
+                                    move.product_id.default_code,
+                                    move.product_id.name,
                                     move.product_uom.name,
                                     (move.product_qty, f_number_color),
-
+                                    
                                     # Unit price:
                                     (standard_price, f_number_color),
                                     (discount_price, f_number_color),
@@ -939,102 +802,268 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     (subtotal1, f_number_color),
                                     (subtotal2, f_number_color),
                                     (subtotal3, f_number_color),
-                                    ]
+                                    ], mask['Consegne'][1])
 
                                 excel_pool.write_xls_line(
                                     ws_name, sheet['row'], data,
-                                    default_format=f_text_color,
+                                    default_format=f_text_color
                                     )
                                 sheet['row'] += 1
 
                                 # ---------------------------------------------
                                 #                    TOTALS:
                                 # ---------------------------------------------
-                                # A. Total per account:    
-                                total[account_id] += subtotal3 # XXX
-                                
+                                # A. Total per account:                            
+                                #document_total += subtotal3
+                                total[account_id] += subtotal3
+
                                 # B. Line total in same sheet:
                                 summary[ws_name]['total_cost'] += subtotal1
                                 summary[ws_name]['total_discount'] += subtotal2
                                 summary[ws_name]['total_revenue'] += subtotal3
-
+                                
 
                         else: # Picking no movements:
-                            data = [
+                            data = self.data_mask_filter([
                                 # Header
-                                ddt.account_id.name or 'NON ASSEGNATA',
-                                ddt.contact_id.name or '/',
-                                ddt.name,
-                                ddt.delivery_date,
+                                picking.account_id.name or 'NON ASSEGNATA',
+                                picking.contact_id.name or '/',
+                                picking.name,
+                                picking.min_date,
+                                picking.pick_state,
                                 
                                 # Move:
                                 'NESSUN MOVIMENTO',
                                 '/',
+                                '/',
+                                (0.0, f_number),
+
                                 (0.0, f_number),
                                 (0.0, f_number),
                                 (0.0, f_number),
-                                ]
+                                
+                                (0.0, f_number),
+                                (0.0, f_number),
+                                (0.0, f_number),
+                                ], mask['Consegne'][1])
                             
                             excel_pool.write_xls_line(
                                 ws_name, sheet['row'], data,
                                 default_format=f_text
                                 )
                             sheet['row'] += 1
-                else: # no 
-                    data = [
-                        # Header
-                        ddt.account_id.name or 'NON ASSEGNATA',
-                        ddt.contact_id.name or '/',
-                        ddt.name,
-                        ddt.delivery_date,
+                            
+                    # Summary data (picking):         
+                    block_key = (picking.pick_state, account)
+                    if block_key not in summary_data:
+                        summary_data[block_key] = []
                         
-                        # Move:
-                        'NESSUN PICKING',
-                        '/',
-                        (0.0, f_number),
-                        (0.0, f_number),
-                        (0.0, f_number),
-                        ]
-                    
-                    excel_pool.write_xls_line(
-                        ws_name, sheet['row'], data,
-                        default_format=f_text
-                        )
-                    sheet['row'] += 1
+                    # Summary color:    
+                    if pick_error:    
+                        f_number_color = f_number_red
+                        f_text_color = f_text_red
+                    else:    
+                        f_number_color = f_number
+                        f_text_color = f_text
+                        
+                    summary_data[block_key].append((
+                        (account.name, f_text_color), 
+                        (picking.name, f_text_color), 
+                        
+                        (pick_total1, f_number_color),
+                        (pick_total2, f_number_color),
+                        (pick_total3, f_number_color),
+                        )) 
 
-                # Summary data (picking):         
-                block_key = (account.name, ddt.name)
-                if block_key not in summary_data:
-                    summary_data[block_key] = []
-                    
-                # Summary color:    
-                if ddt_error:    
-                    f_number_color = f_number_red
-                    f_text_color = f_text_red
-                else:    
-                    f_number_color = f_number
-                    f_text_color = f_text
-                    
-                summary_data[block_key].append((
-                    (account.name, f_text_color), 
-                    (ddt.name, f_text_color), 
-                    
-                    (ddt_total1, f_number_color),
-                    (ddt_total2, f_number_color),
-                    (ddt_total3, f_number_color),
-                    )) 
-
+                # -------------------------------------------------------------
+                # Total line at the end of the block:
+                # -------------------------------------------------------------
+                excel_pool.write_xls_line(
+                    ws_name, 
+                    sheet['row'], 
+                    self.data_mask_filter([
+                        (summary[ws_name]['total_cost'], f_number),
+                        (summary[ws_name]['total_discount'], f_number),
+                        (summary[ws_name]['total_revenue'], f_number),                    
+                        ], mask['Consegne'][2]), 
+                    default_format=f_text, 
+                    col=mask['Consegne'][3])
+                        
         # ---------------------------------------------------------------------
-        # Total line at the end of the block:
+        # B. DDT MATERIAL:
         # ---------------------------------------------------------------------
-        excel_pool.write_xls_line(
-            ws_name, sheet['row'], [
-                (summary[ws_name]['total_cost'], f_number),
-                (summary[ws_name]['total_discount'], f_number),
-                (summary[ws_name]['total_revenue'], f_number),
-                ], default_format=f_text, col=11)
+        if mask['DDT'][0]:
+            ws_name = 'DDT'
+            sheet = sheets[ws_name]
+            summary_data = summary[ws_name]['data']
+
+            total = sheet['total']
+            for key in ddt_db:        
+                for ddt in ddt_db[key]:
+                    ddt_total1 = 0.0
+                    ddt_total2 = 0.0
+                    ddt_total3 = 0.0
+                    ddt_error = False
+
+                    account = ddt.account_id
+                    account_id = account.id
+                    if account not in account_used:
+                        account_used.append(account)
+                    if account_id not in total:
+                        total[account_id] = 0.0                
+                    if ddt.picking_ids:
+                        for picking in ddt.picking_ids:
+                            if picking.move_lines:
+                                for move in picking.move_lines:
+                                    product = move.product_id
+                                    
+                                    #metel_list_price:
+                                    standard_price = product.standard_price 
+                                    discount_price = product.metel_sale
+                                    list_price = product.lst_price
+                                    #list_price = move.price_unit
+                                    
+                                    subtotal1 = \
+                                        standard_price * move.product_qty
+                                    subtotal2 = \
+                                        discount_price * move.product_qty
+                                    subtotal3 = \
+                                        list_price * move.product_qty
+                                    
+                                    ddt_total1 += subtotal1
+                                    ddt_total2 += subtotal2
+                                    ddt_total3 += subtotal3
+                                    
+                                    if not subtotal1 or not subtotal3:
+                                        f_number_color = f_number_red
+                                        f_text_color = f_text_red
+                                        ddt_error = True
+                                    else:    
+                                        f_number_color = f_number
+                                        f_text_color = f_text
+                                    
+                                    data = self.data_mask_filter([  
+                                        # Header
+                                        ddt.account_id.name,
+                                        ddt.contact_id.name or '/',
+                                        ddt.name,
+                                        ddt.delivery_date,
+                                        
+                                        # Move:
+                                        product.default_code,
+                                        product.name,
+                                        move.product_uom.name,
+                                        (move.product_qty, f_number_color),
+
+                                        # Unit price:
+                                        (standard_price, f_number_color),
+                                        (discount_price, f_number_color),
+                                        (list_price, f_number_color),
+                                        
+                                        # Total price:
+                                        (subtotal1, f_number_color),
+                                        (subtotal2, f_number_color),
+                                        (subtotal3, f_number_color),
+                                        ], mask['DDT'][1])
+
+                                    excel_pool.write_xls_line(
+                                        ws_name, sheet['row'], data,
+                                        default_format=f_text_color,
+                                        )
+                                    sheet['row'] += 1
+
+                                    # -----------------------------------------
+                                    #                    TOTALS:
+                                    # -----------------------------------------
+                                    # A. Total per account:    
+                                    total[account_id] += subtotal3 # XXX
+                                    
+                                    # B. Line total in same sheet:
+                                    summary[ws_name][
+                                        'total_cost'] += subtotal1
+                                    summary[ws_name][
+                                        'total_discount'] += subtotal2
+                                    summary[ws_name][
+                                        'total_revenue'] += subtotal3
 
 
+                            else: # Picking no movements:
+                                data = self.data_mask_filter([
+                                    # Header
+                                    ddt.account_id.name or 'NON ASSEGNATA',
+                                    ddt.contact_id.name or '/',
+                                    ddt.name,
+                                    ddt.delivery_date,
+                                    
+                                    # Move:
+                                    'NESSUN MOVIMENTO',
+                                    '/',
+                                    (0.0, f_number),
+                                    (0.0, f_number),
+                                    (0.0, f_number),
+                                    ], mask['DDT'][1])
+                                
+                                excel_pool.write_xls_line(
+                                    ws_name, sheet['row'], data,
+                                    default_format=f_text
+                                    )
+                                sheet['row'] += 1
+                    else: # no 
+                        data = self.data_mask_filter([
+                            # Header
+                            ddt.account_id.name or 'NON ASSEGNATA',
+                            ddt.contact_id.name or '/',
+                            ddt.name,
+                            ddt.delivery_date,
+                            
+                            # Move:
+                            'NESSUN PICKING',
+                            '/',
+                            (0.0, f_number),
+                            (0.0, f_number),
+                            (0.0, f_number),
+                            ], mask['DDT'][1])
+                        
+                        excel_pool.write_xls_line(
+                            ws_name, sheet['row'], data,
+                            default_format=f_text
+                            )
+                        sheet['row'] += 1
+
+                    # Summary data (picking):         
+                    block_key = (account.name, ddt.name)
+                    if block_key not in summary_data:
+                        summary_data[block_key] = []
+                        
+                    # Summary color:    
+                    if ddt_error:    
+                        f_number_color = f_number_red
+                        f_text_color = f_text_red
+                    else:    
+                        f_number_color = f_number
+                        f_text_color = f_text
+                        
+                    summary_data[block_key].append((
+                        (account.name, f_text_color), 
+                        (ddt.name, f_text_color), 
+                        
+                        (ddt_total1, f_number_color),
+                        (ddt_total2, f_number_color),
+                        (ddt_total3, f_number_color),
+                        )) 
+
+            # -----------------------------------------------------------------
+            # Total line at the end of the block:
+            # -----------------------------------------------------------------
+            excel_pool.write_xls_line(
+                ws_name, 
+                sheet['row'], 
+                self.data_mask_filter([
+                    (summary[ws_name]['total_cost'], f_number),
+                    (summary[ws_name]['total_discount'], f_number),
+                    (summary[ws_name]['total_revenue'], f_number),
+                    ], mask['DDT'][2]), 
+                default_format=f_text, col=mask['DDT'][3])
 
         # ---------------------------------------------------------------------
         # C. INVOICED MATERIAL:
@@ -1242,22 +1271,62 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # Total line at the end of the block:
                 # -------------------------------------------------------------
                 excel_pool.write_xls_line(
-                    ws_name, sheet['row'], [
+                    ws_name, 
+                    sheet['row'], 
+                    self.data_mask_filter([
                         (summary[ws_name]['total_cost'], f_number),
                         (summary[ws_name]['total_revenue'], f_number),
-                        ], default_format=f_text, col=18)
+                        ], mask['Interventi'][2]), 
+                    default_format=f_text, 
+                    col=mask['Interventi'][3])
 
         # ---------------------------------------------------------------------
         # E. ACCOUNT:
         # ---------------------------------------------------------------------
-        ws_name = 'Commesse'
-        sheet = sheets[ws_name]
-        summary_data = summary[ws_name]['data']
+        if mask['Commesse'][0]:
+            ws_name = 'Commesse'
+            sheet = sheets[ws_name]
+            summary_data = summary[ws_name]['data']
 
-        # Block all account:
-        for key in account_db:
-            for account in account_db[key]:
-                data = [
+            # Block all account:
+            for key in account_db:
+                for account in account_db[key]:
+                    data = self.data_mask_filter([
+                        account.account_mode,
+                        account.code,
+                        account.name,
+                        account.parent_id.name or '/',
+                        account.from_date,
+                        '/', #account.fiscal_position.name,
+                        account.total_hours,
+                        account.state,
+                        ], mask['Commesse'][1])
+                    
+                    excel_pool.write_xls_line(
+                        ws_name, sheet['row'], data,
+                        default_format=f_text
+                        )
+                    sheet['row'] += 1
+
+            
+            # Block account used:
+            sheet['row'] += 2
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], [u'Commesse toccate nel periodo:', ],
+                default_format=f_title
+                )
+
+            sheet['row'] += 1
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], sheet['header'],
+                default_format=f_header
+                )
+
+            sheet['row'] += 1
+            for account in account_used:   
+                if not account:
+                    continue
+                data = self.data_mask_filter([
                     account.account_mode,
                     account.code,
                     account.name,
@@ -1266,48 +1335,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     '/', #account.fiscal_position.name,
                     account.total_hours,
                     account.state,
-                    ]
+                    ], mask['Commesse'][1])
                 
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], data,
                     default_format=f_text
                     )
                 sheet['row'] += 1
-
-        
-        # Block account used:
-        sheet['row'] += 2
-        excel_pool.write_xls_line(
-            ws_name, sheet['row'], [u'Commesse toccate nel periodo:', ],
-            default_format=f_title
-            )
-
-        sheet['row'] += 1
-        excel_pool.write_xls_line(
-            ws_name, sheet['row'], sheet['header'],
-            default_format=f_header
-            )
-
-        sheet['row'] += 1
-        for account in account_used:   
-            if not account:
-                continue
-            data = [
-                account.account_mode,
-                account.code,
-                account.name,
-                account.parent_id.name or '/',
-                account.from_date,
-                '/', #account.fiscal_position.name,
-                account.total_hours,
-                account.state,
-                ]
-            
-            excel_pool.write_xls_line(
-                ws_name, sheet['row'], data,
-                default_format=f_text
-                )
-            sheet['row'] += 1
 
         # ---------------------------------------------------------------------
         # SUMMARY:
@@ -1321,6 +1355,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ],default_format=f_title)
         
         for block in sheet_order[1:-1]: # Jump TODO commesse?!?
+            # Check if sheet must be created:
+            if block in mask and not mask[block][0]:
+                continue
+
             block_record = summary[block]
 
             excel_pool.write_xls_line(
@@ -1342,6 +1380,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         default_format=f_text
                         )
                     sheet['row'] += 1
+
             # -----------------------------------------------------------------                    
             # Total line:        
             # -----------------------------------------------------------------                    
