@@ -37,11 +37,13 @@
         'base',
         'stock',
         'account',
+        'fast_stock_move', # Management of fast picking
         ],
     'init_xml': [],
     'demo': [],
     'data': [
         'security/corresponding_group.xml',
+        'data/receipt_sequence.xml',
 
         'wizard/receipt_view.xml',
         'corresponding_view.xml',

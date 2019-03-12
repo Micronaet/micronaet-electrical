@@ -46,31 +46,132 @@ class NewReceiptWizard(orm.TransientModel):
     '''
     _name = 'new.receipt.wizard'
 
-    # --------------------
+    # -------------------------------------------------------------------------
     # Wizard button event:
-    # --------------------
+    # -------------------------------------------------------------------------
     def dummy_action(self, cr, uid, ids, context=None):
         ''' Refresh button
         '''
         return True
-        
+
     def action_done(self, cr, uid, ids, context=None):
         ''' Event for button done
         '''
         if context is None: 
-            context = {}        
+            context = {}
         
-        wiz_browse = self.browse(cr, uid, ids, context=context)[0]
+        wiz_proxy = self.browse(cr, uid, ids, context=context)[0]
+
+        # ---------------------------------------------------------------------
+        # Create new corresponding:
+        # ---------------------------------------------------------------------
+        # Pool used:
+        company_pool = self.pool.get('res.company')
+        picking_pool = self.pool.get('stock.picking')
+        move_pool = self.pool.get('stock.move')        
+        quant_pool = self.pool.get('stock.quant')                
+        type_pool = self.pool.get('stock.picking.type')
+
+        now = ('%s' % datetime.now())[:19]
+        origin = 'CORRISPETTIVO %s' % now[:10]
+
+        # ---------------------------------------------------------------------
+        # Search or create daily picking:
+        # ---------------------------------------------------------------------
+        picking_ids = picking_pool.search(cr, uid, [
+            ('corresponding', '=', True),
+            ('origin', '=', origin),
+            ], context=context)        
+        if picking_ids:
+            picking_id = picking_ids[0]
+            picking = picking_pool.browse(
+                cr, uid, picking_ids, context=context)[0]
+            # Parameters:    
+            picking_type = picking.picking_type_id
+            location_id = picking_type.default_location_src_id.id
+            location_dest_id = picking_type.default_location_dest_id.id                
+            company_id = picking.company_id.id
+        else:        
+            company_id = company_pool.search(cr, uid, [], context=context)[0]
+            company = company_pool.browse(cr, uid, company_id, context=context)
+
+            # Type ID:
+            type_ids = type_pool.search(cr, uid, [
+                ('code', '=', 'outgoing'),
+                ], context=context)
+            if not type_ids:
+                raise osv.except_osv(
+                    _('Error'), 
+                    _('Need setup of outgoing stock.picking.type!'),
+                    )    
+            picking_type = \
+                type_pool.browse(cr, uid, type_ids, context=context)[0]
+            location_id = picking_type.default_location_src_id.id
+            location_dest_id = picking_type.default_location_dest_id.id
+            
+            picking_id = picking_pool.create(cr, uid, {
+                'partner_id': company.partner_id.id,
+                'company_id': company_id,
+                'corresponding': True,
+                #'account_id': account.id,
+                'date': now,
+                'min_date': now,
+                'origin': origin,
+                'picking_type_id': picking_type.id,
+                'pick_move': 'out',
+                'pick_state': 'delivered',
+                #'state': 'delivered', # XXX not real!
+                }, context=context)
+
+        # ---------------------------------------------------------------------
+        # Add stock movement line:
+        # ---------------------------------------------------------------------
+        receipt = wiz_proxy.name
+        for line in wiz_proxy.line_ids:
+            product = line.product_id
+            price = line.price
+            qty = line.qty
+            
+            # -----------------------------------------------------------------
+            # Create stock movement:
+            # -----------------------------------------------------------------
+            move_id = move_pool.create(cr, uid, {
+                'name': product.name,
+                'product_uom': product.uom_id.id,
+                'picking_id': picking_id,
+                'picking_type_id': picking_type.id,
+                'origin': 'Scontr: %s' % receipt,
+                'product_id': product.id,
+                'product_uom_qty': qty,
+                'date': now,
+                'location_id': location_id,
+                'location_dest_id': location_dest_id,
+                'state': 'done',
+                }, context=context)
+
+            # -----------------------------------------------------------------
+            # Create quants:
+            # -----------------------------------------------------------------
+            quant_pool.create(cr, uid, {
+                 'stock_move_id': move_id,
+                 'qty': qty,
+                 'cost': price,
+                 'location_id': location_dest_id,
+                 'company_id': company_id,
+                 'product_id': product.id,
+                 'in_date': now,
+                }, context=context)
         
-        return {
-            'type': 'ir.actions.act_window_close'
-            }
+        return self.write(cr, uid, ids, {
+            'state': 'done',
+            }, context=context)
 
     def _get_total(self, cr, uid, ids, fields, args, context=None):
         ''' Fields function for calculate 
         '''
         res = {}
         for receipt in self.browse(cr, uid, ids, context=context)[0]:
+            res[receipt.id] = 0.0
             for line in receipt.line_ids:
                 res[receipt.id] += line.qty * line.price
         return res
@@ -79,10 +180,18 @@ class NewReceiptWizard(orm.TransientModel):
         'name': fields.char('# Receipt', size=25, required=True),
         'total': fields.function(_get_total, method=True, 
             type='float', string='Total'),                        
+        'state': fields.selection([
+            ('draft', 'Draft'),
+            ('done', 'Done'),
+            ], 'State', readonly=True),
         }
 
     _defaults = {
-        # TODO name
+        'name': lambda s, cr, uid, ctx: 
+            s.pool.get('ir.sequence').get(cr, uid, 'new.receipt.wizard'),
+        
+        # Default value for state:
+        'state': lambda *x: 'draft',
         }
 
 class NewReceiptLineWizard(orm.TransientModel):

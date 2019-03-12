@@ -8,16 +8,16 @@
             <field name="arch" type="xml">
                 <form string="Wizard" version="7.0">
                    <header>
-                       <button string="Cancel" special="cancel" />
-                       <button name="dummy_action" string="Total" type="object" />
-                       <button name="action_done" string="Confirm" type="object" icon="gtk-jump-to" class="oe_highlight" />
+                       <button name="dummy_action" string="Total" type="object" attrs="{'invisible': [('state','=','done')]}" class="oe_highlight"/>
+                       <button name="action_done" string="Confirm" type="object" icon="gtk-jump-to" attrs="{'invisible': [('state','=','done')]}" class="oe_highlight"/>
+                       <field name="state" widget="statusbar" />
                    </header>
                    <group colspan="4" col="4">
-                        <field name="name" />
-                        <field name="total" />
+                        <field name="name" readonly="1"/>
+                        <field name="total" readonly="1" />
 
                         <separator string="Details:" colspan="4"/>
-                        <field name="line_ids" colspan="4" nolabel="1">
+                        <field name="line_ids" colspan="4" nolabel="1" attrs="{'readonly': [('state','=','done')]}">
                             <tree string="Detail:" editable="bottom">
                                 <field name="product_id" on_change="onchange_product_id(product_id)"/>
                                 <field name="uom_id" />
@@ -35,7 +35,6 @@
           <field name="res_model">new.receipt.wizard</field>
           <field name="view_type">form</field>
           <field name="view_mode">form</field>
-          <field name="target">new</field>
           <field name="view_id" ref="new_receipt_wizard_view"/>
       </record>  
           

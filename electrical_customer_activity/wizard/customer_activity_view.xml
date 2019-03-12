@@ -8,8 +8,8 @@
             <field name="arch" type="xml">
                 <form string="Stats report" version="7.0">
                    <header>
-                       <button name="action_print" string="Print partner activity" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('mode','=','partner')]}"/>
-                       <button name="action_print_touched" string="Print partner touched" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('mode','!=','partner')]}"/>
+                       <button name="action_print" string="Print partner activity" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('mode','=','partner')]}" />
+                       <button name="action_print_touched" string="Print partner touched" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('mode','!=','partner')]}" />
                        O
                        <button string="Cancel" class="oe_link" special="cancel" />
                    </header>                   
