@@ -37,6 +37,7 @@
         'base',
         'stock',
         'account',
+        'metel_base', # Metel management
         'fast_stock_move', # Management of fast picking
         ],
     'init_xml': [],

@@ -1,0 +1,172 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* electrical_corresponding_daily
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 8.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-03-13 08:32+0000\n"
+"PO-Revision-Date: 2019-03-13 09:35+0100\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"Language: it\n"
+"X-Generator: Poedit 1.6.10\n"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.wizard,name:0
+msgid "# Receipt"
+msgstr "# Scontrino"
+
+#. module: electrical_corresponding_daily
+#: view:new.receipt.wizard:electrical_corresponding_daily.new_receipt_wizard_view
+msgid "Confirm"
+msgstr "Conferma"
+
+#. module: electrical_corresponding_daily
+#: model:ir.ui.menu,name:electrical_corresponding_daily.menu_corresponding_root
+#: field:stock.picking,corresponding:0
+msgid "Corresponding"
+msgstr "Corrispettivo"
+
+#. module: electrical_corresponding_daily
+#: model:res.groups,name:electrical_corresponding_daily.group_corresponding_manager
+msgid "Corresponding Management"
+msgstr "Gestione corrispettivi"
+
+#. module: electrical_corresponding_daily
+#: model:res.groups,name:electrical_corresponding_daily.group_corresponding_user
+msgid "Corresponding User"
+msgstr "Utente Corrispettivo"
+
+#. module: electrical_corresponding_daily
+#: model:ir.actions.act_window,name:electrical_corresponding_daily.action_stock_picking_form
+#: model:ir.ui.menu,name:electrical_corresponding_daily.menu_corresponding_picking
+msgid "Corresponding picking"
+msgstr "Picking corrispettivo"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.line.wizard,create_uid:0
+#: field:new.receipt.wizard,create_uid:0
+msgid "Created by"
+msgstr "Creato da"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.line.wizard,create_date:0
+#: field:new.receipt.wizard,create_date:0
+msgid "Created on"
+msgstr "Creato il"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.wizard,line_ids:0
+msgid "Detail"
+msgstr "Dettaglio"
+
+#. module: electrical_corresponding_daily
+#: view:new.receipt.wizard:electrical_corresponding_daily.new_receipt_wizard_view
+msgid "Detail:"
+msgstr "Dettaglio:"
+
+#. module: electrical_corresponding_daily
+#: view:new.receipt.wizard:electrical_corresponding_daily.new_receipt_wizard_view
+msgid "Details:"
+msgstr "Dettagli:"
+
+#. module: electrical_corresponding_daily
+#: selection:new.receipt.wizard,state:0
+msgid "Done"
+msgstr "Completato"
+
+#. module: electrical_corresponding_daily
+#: selection:new.receipt.wizard,state:0
+msgid "Draft"
+msgstr "Bozza"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.line.wizard,id:0 field:new.receipt.wizard,id:0
+msgid "ID"
+msgstr "ID"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.line.wizard,write_uid:0
+#: field:new.receipt.wizard,write_uid:0
+msgid "Last Updated by"
+msgstr "Ultimo aggiornamento di"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.line.wizard,write_date:0
+#: field:new.receipt.wizard,write_date:0
+msgid "Last Updated on"
+msgstr "Ultimo aggiornamento il"
+
+#. module: electrical_corresponding_daily
+#: model:ir.actions.act_window,name:electrical_corresponding_daily.action_new_receipt_wizard_view
+#: model:ir.ui.menu,name:electrical_corresponding_daily.menu_new_receipt
+msgid "New receipt"
+msgstr "Nuovo scontrino"
+
+#. module: electrical_corresponding_daily
+#: model:ir.model,name:electrical_corresponding_daily.model_stock_picking
+msgid "Picking List"
+msgstr "Lista prelievo"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.line.wizard,price:0
+msgid "Price"
+msgstr "Prezzo"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.line.wizard,price_vat:0
+msgid "Price VAT"
+msgstr "Prezzo ivato"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.line.wizard,product_id:0
+msgid "Product"
+msgstr "Prodotto"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.line.wizard,qty:0
+msgid "Q."
+msgstr "Q."
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.wizard,state:0
+msgid "State"
+msgstr "Stato"
+
+#. module: electrical_corresponding_daily
+#: model:ir.model,name:electrical_corresponding_daily.model_stock_move
+msgid "Stock Move"
+msgstr "Movimento di magazzino"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.line.wizard,subtotal:0
+msgid "Subtotal"
+msgstr "Subtotale"
+
+#. module: electrical_corresponding_daily
+#: view:new.receipt.wizard:electrical_corresponding_daily.new_receipt_wizard_view
+#: field:new.receipt.wizard,total:0
+msgid "Total"
+msgstr "Totale"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.wizard,total_vat:0
+msgid "Total VAT"
+msgstr "Totale VAT"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.line.wizard,uom_id:0
+msgid "UOM"
+msgstr "UM"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.line.wizard,wizard_id:0
+#: view:new.receipt.wizard:electrical_corresponding_daily.new_receipt_wizard_view
+msgid "Wizard"
+msgstr "Wizard"

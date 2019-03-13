@@ -13,8 +13,8 @@
                        <field name="state" widget="statusbar" />
                    </header>
                    <group colspan="4" col="4">
-                        <field name="name" readonly="1"/>
-                        <field name="total" readonly="1" />
+                        <field name="name" readonly="1" attrs="{'invisible': [('state','=','draft')]}"/>
+                        <newline/>
 
                         <separator string="Details:" colspan="4"/>
                         <field name="line_ids" colspan="4" nolabel="1" attrs="{'readonly': [('state','=','done')]}">
@@ -23,8 +23,12 @@
                                 <field name="uom_id" />
                                 <field name="qty" />
                                 <field name="price" />
+                                <field name="price_vat" />
+                                <field name="subtotal" />
                             </tree>
                         </field>
+                        <field name="total" readonly="1" />
+                        <field name="total_vat" readonly="1" />
                    </group>
                 </form>
             </field>

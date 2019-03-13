@@ -60,6 +60,10 @@ class NewReceiptWizard(orm.TransientModel):
         if context is None: 
             context = {}
         
+        name = self.pool.get('ir.sequence').get(cr, uid, 'new.receipt.wizard')
+        self.write(cr, uid, ids, {
+            'name': name,
+            }, context=context)
         wiz_proxy = self.browse(cr, uid, ids, context=context)[0]
 
         # ---------------------------------------------------------------------
@@ -147,6 +151,7 @@ class NewReceiptWizard(orm.TransientModel):
                 'location_id': location_id,
                 'location_dest_id': location_dest_id,
                 'state': 'done',
+                'price_unit': price,
                 }, context=context)
 
             # -----------------------------------------------------------------
@@ -169,17 +174,22 @@ class NewReceiptWizard(orm.TransientModel):
     def _get_total(self, cr, uid, ids, fields, args, context=None):
         ''' Fields function for calculate 
         '''
+        vat = 1.22
         res = {}
         for receipt in self.browse(cr, uid, ids, context=context)[0]:
-            res[receipt.id] = 0.0
+            res[receipt.id] = {'total': 0.0}
             for line in receipt.line_ids:
-                res[receipt.id] += line.qty * line.price
+                subtotal = line.qty * line.price
+                res[receipt.id]['total'] += subtotal
+            res[receipt.id]['total_vat'] = res[receipt.id]['total'] * vat
         return res
         
     _columns = {
-        'name': fields.char('# Receipt', size=25, required=True),
+        'name': fields.char('# Receipt', size=25),
         'total': fields.function(_get_total, method=True, 
-            type='float', string='Total'),                        
+            type='float', string='Total', multi=True),      
+        'total_vat': fields.function(_get_total, method=True, 
+            type='float', string='Total VAT', multi=True),
         'state': fields.selection([
             ('draft', 'Draft'),
             ('done', 'Done'),
@@ -187,9 +197,6 @@ class NewReceiptWizard(orm.TransientModel):
         }
 
     _defaults = {
-        'name': lambda s, cr, uid, ctx: 
-            s.pool.get('ir.sequence').get(cr, uid, 'new.receipt.wizard'),
-        
         # Default value for state:
         'state': lambda *x: 'draft',
         }
@@ -213,6 +220,19 @@ class NewReceiptLineWizard(orm.TransientModel):
         res['value']['price'] = product_proxy.standard_price
         return res
 
+    def _get_subtotal_value(self, cr, uid, ids, fields, args, context=None):
+        ''' Fields function for calculate 
+        '''
+        vat_rate = 1.22 # TODO keep in parameter field!
+        res = {}
+        for line in self.browse(cr, uid, ids, context=context):
+            price_vat = line.price * vat_rate
+            res[line.id] = {
+                'price_vat': price_vat,
+                'subtotal': price_vat * line.qty,
+                }
+        return res
+    
     _columns = {
         'wizard_id': fields.many2one('new.receipt.wizard', 'Wizard'),
         'product_id': fields.many2one('product.product', 'Product'),
@@ -222,6 +242,12 @@ class NewReceiptLineWizard(orm.TransientModel):
             string='UOM', readonly=True),
         'qty': fields.float('Q.', digits=(16, 2), required=True),
         'price': fields.float('Price', digits=(16, 4), required=True),
+        'price_vat': fields.function(
+            _get_subtotal_value, method=True, type='float', string='Price VAT',
+            readonly=True, multi=True),                         
+        'subtotal': fields.function(
+            _get_subtotal_value, method=True, type='float', string='Subtotal',
+            readonly=True, multi=True),
         }
 
 class NewReceiptWizard(orm.TransientModel):
