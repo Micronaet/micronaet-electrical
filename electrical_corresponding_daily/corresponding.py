@@ -42,15 +42,4 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
-class StockPicking(orm.Model):
-    """ Model name: StockPicking
-    """
-    
-    _inherit = 'stock.picking'
-    
-    _columns = {
-        'corresponding': fields.boolean('Corresponding'),
-        }
-# TODO Note: origin of stock movement is the receipt
-
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
