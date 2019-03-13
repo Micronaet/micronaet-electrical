@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-09 18:06+0000\n"
-"PO-Revision-Date: 2018-11-09 19:06+0100\n"
+"POT-Creation-Date: 2019-03-13 16:07+0000\n"
+"PO-Revision-Date: 2019-03-13 17:09+0100\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -24,6 +24,7 @@ msgid "Brand"
 msgstr "Marchio"
 
 #. module: metel_pricelist
+#: view:product.category:metel_pricelist.view_product_category_statistic_cost_button_tree
 #: view:product.product:metel_pricelist.view_product_product_metel_page_form
 #: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form
 msgid "Cost management"
@@ -33,6 +34,12 @@ msgstr "Gestione costi"
 #: view:product.category:metel_pricelist.view_product_category_metel_discount_form
 msgid "Cost rule:"
 msgstr "Regole costo:"
+
+#. module: metel_pricelist
+#: selection:product.product,net_selection:0
+#: selection:product.product,sale_selection:0
+msgid "Discount group"
+msgstr "Gruppo di scontistica"
 
 #. module: metel_pricelist
 #: selection:product.product,net_selection:0
@@ -92,7 +99,7 @@ msgstr "METEL % Netto forzato"
 #: field:product.product,metel_net_force_scale:0
 #: field:product.product,metel_sale_force_scale:0
 msgid "METEL Net scale %"
-msgstr "METEL % Netto (scala sconti)"
+msgstr "METEL % Netto scala"
 
 #. module: metel_pricelist
 #: field:product.product,metel_sale_force:0
@@ -108,7 +115,7 @@ msgstr "METEL % Forzato scontato"
 #. module: metel_pricelist
 #: field:product.category,metel_sale_force_scale:0
 msgid "METEL Sale scale %"
-msgstr "METEL % Scontato (scala sconti)"
+msgstr "METEL %  Scontato scala"
 
 #. module: metel_pricelist
 #: field:product.product,lst_price_vat:0
@@ -144,6 +151,11 @@ msgstr "Netto (ivato)"
 #: field:product.product,net_selection:0
 msgid "Net selection"
 msgstr "Netto selezionato"
+
+#. module: metel_pricelist
+#: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form
+msgid "Open producer site"
+msgstr "Apri scheda produttore"
 
 #. module: metel_pricelist
 #: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form
@@ -194,12 +206,6 @@ msgstr "Scontato (ivato)"
 #: field:product.product,sale_selection:0
 msgid "Sale selection"
 msgstr "Scontato selezionato"
-
-#. module: metel_pricelist
-#: selection:product.product,net_selection:0
-#: selection:product.product,sale_selection:0
-msgid "Statistic category"
-msgstr "Categoria statistica"
 
 #. module: metel_pricelist
 #: view:product.product:metel_pricelist.view_product_product_metel_pricelist_form

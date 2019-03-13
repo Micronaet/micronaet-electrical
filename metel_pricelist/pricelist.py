@@ -69,6 +69,30 @@ class ProductProduct(orm.Model):
     """    
     _inherit = 'product.category'
     
+    def metel_group_cost_management(self, cr, uid, ids, context=None):
+        ''' Cost management view:
+        '''
+        model_pool = self.pool.get('ir.model.data')
+        view_id = model_pool.get_object_reference(
+            cr, uid,
+            'metel_pricelist', 'view_product_category_metel_discount_form',
+            )[1]
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Cost detail'),
+            'view_type': 'form',
+            'view_mode': 'form,tree',
+            'res_id': ids[0],
+            'res_model': 'product.category',
+            'view_id': view_id, # False
+            'views': [(view_id, 'form'), (False, 'tree')],
+            'domain': [],
+            'context': context,
+            'target': 'current', # 'new'
+            'nodestroy': False,
+            }
+
     # -------------------------------------------------------------------------
     # On change function:
     # -------------------------------------------------------------------------
