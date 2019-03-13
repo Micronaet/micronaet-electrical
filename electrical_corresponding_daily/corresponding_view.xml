@@ -6,7 +6,7 @@
             <field name="res_model">stock.picking</field>
             <field name="view_mode">tree,form</field>
             <!--<field name="view_id" ref="view_model_name_form"/>-->
-            <field name="context">{}</field>
+            <field name="context">{'show_origin': True}</field>
             <field name="domain">[('corresponding', '=', True)]</field>
         </record>
 
