@@ -42,4 +42,46 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
+class StockPicking(orm.Model):
+    """ Model name: StockPicking
+    """
+    
+    _inherit = 'stock.picking'
+    
+    def _get_corresponding_total(self, cr, uid, ids, fields, args, context=None):
+        ''' Fields function for calculate 
+        '''
+        res = {}
+        vat = 1.22
+
+        for picking in self.browse(cr, uid, ids, context=context):
+            res[picking.id] = {
+                'corresponding_total': 0.0,
+                'corresponding_error': False,
+                }
+            if not picking.corresponding:
+                continue
+            for move in picking.move_lines:
+                subtotal = move.price_unit * move.product_uom_qty
+                if not subtotal:
+                    res[picking.id]['corresponding_error'] = True
+                res[picking.id]['corresponding_total'] = subtotal    
+            res[picking.id]['corresponding_total_vat'] = \
+                res[picking.id]['corresponding_total'] * vat
+        return res
+        
+    _columns = {
+        'corresponding_total': fields.function(
+            _get_corresponding_total, method=True, 
+            type='float', string='Corresponding', 
+            multi=True),
+        'corresponding_total_vat': fields.function(
+            _get_corresponding_total, method=True, 
+            type='float', string='Corresponding VAT', 
+            multi=True),
+        'corresponding_error': fields.function(
+            _get_corresponding_total, method=True, 
+            type='boolean', string='Corresponding', 
+            multi=True),                        
+        }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
