@@ -18,11 +18,25 @@
                     <field name="priority" invisible="1"/>
                     <field name="picking_type_id" invisible="1"/>
                     <field name="corresponding_error" invisible="1" />
-                    <field name="corresponding_total" />
-                    <field name="corresponding_total_vat" />
+                    <field name="corresponding_total" sum="total" />
+                    <field name="corresponding_total_vat" sum="total_vat" />
                     <field name="pick_state" />
                 </tree>
            </field>
+        </record>
+        <record model="ir.ui.view" id="view_stock_picking_corresponding_form">
+            <field name="name">stock.picking.form</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <notebook position="after">
+                    <group colspan="4" col="4">
+                        <field name="corresponding_total" attrs="{'invisible': [('corresponding','=',False)]}" readonly="1"/>
+                        <field name="corresponding_total_vat" attrs="{'invisible': [('corresponding','=',False)]}" readonly="1"/>
+                        <field name="corresponding" invisible="1" />
+                    </group>    
+                </notebook>
+            </field>
         </record>
         <record model="ir.actions.act_window" id="action_stock_picking_form">
             <field name="name">Corresponding picking</field>

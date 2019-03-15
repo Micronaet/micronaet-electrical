@@ -57,6 +57,7 @@ class StockPicking(orm.Model):
         for picking in self.browse(cr, uid, ids, context=context):
             res[picking.id] = {
                 'corresponding_total': 0.0,
+                'corresponding_total_vat': 0.0,
                 'corresponding_error': False,
                 }
             if not picking.corresponding:
