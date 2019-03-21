@@ -140,7 +140,7 @@
              <field name="inherit_id" ref="metel_base.view_product_category_statistic_tree"/>
              <field name="arch" type="xml">
                  <field name="name" position="after">
-                     <button name="metel_group_cost_management" string="Cost management" type="object" groups="metel_base.group_metel_cost_manager" class="oe_highlight" attrs="{'invisible': [('metel_mode','not in',('producer', 'discount'))]}"/>
+                     <button name="metel_group_cost_management" string="Cost management" type="object" groups="metel_base.group_metel_cost_manager" class="oe_highlight" attrs="{'invisible': [('metel_mode','not in',('brand', 'discount'))]}"/>
                  </field>
              </field>
          </record>
