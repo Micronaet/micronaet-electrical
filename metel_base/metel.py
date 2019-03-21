@@ -470,6 +470,7 @@ class ProductProduct(orm.Model):
     _columns = {
         #'metel_code': fields.char('Metel code', size=18),
         'is_metel': fields.boolean('Is Metel'),
+        'metel_auto': fields.boolean('Metel auto import'),
         'metel_producer_id': fields.many2one(
             'product.category', 'Metel producer'),
         'metel_brand_id': fields.many2one(

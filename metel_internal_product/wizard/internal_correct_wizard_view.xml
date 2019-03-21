@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+       <!-- product.metel.group.wizard -->
+       <record id="product_metel_group_wizard_view" model="ir.ui.view">
+            <field name="name">Metel group management</field>
+            <field name="model">product.metel.group.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Wizard" version="7.0">
+                   <header>
+                       <button string="Cancel" special="cancel" />
+                       <button name="action_update" string="Update" type="object" icon="gtk-refresh" class="oe_highlight" />
+                   </header>                   
+                   <group colspan="4" col="4">
+                        <field name="product_id" readonly="1"/>
+                        <field name="metel_electrocod_id" />
+                        
+                        <field name="producer_code" attrs="{'readonly': [('brand_code','!=',False)]}"/>
+                        <field name="producer_category_id" readonly="1"/>
+
+                        <field name="brand_code" attrs="{'readonly': [('brand_code','!=',False)]}"/>
+                        <field name="brand_category_id" readonly="1"/>
+
+                        <field name="discount_code" attrs="{'readonly': [('discount_code','!=',False)]}"/>
+                        <field name="discount_category_id" readonly="1"/>
+                   </group>
+                </form>
+            </field>
+      </record>
+
+      <record model="ir.actions.act_window" id="action_product_metel_group_wizard">
+          <field name="name">Assign Metel group</field>
+          <field name="res_model">product.metel.group.wizard</field>
+          <field name="view_type">form</field>
+          <field name="view_mode">form</field>
+          <field name="target">new</field>
+          <field name="view_id" ref="product_metel_group_wizard_view"/>
+      </record>
+      
+      <record model="ir.ui.view" id="view_product_metel_group_buttom_form">
+          <field name="name">product.product.form</field>
+          <field name="model">product.product</field>
+          <field name="inherit_id" ref="product.product_normal_form_view"/>
+          <field name="arch" type="xml">
+              <field name="default_code" position="after">
+                  <field name="metel_auto" invisible="1"/>
+                  <button name="%(action_product_metel_group_wizard)d" string="Metel category" 
+                      type="action" attrs="{'invisible': ['|',('metel_auto','=',True),('is_metel','=',False)]}"
+                      context="{'default_product_id': active_id}"
+                      />
+              </field>
+          </field>
+      </record>      
+    </data>
+</openerp>

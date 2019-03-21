@@ -249,6 +249,7 @@ class MetelBase(orm.Model):
                         # Master data:
                         data = {
                             'is_metel': True,
+                            'metel_auto': True,
                             'default_code': default_code,
                             
                             'metel_producer_id': metel_producer_id,
