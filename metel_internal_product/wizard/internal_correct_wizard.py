@@ -56,10 +56,14 @@ class ProductMetelGroupWizard(orm.TransientModel):
         if context is None: 
             context = {}        
         
-        wiz_browse = self.browse(cr, uid, ids, context=context)[0]        
         category_pool = self.pool.get('product.category')
+
+        wiz_browse = self.browse(cr, uid, ids, context=context)[0]        
+        product = wiz_browse.product_id
         
+        # ---------------------------------------------------------------------
         # Metel parent:
+        # ---------------------------------------------------------------------
         category_ids = category_pool.search(cr, uid, [
             ('metel_mode', '=', 'metel'),
             ], context=context)
@@ -71,22 +75,88 @@ class ProductMetelGroupWizard(orm.TransientModel):
         metel_id = category_ids[0]
                 
         product_data = {}
+        
+        # ---------------------------------------------------------------------
         # Producer:
+        # ---------------------------------------------------------------------
         import pdb; pdb.set_trace()
         producer_code = wiz_browse.producer_code.upper()
-        product = wiz_browse.product_id
+        producer_category_id = product.producer_category_id.id
+        if not producer_category_id:
+            producer_ids = category_pool.search(cr, uid, [
+                ('metel_mode', '=', 'producer'),
+                ('metel_code', 'ilike', producer_code),
+                ], context=context)
+            if producer_ids:
+                producer_category_id = producer_ids[0]    
         
-        if producer_code and not product.producer_category_id:
-            producer_id = category_pool.create(cr, uid, {
+        if producer_code and not producer_category_id:
+            producer_category_id = category_pool.create(cr, uid, {
                 'parent_id': metel_id,
                 'name': producer_code,
                 'metel_code': producer_code,
                 'type': 'normal',
                 'metel_mode': 'producer',
                 }, context=context)
-            product_data['metel_producer_id'] = producer_id
+
+            product_data['metel_producer_id'] = producer_category_id
             product_data['metel_producer_code'] = producer_code
+
+        # ---------------------------------------------------------------------
+        # Brand:
+        # ---------------------------------------------------------------------
+        brand_code = wiz_browse.brand_code.upper()
+        brand_category_id = product.brand_category_id.id
+        if not brand_category_id:
+            brand_ids = category_pool.search(cr, uid, [
+                ('parent_id', '=', producer_category_id),
+                ('metel_mode', '=', 'brand'),
+                ('metel_code', 'ilike', brand_code),
+                ], context=context)
+            if brand_ids:
+                brand_category_id = brand_ids[0]    
         
+        if brand_code and not brand_category_id:
+            brand_category_id = category_pool.create(cr, uid, {
+                'parent_id': producer_category_id,
+                'name': brand_code,
+                'metel_code': brand_code,
+                'type': 'normal',
+                'metel_mode': 'brand',
+                }, context=context)
+
+            product_data['metel_brand_id'] = brand_category_id
+            product_data['metel_brand_code'] = brand_code
+
+        # ---------------------------------------------------------------------
+        # Discount:
+        # ---------------------------------------------------------------------
+        discount_code = wiz_browse.discount_code.upper()
+        if not discount_code:
+            return True
+
+        discount_category_id = product.metel_discount_id.id
+        if not discount_category_id:
+            discount_ids = category_pool.search(cr, uid, [
+                ('parent_id', '=', brand_category_id),
+                ('metel_mode', '=', 'discount'),
+                ('metel_code', 'ilike', discount_code),
+                ], context=context)
+            if discount_ids:
+                discount_category_id = discount_ids[0]    
+        
+        if discount_code and not discount_category_id:
+            discount_id = category_pool.create(cr, uid, {
+                'parent_id': brand_category_id,
+                'name': discount_code,
+                'metel_code': discount_code,
+                'type': 'normal',
+                'metel_mode': 'discount',
+                }, context=context)
+
+            product_data['metel_discount_id'] = discount_id
+            product_data['metel_discount_code'] = discount_code
+
         return True
 
     # -------------------------------------------------------------------------
@@ -116,10 +186,9 @@ class ProductMetelGroupWizard(orm.TransientModel):
             return product.metel_producer_id.id
         elif mode == 'brand':
             return product.metel_brand_id.id
-        elif mode == 'discount':
+        else:    
+        #elif mode == 'discount':
             return product.metel_discount_id.id
-        else:# Elecrocod elif mode == 'electrocod':
-            return product.metel_electrocod_id.id
 
     _columns = {
         'product_id': fields.many2one(
@@ -135,9 +204,6 @@ class ProductMetelGroupWizard(orm.TransientModel):
             'product.category', 'Brand category'),
         'discount_category_id': fields.many2one(
             'product.category', 'Discount category'),
-
-        'metel_electrocod_id': fields.many2one(
-            'product.category', 'Electrocod'),
         }
         
     _defaults = {
@@ -152,8 +218,5 @@ class ProductMetelGroupWizard(orm.TransientModel):
             s.generate_category_id(cr, uid, 'brand', ctx),
         'discount_category_id': lambda s, cr, uid, ctx: 
             s.generate_category_id(cr, uid, 'discount', ctx),
-
-        'metel_electrocod_id': lambda s, cr, uid, ctx: 
-            s.generate_category_id(cr, uid, 'electrocod', ctx),
         }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
