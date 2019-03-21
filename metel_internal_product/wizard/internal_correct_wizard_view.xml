@@ -21,7 +21,7 @@
                         <field name="brand_code" attrs="{'readonly': [('brand_code','!=',False)]}"/>
                         <field name="brand_category_id" readonly="1"/>
 
-                        <field name="discount_code" attrs="{'readonly': [('discount_code','!=',False)]}"/>
+                        <field name="discount_code" />
                         <field name="discount_category_id" readonly="1"/>
                    </group>
                 </form>
