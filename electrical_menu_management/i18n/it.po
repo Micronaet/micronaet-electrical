@@ -1,0 +1,120 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* electrical_menu_management
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 8.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-03-22 08:57+0000\n"
+"PO-Revision-Date: 2019-03-22 09:59+0100\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"Language: it\n"
+"X-Generator: Poedit 1.6.10\n"
+
+#. module: electrical_menu_management
+#: view:menu.item.create.wizard:electrical_menu_management.menu_item_create_wizard_view
+msgid "Cancel"
+msgstr "Annulla"
+
+#. module: electrical_menu_management
+#: view:menu.item.create.wizard:electrical_menu_management.menu_item_create_wizard_view
+msgid "Create"
+msgstr "Crea"
+
+#. module: electrical_menu_management
+#: model:ir.actions.act_window,name:electrical_menu_management.action_menu_item_create_wizard_form
+#: model:ir.ui.menu,name:electrical_menu_management.menu_menu_item_create_wizard
+msgid "Create menu"
+msgstr "Crea menù"
+
+#. module: electrical_menu_management
+#: field:menu.item.create.wizard,create_uid:0
+msgid "Created by"
+msgstr "Creato da"
+
+#. module: electrical_menu_management
+#: field:menu.item.create.wizard,create_date:0
+msgid "Created on"
+msgstr "Creato il"
+
+#. module: electrical_menu_management
+#: model:ir.ui.menu,name:electrical_menu_management.menu_menu_item_root
+msgid "Custom menu"
+msgstr "Menu personalizzato"
+
+#. module: electrical_menu_management
+#: field:menu.item.create.wizard,group_ids:0
+msgid "Group"
+msgstr "Gruppi"
+
+#. module: electrical_menu_management
+#: field:menu.item.create.wizard,id:0
+msgid "ID"
+msgstr "ID"
+
+#. module: electrical_menu_management
+#: field:ir.ui.menu,is_custom:0
+msgid "Is custom"
+msgstr "E' personalizzato"
+
+#. module: electrical_menu_management
+#: field:menu.item.create.wizard,write_uid:0
+msgid "Last Updated by"
+msgstr "Aggiornato da"
+
+#. module: electrical_menu_management
+#: field:menu.item.create.wizard,write_date:0
+msgid "Last Updated on"
+msgstr "Aggiornato il"
+
+#. module: electrical_menu_management
+#: model:res.groups,name:electrical_menu_management.group_menu_manager
+msgid "Menu Manager"
+msgstr "Gestione menù"
+
+#. module: electrical_menu_management
+#: model:ir.actions.act_window,name:electrical_menu_management.action_custom_menu_tree
+#: model:ir.ui.menu,name:electrical_menu_management.menu_menu_item_custom_tree
+msgid "Menu list"
+msgstr "Lista menù"
+
+#. module: electrical_menu_management
+#: field:menu.item.create.wizard,name:0
+msgid "Name"
+msgstr "Nome"
+
+#. module: electrical_menu_management
+#: help:menu.item.create.wizard,parent_id:0
+msgid "No parent so master top menu"
+msgstr "Nessun menù padre lo porta nella sezione in alto"
+
+#. module: electrical_menu_management
+#: field:menu.item.create.wizard,parent_id:0
+msgid "Parent"
+msgstr "Padre"
+
+#. module: electrical_menu_management
+#: help:menu.item.create.wizard,source_id:0
+msgid "Select menu that must be copied"
+msgstr "Seleziona il menù da copiare"
+
+#. module: electrical_menu_management
+#: field:menu.item.create.wizard,sequence:0
+msgid "Seq."
+msgstr "Seq."
+
+#. module: electrical_menu_management
+#: field:menu.item.create.wizard,source_id:0
+msgid "Source"
+msgstr "Sorgente"
+
+#. module: electrical_menu_management
+#: view:menu.item.create.wizard:electrical_menu_management.menu_item_create_wizard_view
+msgid "Wizard"
+msgstr "Wizard"
