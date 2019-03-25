@@ -47,29 +47,90 @@ class MenuItemCreateWizard(orm.TransientModel):
     '''
     _name = 'menu.item.create.wizard'
 
-    # --------------------
-    # Wizard button event:
-    # --------------------
-    def action_create(self, cr, uid, ids, context=None):
-        ''' Event for button done
-        '''
-        if context is None: 
-            context = {}        
-        
-        menu_pool = self.pool.get('ir.ui.menu')
-        wiz_browse = self.browse(cr, uid, ids, context=context)[0]
 
+    # -------------------------------------------------------------------------
+    # Utility:
+    # -------------------------------------------------------------------------
+    def create_custom_menu(self, cr, uid, menu, 
+            name, parent_id, sequence=10, 
+            recursive=False,            
+            context=None):
+        ''' Create menu single or with recursion
+            menu: browse obj to duplicate
+            name, sequence, parent_id: default fields
+            recursive: generate also submenu
+        '''
+        menu_pool = self.pool.get('ir.ui.menu')
         data = {
             'is_custom': True,
-            # TODO parent left and parent_right
-            'name': wiz_browse.name,
-            'sequence': wiz_browse.sequence,
-            'parent_id': wiz_browse.parent_id.id,
+            'name': name,
+            'parent_id': parent_id,
+            'sequence': sequence,
             # TODO group
             }
         
-        source = wiz_browse.source_id
-        if source:
+
+        # ---------------------------------------------------------------------
+        # Selected menu:        
+        # ---------------------------------------------------------------------
+        if not menu: # Simply menu (top or left):
+            return menu_pool.create(cr, uid, data, context=context)
+            
+        action = menu.action
+        if action:
+            data['action'] = '%s,%s' % (action._model, action.id)
+        
+        # Create this menu:
+        parent_id = menu_pool.create(cr, uid, data, context=context)
+        
+        if recursive and menu.child_id:
+            # Recursive:
+            for child in menu.child_id:
+                self.create_custom_menu(
+                cr, 
+                uid, 
+                child, 
+                child.name, 
+                parent_id, 
+                child.sequence, 
+                recursive=recursive, 
+                context=context,
+                )
+        return parent_id
+                
+        #    raise osv.except_osv(
+        #        _('Error'), _('Menu not have an action associated!'))
+
+    
+    # -------------------------------------------------------------------------
+    # Wizard button event:
+    # -------------------------------------------------------------------------
+    def action_create(self, cr, uid, ids, context=None):
+        ''' Event for button done
+        '''
+        wiz_browse = self.browse(cr, uid, ids, context=context)[0]
+
+        return self.create_custom_menu(
+            cr, 
+            uid, 
+            wiz_browse.source_id, 
+            wiz_browse.name, 
+            parent_id=wiz_browse.parent_id.id, 
+            sequence=wiz_browse.sequence, 
+            recursive=wiz_browse.recursive, # True if there's a block
+            # TODO group
+            context=context
+            )
+
+    
+        # Create single voice menu:                
+        if not block:
+            return menu_pool.create(cr, uid, data, context=context)        
+
+        # ---------------------------------------------------------------------
+        # Block:
+        # ---------------------------------------------------------------------
+        if block:
             action = source.action
             if action:
                 data['action'] = '%s,%s' % (action._model, action.id)
@@ -90,8 +151,9 @@ class MenuItemCreateWizard(orm.TransientModel):
             'wizard_id', 'group_id', 'Group'),
         'source_id': fields.many2one(
             'ir.ui.menu', 'Source', help='Select menu that must be copied'),
+        'recursive': fields.boolean('Recursive'),
         }
-        
+
     _defaults = {
         'sequence': lambda *x: 10,
         }    
@@ -106,4 +168,3 @@ class IrUiMenu(orm.Model):
         'is_custom': fields.boolean('Is custom'),
         }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
-
