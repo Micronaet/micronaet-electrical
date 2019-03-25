@@ -69,7 +69,6 @@ class MenuItemCreateWizard(orm.TransientModel):
             # TODO group
             }
         
-
         # ---------------------------------------------------------------------
         # Selected menu:        
         # ---------------------------------------------------------------------
@@ -117,25 +116,6 @@ class MenuItemCreateWizard(orm.TransientModel):
             # TODO group
             context=context
             )
-
-    
-        # Create single voice menu:                
-        if not block:
-            return menu_pool.create(cr, uid, data, context=context)        
-
-        # ---------------------------------------------------------------------
-        # Block:
-        # ---------------------------------------------------------------------
-        if block:
-            action = source.action
-            if action:
-                data['action'] = '%s,%s' % (action._model, action.id)
-            else:
-                raise osv.except_osv(
-                    _('Error'), 
-                    _('Menu not have an action associated!'),
-                    )
-        return menu_pool.create(cr, uid, data, context=context)        
 
     _columns = {
         'sequence': fields.integer('Seq.', required=True),
