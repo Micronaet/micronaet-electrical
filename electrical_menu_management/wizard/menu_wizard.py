@@ -97,10 +97,6 @@ class MenuItemCreateWizard(orm.TransientModel):
                 context=context,
                 )
         return parent_id
-                
-        #    raise osv.except_osv(
-        #        _('Error'), _('Menu not have an action associated!'))
-
     
     # -------------------------------------------------------------------------
     # Wizard button event:
