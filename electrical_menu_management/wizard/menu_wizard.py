@@ -111,8 +111,8 @@ class MenuItemCreateWizard(orm.TransientModel):
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
 
         return self.create_custom_menu(
-            cr, 
-            uid, 
+            cr,
+            uid,
             wiz_browse.source_id, 
             wiz_browse.name, 
             parent_id=wiz_browse.parent_id.id, 
