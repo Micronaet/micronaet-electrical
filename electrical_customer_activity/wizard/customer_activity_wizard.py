@@ -1489,7 +1489,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             total['total_cost'] += total_cost
             total['total_discount'] += total_discount
             total['total_revenue'] += total_revenue
-
+            import pdb; pdb.set_trace()
             data = [block, ].extend(self.data_mask_filter([
                 (total_cost, f_number),
                 (total_discount, f_number),
