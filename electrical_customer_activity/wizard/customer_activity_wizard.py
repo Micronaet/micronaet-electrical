@@ -1494,7 +1494,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 (total_cost, f_number),
                 (total_discount, f_number),
                 (total_revenue, f_number),
-                ], mask[block][5])
+                ], mask[block][5]))
             excel_pool.write_xls_line(
                 ws_name, sheet['row'], data, default_format=f_text)
 
@@ -1505,7 +1505,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             (total.get('total_cost', 0.0), f_number),
             (total.get('total_discount', 0.0), f_number),
             (total.get('total_revenue', 0.0), f_number),
-            ], mask[block][5])
+            ], mask[block][5]))
         excel_pool.write_xls_line(
             ws_name, sheet['row'], dta, default_format=f_text)            
         
