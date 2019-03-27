@@ -328,7 +328,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 '', '', 2, # Summary hide col.
                 ],
             
-            'Total:': '',    # Mask for total
+            'Total': '',    # Mask for total
             }
 
         # Customer report different setup:
