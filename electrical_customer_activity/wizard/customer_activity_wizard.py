@@ -685,7 +685,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         summary = {
             'Interventi': {
-                'header': ['Commessa', 'Intervento', 'Costo', 'Ricavo'],
+                'header': ['Commessa', 'Intervento', 'Costo', 'Totale'],
                 'data': {},
                 'total_cost': 0.0, 
                 #'total_discount': 0.0, 
@@ -694,7 +694,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             'Consegne': {
                 'header': ['Commessa', 'Picking', 'Costo', 'Scontato', 
-                    'Ricavo'],
+                    'Totale'],
                 'data': {},
                 'total_cost': 0.0, 
                 'total_discount': 0.0, 
@@ -703,7 +703,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             'DDT': {
                 'header': ['Commessa', 'DDT', 'Costo', 'Scontato', 
-                    'Ricavo'],
+                    'Totale'],
                 'data': {},
                 'total_cost': 0.0, 
                 'total_discount': 0.0, 
@@ -1239,7 +1239,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     
                     #document_total = 0.0
                     this_revenue = intervent.unit_amount * unit_revenue
-                    this_cost = intervent.amount
+                    this_cost = -intervent.amount
 
                     if not this_revenue or not this_cost:
                         f_number_color = f_number_red
