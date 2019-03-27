@@ -1559,7 +1559,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 filter_text,
                 ],default_format=f_title)
 
-
+            private_summary = {}
             # -----------------------------------------------------------------
             # A. STOCK MATERIAL:
             # -----------------------------------------------------------------
@@ -1634,7 +1634,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 row += 1 
                 excel_pool.write_xls_line(
                     ws_name, row, [(total, f_number)], default_format=f_text, 
-                    col=6)
+                    col=5)
+                private_summary['Consegne'] = total
 
             # -----------------------------------------------------------------
             # D. INTERVENT:
@@ -1715,6 +1716,39 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     (total, f_number),
                     ], 
                 default_format=f_text, col=4)
+            private_summary['Interventi'] = total
+
+            # -----------------------------------------------------------------
+            # SUMMARY:
+            # -----------------------------------------------------------------
+            total = 0.0
+
+            # Print header
+            row += 2
+            #excel_pool.write_xls_line(
+            #    ws_name, row, [
+            #        'RIEPILOGO TOTALI', '',
+            #        ], default_format=f_header)
+
+            #row += 1
+            excel_pool.write_xls_line(
+                ws_name, row, [
+                    'Blocco', 'Totale',
+                    ], default_format=f_header)
+            
+            for block in private_summary:
+                row += 1
+                subtotal = private_summary[block]
+                total += subtotal
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        block, 
+                        (subtotal, f_number),
+                        ], default_format=f_text)
+            excel_pool.write_xls_line(
+                ws_name, row, [
+                    total,
+                    ], default_format=f_number, col=1)
 
         return excel_pool.return_attachment(cr, uid, 'partner_activity')
 
