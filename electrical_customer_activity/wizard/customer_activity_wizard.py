@@ -1593,7 +1593,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             #subtotal1 = standard_price * move.product_qty
                             #subtotal2 = discount_price * move.product_qty
                             subtotal = list_price * move.product_qty                            
-                            total += subtotal
                             
                             if subtotal:
                                 f_number_color = f_number
