@@ -1481,7 +1481,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
             }
 
         for block in sheet_order[1:]:
-            sheet['row'] += 1
 
             # -----------------------------------------------------------------
             # Parameters:
@@ -1493,6 +1492,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             if not any((total_cost, total_discount, total_revenue)):
                 continue
 
+            sheet['row'] += 1
             excel_pool.write_xls_line(
                 ws_name, sheet['row'], 
                 self.data_mask_filter([ 
