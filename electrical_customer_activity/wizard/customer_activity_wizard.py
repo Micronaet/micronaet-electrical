@@ -1629,15 +1629,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         )
                     total += this_revenue
 
-                # -------------------------------------------------------------
-                # Total line at the end of the block:
-                # -------------------------------------------------------------
-                row += 1
-                excel_pool.write_xls_line(
-                    ws_name, row, [
-                        (total, f_number),
-                        ], 
-                    default_format=f_text, col=4)
+            # -------------------------------------------------------------
+            # Total line at the end of the block:
+            # -------------------------------------------------------------
+            row += 1
+            excel_pool.write_xls_line(
+                ws_name, row, [
+                    (total, f_number),
+                    ], 
+                default_format=f_text, col=4)
 
         return excel_pool.return_attachment(cr, uid, 'partner_activity')
 
