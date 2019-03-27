@@ -1466,7 +1466,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Costo', 
             'Scontato', 
             'Listino',
-            ], mask[block][5]), default_format=f_header)
+            ], mask[block][4]), default_format=f_header)
         total = {
             'total_cost': 0.0,
             'total_discount': 0.0,
@@ -1489,24 +1489,25 @@ class ResPartnerActivityWizard(orm.TransientModel):
             total['total_cost'] += total_cost
             total['total_discount'] += total_discount
             total['total_revenue'] += total_revenue
-                    
-            excel_pool.write_xls_line(
-                ws_name, sheet['row'], self.data_mask_filter([
-                block,
+
+            data = [block, ].extend(self.data_mask_filter([
                 (total_cost, f_number),
                 (total_discount, f_number),
                 (total_revenue, f_number),
-                ], mask[block][5]), default_format=f_text)
+                ], mask[block][5])
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], data, default_format=f_text)
 
         # Final total of the table:
         sheet['row'] += 1
-        excel_pool.write_xls_line(
-            ws_name, sheet['row'], self.data_mask_filter([
+        data = ['Totale:', ].extend(self.data_mask_filter([
             ('Totale:', f_title),
             (total.get('total_cost', 0.0), f_number),
             (total.get('total_discount', 0.0), f_number),
             (total.get('total_revenue', 0.0), f_number),
-            ], mask[block][5]), default_format=f_text)            
+            ], mask[block][5])
+        excel_pool.write_xls_line(
+            ws_name, sheet['row'], dta, default_format=f_text)            
         
         return excel_pool.return_attachment(cr, uid, 'partner_activity')
 
