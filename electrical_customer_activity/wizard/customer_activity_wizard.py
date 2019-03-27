@@ -1455,8 +1455,60 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             sheet['row'] += 1
         
-        return excel_pool.return_attachment(
-            cr, uid, 'partner_activity')
+        # ---------------------------------------------------------------------
+        # TOTAL BLOCK:
+        # ---------------------------------------------------------------------
+        # Header:
+        sheet['row'] += 1
+        excel_pool.write_xls_line(
+            ws_name, sheet['row'], [
+            'Blocco',
+            'Costo', 
+            'Scontato', 
+            'Listino',
+            ], default_format=f_header)
+        total = {
+            'total_cost': 0.0,
+            'total_discount': 0.0,
+            'total_revenue': 0.0,
+            }
+
+        for block in sheet_order[1:]:
+            sheet['row'] += 1
+
+            # -----------------------------------------------------------------
+            # Parameters:
+            # -----------------------------------------------------------------
+            total_cost = summary[block].get('total_cost', 0.0)
+            total_discount = summary[block].get('total_discount', 0.0)
+            total_revenue = summary[block].get('total_revenue', 0.0)
+
+            # -----------------------------------------------------------------
+            # Total  
+            # -----------------------------------------------------------------
+            total['total_cost'] += total_cost
+            total['total_discount'] += total_discount
+            total['total_revenue'] += total_revenue
+                    
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], [
+                block,
+                (total_cost, f_number),
+                (total_discount, f_number),
+                (total_revenue, f_number),
+                ], default_format=f_text)
+
+        # Final total of the table:
+        sheet['row'] += 1
+        excel_pool.write_xls_line(
+            ws_name, sheet['row'], [
+            ('Totale:', f_title),
+            (total.get('total_cost', 0.0), f_number),
+            (total.get('total_discount', 0.0), f_number),
+            (total.get('total_revenue', 0.0), f_number),
+            ], default_format=f_text)            
+        
+        return excel_pool.return_attachment(cr, uid, 'partner_activity')
 
     _columns = {
         'mode': fields.selection([
