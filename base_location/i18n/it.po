@@ -1,0 +1,149 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* base_location
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 8.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-07-27 16:23+0000\n"
+"PO-Revision-Date: 2017-08-05 23:32+0100\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"Language: it\n"
+"X-Generator: Poedit 1.6.10\n"
+
+#. module: base_location
+#: model:ir.actions.act_window,name:base_location.action_zip_tree
+msgid "Cites/locations Management"
+msgstr "Gestione Città/Locazioni"
+
+#. module: base_location
+#: field:res.country.state,better_zip_ids:0
+msgid "Cities"
+msgstr "Città"
+
+#. module: base_location
+#: model:ir.ui.menu,name:base_location.zip_base
+msgid "Cities/Locations Management"
+msgstr "Gestione Città/Locazioni"
+
+#. module: base_location
+#: field:res.better.zip,city:0
+msgid "City"
+msgstr "Città"
+
+#. module: base_location
+#: field:res.better.zip,code:0
+msgid "City Code"
+msgstr "Codice Città"
+
+#. module: base_location
+#: view:res.company:base_location.view_company_form_city
+#: view:res.partner:base_location.view_partner_form
+msgid "City completion"
+msgstr "Completamento città"
+
+#. module: base_location
+#: field:res.partner,zip_id:0
+msgid "City/Location"
+msgstr "Città/Locazione"
+
+#. module: base_location
+#: model:ir.model,name:base_location.model_res_better_zip
+msgid "City/locations completion object"
+msgstr "Citttà/Locazione completa oggetto"
+
+#. module: base_location
+#: model:ir.model,name:base_location.model_res_company
+msgid "Companies"
+msgstr "Aziende"
+
+#. module: base_location
+#: view:res.better.zip:base_location.view_better_zip_filter
+#: field:res.better.zip,country_id:0
+#: view:res.country:base_location.view_country_search
+msgid "Country"
+msgstr "Paese"
+
+#. module: base_location
+#: model:ir.model,name:base_location.model_res_country_state
+msgid "Country state"
+msgstr "Nazione"
+
+#. module: base_location
+#: field:res.better.zip,create_uid:0
+msgid "Created by"
+msgstr "Creato da"
+
+#. module: base_location
+#: field:res.better.zip,create_date:0
+msgid "Created on"
+msgstr "Creato il"
+
+#. module: base_location
+#: view:res.better.zip:base_location.view_better_zip_filter
+msgid "Group By"
+msgstr "Raggruppa per"
+
+#. module: base_location
+#: field:res.better.zip,id:0
+msgid "ID"
+msgstr "ID"
+
+#. module: base_location
+#: field:res.better.zip,write_uid:0
+msgid "Last Updated by"
+msgstr "Aggiornato da"
+
+#. module: base_location
+#: field:res.better.zip,write_date:0
+msgid "Last Updated on"
+msgstr "Aggiornato il"
+
+#. module: base_location
+#: field:res.company,better_zip_id:0
+msgid "Location"
+msgstr "Locazione"
+
+#. module: base_location
+#: field:res.better.zip,display_name:0
+msgid "Name"
+msgstr "Nome"
+
+#. module: base_location
+#: model:ir.model,name:base_location.model_res_partner
+msgid "Partner"
+msgstr "Partner"
+
+#. module: base_location
+#: view:res.better.zip:base_location.view_better_zip_filter
+msgid "Search city"
+msgstr "Ricerca città"
+
+#. module: base_location
+#: view:res.better.zip:base_location.view_better_zip_filter
+#: field:res.better.zip,state_id:0
+msgid "State"
+msgstr "Provincia"
+
+#. module: base_location
+#: help:res.better.zip,code:0
+msgid "The official code for the city"
+msgstr "Il codice ufficiale per la città"
+
+#. module: base_location
+#: help:res.company,better_zip_id:0
+msgid "Use the city name or the zip code to search the location"
+msgstr "Usare il nome della città o il codice CAP per ricercare la locazione"
+
+#. module: base_location
+#: view:res.better.zip:base_location.better_zip_form
+#: view:res.better.zip:base_location.better_zip_tree
+#: field:res.better.zip,name:0
+msgid "ZIP"
+msgstr "CAP"
