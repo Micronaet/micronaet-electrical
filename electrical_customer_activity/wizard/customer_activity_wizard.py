@@ -377,8 +377,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 mask['Interventi'][6] = 0
                 mask['Consegne'][6] = 0
                 mask['DDT'][6] = 0
-                
-                mask['Total'] = '1001'
             else:    
                 # Summary line:
                 mask['Interventi'][4] = '1101'
@@ -390,6 +388,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 mask['Consegne'][5] = '001'
                 mask['DDT'][5] = '001'
                 
+            # -----------------------------------------------------------------
+            # Total table:
+            # -----------------------------------------------------------------
+            mask['Total'] = '1001'
             
         # ---------------------------------------------------------------------
         # Pool used:
@@ -1488,20 +1490,25 @@ class ResPartnerActivityWizard(orm.TransientModel):
             total_discount = summary[block].get('total_discount', 0.0)
             total_revenue = summary[block].get('total_revenue', 0.0)
 
+            data = self.data_mask_filter([ 
+                block, 
+                (total_cost, f_number),
+                (total_discount, f_number),
+                (total_revenue, f_number),
+                ])
+            if not any(data[1:])
+                continue
+
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], data, mask['Total'], 
+                default_format=f_text)
+
             # -----------------------------------------------------------------
             # Total  
             # -----------------------------------------------------------------
             total['total_cost'] += total_cost
             total['total_discount'] += total_discount
             total['total_revenue'] += total_revenue
-
-            excel_pool.write_xls_line(
-                ws_name, sheet['row'], self.data_mask_filter([ 
-                block, 
-                (total_cost, f_number),
-                (total_discount, f_number),
-                (total_revenue, f_number),
-                ], mask['Total']), default_format=f_text)
 
         # Final total of the table:
         sheet['row'] += 1
