@@ -1559,6 +1559,83 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 filter_text,
                 ],default_format=f_title)
 
+
+            # -----------------------------------------------------------------
+            # A. STOCK MATERIAL:
+            # -----------------------------------------------------------------
+            # Print header
+            row += 1
+            excel_pool.write_xls_line(
+                ws_name, row, [
+                    'MATERIALI', '', '', '', '', '',
+                    ], default_format=f_header)
+
+            row += 1
+            excel_pool.write_xls_line(
+                ws_name, row, [
+                    'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
+                    'Totale',
+                    ], default_format=f_header)
+
+            total = 0.0
+            for key in picking_db:  
+                for picking in picking_db[key]:
+                    if picking.move_lines:
+                        for move in picking.move_lines:
+                            product = move.product_id
+                            
+                            #metel_list_price:
+                            #standard_price = product.standard_price 
+                            discount_price = product.metel_sale
+                            list_price = product.lst_price
+                            #list_price = move.price_unit
+                            
+                            #subtotal1 = standard_price * move.product_qty
+                            #subtotal2 = discount_price * move.product_qty
+                            subtotal = list_price * move.product_qty                            
+                            total += subtotal
+                            
+                            if subtotal:
+                                f_number_color = f_number
+                                f_text_color = f_text
+                            else:    
+                                f_number_color = f_number_red
+                                f_text_color = f_text_red
+                                pick_error = True
+                                
+                            data = [
+                                move.product_id.default_code,
+                                move.product_id.name,
+                                move.product_uom.name,
+                                (move.product_qty, f_number_color),
+                                
+                                # Unit price:
+                                #(standard_price, f_number_color),
+                                #(discount_price, f_number_color),
+                                (list_price, f_number_color),
+                                
+                                # Total price:
+                                (subtotal, f_number_color),
+                                ]
+                            row += 1
+                            excel_pool.write_xls_line(
+                                ws_name, row, data,
+                                default_format=f_text_color
+                                )
+
+                            # ---------------------------------------------
+                            #                    TOTALS:
+                            # ---------------------------------------------
+                            total += subtotal
+
+                # -------------------------------------------------------------
+                # Total line at the end of the block:
+                # -------------------------------------------------------------
+                row += 1 
+                excel_pool.write_xls_line(
+                    ws_name, row, [(total, f_number)], default_format=f_text, 
+                    col=6)
+
             # -----------------------------------------------------------------
             # D. INTERVENT:
             # -----------------------------------------------------------------
@@ -1566,7 +1643,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             total = 0.0
 
             # Print header
-            row += 1
+            row += 2
             excel_pool.write_xls_line(
                 ws_name, row, [
                     'MANODOPERA', '', '', '', '', 
