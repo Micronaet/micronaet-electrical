@@ -1469,11 +1469,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
         sheet['row'] += 1
         excel_pool.write_xls_line(
             ws_name, sheet['row'], self.data_mask_filter([
-            'Blocco',
-            'Costo', 
-            'Scontato', 
-            'Listino',
-            ], mask['Total']), default_format=f_header)
+                'Blocco',
+                'Costo', 
+                'Scontato', 
+                'Listino',
+                ], mask['Total']), default_format=f_header)
         total = {
             'total_cost': 0.0,
             'total_discount': 0.0,
@@ -1489,19 +1489,18 @@ class ResPartnerActivityWizard(orm.TransientModel):
             total_cost = summary[block].get('total_cost', 0.0)
             total_discount = summary[block].get('total_discount', 0.0)
             total_revenue = summary[block].get('total_revenue', 0.0)
-
-            data = self.data_mask_filter([ 
-                block, 
-                (total_cost, f_number),
-                (total_discount, f_number),
-                (total_revenue, f_number),
-                ])
-            if not any(data[1:])
+            
+            if not any((total_cost, total_discount, total_revenue)):
                 continue
 
             excel_pool.write_xls_line(
-                ws_name, sheet['row'], data, mask['Total'], 
-                default_format=f_text)
+                ws_name, sheet['row'], 
+                self.data_mask_filter([ 
+                    block, 
+                    (total_cost, f_number),
+                    (total_discount, f_number),
+                    (total_revenue, f_number),
+                    ], mask['Total']), default_format=f_text)
 
             # -----------------------------------------------------------------
             # Total  
