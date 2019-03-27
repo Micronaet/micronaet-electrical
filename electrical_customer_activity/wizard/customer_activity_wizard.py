@@ -1559,7 +1559,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 filter_text,
                 ],default_format=f_title)
 
-            private_summary = {}
+            private_summary = []
             # -----------------------------------------------------------------
             # A. STOCK MATERIAL:
             # -----------------------------------------------------------------
@@ -1634,10 +1634,88 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 excel_pool.write_xls_line(
                     ws_name, row, [(total, f_number)], default_format=f_text, 
                     col=5)
-                private_summary['Consegne'] = total
+                private_summary.append(('Consegne', total))
 
             # -----------------------------------------------------------------
-            # D. INTERVENT:
+            # B. DDT MATERIAL:
+            # -----------------------------------------------------------------
+            # Print header
+            row += 2
+            excel_pool.write_xls_line(
+                ws_name, row, [
+                    'MATERIALI DDT', '', '', '', '', '',
+                    ], default_format=f_header)
+
+            row += 1
+            excel_pool.write_xls_line(
+                ws_name, row, [
+                    'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
+                    'Totale',
+                    ], default_format=f_header)
+
+            total = 0.0
+            for key in ddt_db:        
+                for ddt in ddt_db[key]:
+                    if ddt.picking_ids:
+                        for picking in ddt.picking_ids:
+                            for move in picking.move_lines:
+                                product = move.product_id
+                                
+                                #metel_list_price:
+                                #standard_price = product.standard_price 
+                                #discount_price = product.metel_sale
+                                list_price = product.lst_price
+                                #list_price = move.price_unit
+                                
+                                #subtotal1 = \
+                                #    standard_price * move.product_qty
+                                #subtotal2 = \
+                                #    discount_price * move.product_qty
+                                subtotal = \
+                                    list_price * move.product_qty
+                                
+                                
+                                if subtotal:
+                                    f_number_color = f_number
+                                    f_text_color = f_text
+                                else:    
+                                    f_number_color = f_number_red
+                                    f_text_color = f_text_red
+                                    ddt_error = True
+                                
+                                data = [  
+                                    product.default_code,
+                                    product.name,
+                                    move.product_uom.name,
+                                    (move.product_qty, f_number_color),
+                                    #(standard_price, f_number_color),
+                                    #(discount_price, f_number_color),
+                                    (list_price, f_number_color),
+                                    (subtotal, f_number_color),
+                                    ]
+
+                                row += 1
+                                excel_pool.write_xls_line(
+                                    ws_name, row, data,
+                                    default_format=f_text_color,
+                                    )
+
+                                # -----------------------------------------
+                                #                    TOTALS:
+                                # -----------------------------------------
+                                total += subtotal
+                        
+            # -------------------------------------------------------------
+            # Total line at the end of the block:
+            # -------------------------------------------------------------
+            row += 1 
+            excel_pool.write_xls_line(
+                ws_name, row, [(total, f_number)], default_format=f_text, 
+                col=5)
+            private_summary.append(('DDT', total))
+
+            # -----------------------------------------------------------------
+            # C. INTERVENT:
             # -----------------------------------------------------------------
             partner_forced = False # update first time!        
             total = 0.0
@@ -1715,7 +1793,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     (total, f_number),
                     ], 
                 default_format=f_text, col=4)
-            private_summary['Interventi'] = total
+            private_summary.append(('Interventi', total))
 
             # -----------------------------------------------------------------
             # SUMMARY:
@@ -1735,9 +1813,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'Blocco', 'Totale',
                     ], default_format=f_header)
             
-            for block in private_summary:
+            for block, subtotal in private_summary:
                 row += 1
-                subtotal = private_summary[block]
                 total += subtotal
                 excel_pool.write_xls_line(
                     ws_name, row, [
