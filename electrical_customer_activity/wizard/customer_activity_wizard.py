@@ -303,7 +303,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Sheet: Hide bloc, Col hide, Total hide, total position
             #        Summary line mask
 
-            #'Riepilogo': [True, '', '', 12],
+            'Riepilogo': [
+                True, #'', # Hide block, Col Hide
+                #'', 18, # Total line hide, Total position
+                #'', '', 2, # Summary hide col.
+                ],
 
             'Interventi': [
                 True, '', # Hide block, Col Hide
@@ -377,7 +381,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 mask['Interventi'][6] = 0
                 mask['Consegne'][6] = 0
                 mask['DDT'][6] = 0
-            else:    
+            else: # detail
                 # Summary line:
                 mask['Interventi'][4] = '1101'
                 mask['Consegne'][4] = '11001'
@@ -392,6 +396,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Total table:
             # -----------------------------------------------------------------
             mask['Total'] = '1001'
+
+        elif report_mode == 'private':
+            # Hide extra pages:
+            mask['Riepilogo'][0] = False
+            mask['Interventi'][0] = False
+            mask['Consegne'][0] = False
+            mask['DDT'][0] = False
+            mask['Commesse'][0] = False
+            
             
         # ---------------------------------------------------------------------
         # Pool used:
@@ -424,7 +437,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         account_used = []
 
         # ---------------------------------------------------------------------
-        # A. STOCK MATERIAL:
+        # A. COLLECT STOCK MATERIAL:
         # ---------------------------------------------------------------------
         # Domain:
         domain = [
@@ -458,7 +471,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             picking_db[key].append(picking)
 
         # ---------------------------------------------------------------------
-        # B. DDT MATERIAL:
+        # B. COLLECT DDT MATERIAL:
         # ---------------------------------------------------------------------
         # Domain:
         domain = [
@@ -491,7 +504,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ddt_db[key].append(ddt)
 
         # ---------------------------------------------------------------------
-        # C. INVOICED MATERIAL:
+        # C. COLLECT INVOICED MATERIAL:
         # ---------------------------------------------------------------------
         """
         # Domain:
@@ -524,7 +537,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         """
 
         # ---------------------------------------------------------------------
-        # D. INTERVENT:
+        # D. COLLECT INTERVENT:
         # ---------------------------------------------------------------------
         # Domain:
         domain = [
@@ -570,7 +583,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 intervent_ids))
 
         # ---------------------------------------------------------------------
-        # E. ACCOUNT:
+        # E. COLLECT ACCOUNT:
         # ---------------------------------------------------------------------
         # Domain:
         domain = [
@@ -1401,124 +1414,231 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         # SUMMARY:
         # ---------------------------------------------------------------------
-        ws_name = 'Riepilogo'
-        sheet = sheets[ws_name]
+        if mask['Riepilogo'][0]:
+            ws_name = 'Riepilogo'
+            sheet = sheets[ws_name]
 
-        # Filter text:
-        excel_pool.write_xls_line(ws_name, 0, [
-            filter_text,
-            ],default_format=f_title)
-        
-        for block in sheet_order[1:-1]: # Jump TODO commesse?!?
-            # Check if sheet must be created:
-            if block in mask and not mask[block][0]:
-                continue
-
-            block_record = summary[block]
-
-            excel_pool.write_xls_line(
-                ws_name, sheet['row'], ['Blocco: %s' % block],
-                default_format=f_title
-                )
-            sheet['row'] += 1
-
-            excel_pool.write_xls_line(
-                ws_name, 
-                sheet['row'], 
-                self.data_mask_filter(block_record['header'], mask[block][4]),
-                default_format=f_header
-                )
-            sheet['row'] += 1
+            # Filter text:
+            excel_pool.write_xls_line(ws_name, 0, [
+                filter_text,
+                ],default_format=f_title)
             
-            for key in block_record['data']:
-                if report_mode != 'summary':
-                    for record in block_record['data'][key]: 
-                        excel_pool.write_xls_line(
-                            ws_name, 
-                            sheet['row'], 
-                            self.data_mask_filter(record, mask[block][4]),
-                            default_format=f_text,
-                            )
-                        sheet['row'] += 1
+            for block in sheet_order[1:-1]: # Jump TODO commesse?!?
+                # Check if sheet must be created:
+                if block in mask and not mask[block][0]:
+                    continue
 
-            # -----------------------------------------------------------------                    
-            # Total line:        
-            # -----------------------------------------------------------------                    
-            if 'total_discount' in summary[block]:
-                data = self.data_mask_filter([
-                    (summary[block]['total_cost'], f_number),
-                    (summary[block]['total_discount'], f_number),
-                    (summary[block]['total_revenue'], f_number),
-                    ], mask[block][5])
-            else:        
-                data = self.data_mask_filter([
-                    (summary[block]['total_cost'], f_number),
-                    (summary[block]['total_revenue'], f_number),
-                    ], mask[block][5])
+                block_record = summary[block]
 
-            excel_pool.write_xls_line(
-                ws_name, sheet['row'], data, default_format=f_text, 
-                col=mask[block][6])
+                excel_pool.write_xls_line(
+                    ws_name, sheet['row'], ['Blocco: %s' % block],
+                    default_format=f_title
+                    )
+                sheet['row'] += 1
 
-            sheet['row'] += 1
+                excel_pool.write_xls_line(
+                    ws_name, 
+                    sheet['row'], 
+                    self.data_mask_filter(
+                        block_record['header'], mask[block][4]),
+                    default_format=f_header
+                    )
+                sheet['row'] += 1
+                
+                for key in block_record['data']:
+                    if report_mode != 'summary':
+                        for record in block_record['data'][key]: 
+                            excel_pool.write_xls_line(
+                                ws_name, 
+                                sheet['row'], 
+                                self.data_mask_filter(record, mask[block][4]),
+                                default_format=f_text,
+                                )
+                            sheet['row'] += 1
+
+                # -------------------------------------------------------------                 
+                # Total line:        
+                # -------------------------------------------------------------                  
+                if 'total_discount' in summary[block]:
+                    data = self.data_mask_filter([
+                        (summary[block]['total_cost'], f_number),
+                        (summary[block]['total_discount'], f_number),
+                        (summary[block]['total_revenue'], f_number),
+                        ], mask[block][5])
+                else:        
+                    data = self.data_mask_filter([
+                        (summary[block]['total_cost'], f_number),
+                        (summary[block]['total_revenue'], f_number),
+                        ], mask[block][5])
+
+                excel_pool.write_xls_line(
+                    ws_name, sheet['row'], data, default_format=f_text, 
+                    col=mask[block][6])
+
+                sheet['row'] += 1
         
-        # ---------------------------------------------------------------------
-        # TOTAL BLOCK:
-        # ---------------------------------------------------------------------
-        # Header:
-        sheet['row'] += 1
-        excel_pool.write_xls_line(
-            ws_name, sheet['row'], self.data_mask_filter([
-                'Blocco',
-                'Costo', 
-                'Scontato', 
-                'Listino',
-                ], mask['Total']), default_format=f_header)
-        total = {
-            'total_cost': 0.0,
-            'total_discount': 0.0,
-            'total_revenue': 0.0,
-            }
-
-        for block in sheet_order[1:]:
-
             # -----------------------------------------------------------------
-            # Parameters:
+            # TOTAL BLOCK:
             # -----------------------------------------------------------------
-            total_cost = summary[block].get('total_cost', 0.0)
-            total_discount = summary[block].get('total_discount', 0.0)
-            total_revenue = summary[block].get('total_revenue', 0.0)
+            # Header:
+            sheet['row'] += 1
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], self.data_mask_filter([
+                    'Blocco',
+                    'Costo', 
+                    'Scontato', 
+                    'Listino',
+                    ], mask['Total']), default_format=f_header)
+            total = {
+                'total_cost': 0.0,
+                'total_discount': 0.0,
+                'total_revenue': 0.0,
+                }
+
+            for block in sheet_order[1:]:
+
+                # -------------------------------------------------------------
+                # Parameters:
+                # -------------------------------------------------------------
+                total_cost = summary[block].get('total_cost', 0.0)
+                total_discount = summary[block].get('total_discount', 0.0)
+                total_revenue = summary[block].get('total_revenue', 0.0)
+                
+                if not any((total_cost, total_discount, total_revenue)):
+                    continue
+
+                sheet['row'] += 1
+                excel_pool.write_xls_line(
+                    ws_name, sheet['row'], 
+                    self.data_mask_filter([ 
+                        block, 
+                        (total_cost, f_number),
+                        (total_discount, f_number),
+                        (total_revenue, f_number),
+                        ], mask['Total']), default_format=f_text)
+
+                # -------------------------------------------------------------
+                # Total  
+                # -------------------------------------------------------------
+                total['total_cost'] += total_cost
+                total['total_discount'] += total_discount
+                total['total_revenue'] += total_revenue
+
+            # Final total of the table:
+            sheet['row'] += 1
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], self.data_mask_filter([
+                ('Totale:', f_title),
+                (total.get('total_cost', 0.0), f_number),
+                (total.get('total_discount', 0.0), f_number),
+                (total.get('total_revenue', 0.0), f_number),
+                ], mask['Total']), default_format=f_text)            
+
+        # ---------------------------------------------------------------------
+        # PRIVATE MODE:
+        # ---------------------------------------------------------------------
+        if report_mode == 'private':
+            ws_name = 'Ridotta'
+            excel_pool.create_worksheet(ws_name)
+            row = 0
+
+            f_number = excel_pool.get_format('number')
+            f_number_red = excel_pool.get_format('bg_red_number')
             
-            if not any((total_cost, total_discount, total_revenue)):
-                continue
+            f_title = excel_pool.get_format('title')
+            f_header = excel_pool.get_format('header')
+            
+            f_text = excel_pool.get_format('text')
+            f_text_red = excel_pool.get_format('bg_red')
 
-            sheet['row'] += 1
+            # Setup columns
+            excel_pool.column_width(ws_name, [20, 30, 10, 20, 15, 15])
+            
+            # Filter text:
+            excel_pool.write_xls_line(ws_name, row, [
+                filter_text,
+                ],default_format=f_title)
+
+            # -----------------------------------------------------------------
+            # D. INTERVENT:
+            # -----------------------------------------------------------------
+            partner_forced = False # update first time!        
+            total = 0.0
+
+            # Print header
+            row += 1
             excel_pool.write_xls_line(
-                ws_name, sheet['row'], 
-                self.data_mask_filter([ 
-                    block, 
-                    (total_cost, f_number),
-                    (total_discount, f_number),
-                    (total_revenue, f_number),
-                    ], mask['Total']), default_format=f_text)
+                ws_name, row, [
+                    'MANODOPERA', '', '', '', '', 
+                    ], default_format=f_header)
 
-            # -----------------------------------------------------------------
-            # Total  
-            # -----------------------------------------------------------------
-            total['total_cost'] += total_cost
-            total['total_discount'] += total_discount
-            total['total_revenue'] += total_revenue
+            row += 1
+            excel_pool.write_xls_line(
+                ws_name, row, [
+                    #'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
+                    #'Totale',
+                    'Data', 'Intervento', 'H.', 'Utente', 'Prezzo totale',
+                    ], default_format=f_header)
 
-        # Final total of the table:
-        sheet['row'] += 1
-        excel_pool.write_xls_line(
-            ws_name, sheet['row'], self.data_mask_filter([
-            ('Totale:', f_title),
-            (total.get('total_cost', 0.0), f_number),
-            (total.get('total_discount', 0.0), f_number),
-            (total.get('total_revenue', 0.0), f_number),
-            ], mask['Total']), default_format=f_text)            
-        
+            for key in intervent_db:
+                for intervent in intervent_db[key]:
+                    # Readability:
+                    user = intervent.user_id
+                    partner = intervent.intervent_partner_id
+                    user_mode_id = intervent.user_mode_id.id
+                    
+                    # ---------------------------------------------------------
+                    # Initial setup of mapping and forced price database:
+                    # ---------------------------------------------------------
+                    if partner_forced == False:
+                        partner_forced = {}
+                        for forced in partner.mode_revenue_ids:        
+                            partner_forced[forced.mode_id.id] = \
+                                forced.list_price
+                    # ---------------------------------------------------------
+                    # Read revenue:        
+                    if user_mode_id in partner_forced: # partner forced
+                        unit_revenue = partner_forced[user_mode_id]
+                    else: # read for default list:
+                        unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
+
+                    this_revenue = intervent.unit_amount * unit_revenue
+                    #this_cost = -intervent.amount
+
+                    if this_revenue:
+                        f_number_color = f_number
+                        f_text_color = f_text
+                    else:    
+                        f_number_color = f_number_red
+                        f_text_color = f_text_red
+                        ddt_error = True
+
+                    data = [
+                        intervent.date_start,
+                        intervent.name,
+                        intervent.intervent_total,
+                        user.name,
+                        #intervent.intervent_duration intervent.unit_amount,
+                        (this_revenue, f_number_color), # total revenue
+                        ]
+
+                    row += 1
+                    excel_pool.write_xls_line(
+                        ws_name, row, data,
+                        default_format=f_text_color
+                        )
+                    total += this_revenue
+
+                # -------------------------------------------------------------
+                # Total line at the end of the block:
+                # -------------------------------------------------------------
+                row += 1
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        (total, f_number),
+                        ], 
+                    default_format=f_text, col=4)
+
         return excel_pool.return_attachment(cr, uid, 'partner_activity')
 
     _columns = {
@@ -1530,6 +1650,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Client:
             ('detail', 'Customer detail'),
             ('summary', 'Customer summary'),
+
+            ('private', 'Private (minimal)'),
             ], 'Mode', required=True),
             
         'partner_id': fields.many2one(
