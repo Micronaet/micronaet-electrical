@@ -1745,6 +1745,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         block, 
                         (subtotal, f_number),
                         ], default_format=f_text)
+            row += 1            
             excel_pool.write_xls_line(
                 ws_name, row, [
                     total,
