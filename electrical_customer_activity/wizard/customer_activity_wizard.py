@@ -47,6 +47,22 @@ class ResPartnerActivityWizard(orm.TransientModel):
     '''
     _name = 'res.partner.activity.wizard'
 
+    def onchange_partner_private(self, cr, uid, ids, partner_id, context=None):
+        ''' Change default discount and price for private report
+        '''
+        res = {}
+        if not partner_id:
+            return res
+            
+        partner_pool = self.pool.get('res.partner')
+        partner = partner_pool.browse(cr, uid, partner_id, context=context)
+        
+        res['value'] = {
+            'activity_material_discount': partner.activity_material_discount,
+            'activity_price': partner.activity_price,
+            }
+        return res
+
     def data_mask_filter(self, data, mask):
         ''' data = list of data
             mask = bit list with 0 or 1 
@@ -278,6 +294,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         to_date = wiz_browse.to_date
         no_account = wiz_browse.no_account
         report_mode = wiz_browse.mode
+
+        # Private report:
+        activity_material_discount = wiz_browse.activity_material_discount
+        activity_price = wiz_browse.activity_price #'metel_sale' 'lst_price'
 
         # Intervent management:
         intervent_mode = wiz_browse.intervent_mode
@@ -1586,13 +1606,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             
                             #metel_list_price:
                             #standard_price = product.standard_price 
-                            discount_price = product.metel_sale
-                            list_price = product.lst_price
+                            #discount_price = product.metel_sale
+                            #list_price = product.lst_price
                             #list_price = move.price_unit
-                            
-                            #subtotal1 = standard_price * move.product_qty
-                            #subtotal2 = discount_price * move.product_qty
-                            subtotal = list_price * move.product_qty                            
+
+                            if activity_price == 'lst_price':
+                                price = product.lst_price
+                            else:    
+                                price = product.metel_sale
+                            subtotal = price * move.product_qty                            
                             
                             if subtotal:
                                 f_number_color = f_number
@@ -1608,12 +1630,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 move.product_uom.name,
                                 (move.product_qty, f_number_color),
                                 
-                                # Unit price:
-                                #(standard_price, f_number_color),
-                                #(discount_price, f_number_color),
-                                (list_price, f_number_color),
-                                
-                                # Total price:
+                                (price, f_number_color),
                                 (subtotal, f_number_color),
                                 ]
                             row += 1
@@ -1634,7 +1651,21 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 excel_pool.write_xls_line(
                     ws_name, row, [(total, f_number)], default_format=f_text, 
                     col=5)
-                private_summary.append(('Consegne', total))
+                    
+                # Discount if present:
+                if activity_material_discount:
+                    row += 1 
+                    discount = total * (
+                        100.0 - activity_material_discount) / 100.0
+                    excel_pool.write_xls_line(
+                        ws_name, row, [
+                            '- %s%% Sconto' % activity_material_discount,
+                            (discount, f_number),
+                            ], default_format=f_text, 
+                        col=4)
+                    private_summary.append(('Consegne', discount))
+                else:
+                    private_summary.append(('Consegne', total))
 
             # -----------------------------------------------------------------
             # B. DDT MATERIAL:
@@ -1664,16 +1695,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 #metel_list_price:
                                 #standard_price = product.standard_price 
                                 #discount_price = product.metel_sale
-                                list_price = product.lst_price
+                                #list_price = product.lst_price
                                 #list_price = move.price_unit
-                                
-                                #subtotal1 = \
-                                #    standard_price * move.product_qty
-                                #subtotal2 = \
-                                #    discount_price * move.product_qty
-                                subtotal = \
-                                    list_price * move.product_qty
-                                
+
+                                if activity_price == 'lst_price':
+                                    price = product.lst_price
+                                else:    
+                                    price = product.metel_sale
+                                subtotal = price * move.product_qty                            
                                 
                                 if subtotal:
                                     f_number_color = f_number
@@ -1688,9 +1717,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     product.name,
                                     move.product_uom.name,
                                     (move.product_qty, f_number_color),
-                                    #(standard_price, f_number_color),
-                                    #(discount_price, f_number_color),
-                                    (list_price, f_number_color),
+
+                                    (price, f_number_color),
                                     (subtotal, f_number_color),
                                     ]
 
@@ -1712,7 +1740,21 @@ class ResPartnerActivityWizard(orm.TransientModel):
             excel_pool.write_xls_line(
                 ws_name, row, [(total, f_number)], default_format=f_text, 
                 col=5)
-            private_summary.append(('DDT', total))
+
+            # Discount if present:
+            if activity_material_discount:
+                row += 1 
+                discount = total * (
+                    100.0 - activity_material_discount) / 100.0
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        '- %s%% Sconto' % activity_material_discount,
+                        (discount, f_number),
+                        ], default_format=f_text, 
+                    col=4)
+                private_summary.append(('DDT', discount))
+            else:
+                private_summary.append(('DDT', total))
 
             # -----------------------------------------------------------------
             # C. INTERVENT:
@@ -1802,12 +1844,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             # Print header
             row += 2
-            #excel_pool.write_xls_line(
-            #    ws_name, row, [
-            #        'RIEPILOGO TOTALI', '',
-            #        ], default_format=f_header)
-
-            #row += 1
             excel_pool.write_xls_line(
                 ws_name, row, [
                     'Blocco', 'Totale',
@@ -1865,6 +1901,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
             help='Select intervent depend on invoice mode'),
         'mark_invoiced': fields.boolean('Mark intervent as invoiced', 
             help='All selected intervent will be marked as invoiced'),
+
+        # Private report:
+        'activity_material_discount': fields.float(
+            'Material discount (report activity)', digits=(16, 4)),
+        'activity_price': fields.selection([
+            ('metel_sale', 'Discount price'),
+            ('lst_price', 'List price'),
+            ], 'Price used (report activity'),
         }
         
     _defaults = {

@@ -21,8 +21,43 @@
 #
 ###############################################################################
 
-from . import partner_custom
-from . import wizard
+import os
+import sys
+import logging
+import openerp
+import openerp.netsvc as netsvc
+import openerp.addons.decimal_precision as dp
+from openerp.osv import fields, osv, expression, orm
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+from openerp import SUPERUSER_ID, api
+from openerp import tools
+from openerp.tools.translate import _
+from openerp.tools.float_utils import float_round as round
+from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT, 
+    DEFAULT_SERVER_DATETIME_FORMAT, 
+    DATETIME_FORMATS_MAP, 
+    float_compare)
 
 
+_logger = logging.getLogger(__name__)
+
+class ResPartner(orm.Model):
+    """ Model name: ResPartner
+    """
+    
+    _inherit = 'res.partner'
+    
+    _columns = {
+        'activity_material_discount': fields.float(
+            'Material discount (report activity)', digits=(16, 4)),
+        'activity_price': fields.selection([
+            ('metel_sale', 'Discount price'),
+            ('lst_price', 'List price'),
+            ], 'Price used (report activity'),
+        }
+
+    _defaults = {
+        'activity_price': lambda *x: 'lst_price',
+        }    
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
