@@ -186,6 +186,8 @@ class MetelBase(orm.Model):
                             line[108:119], 2, logger) # public price
                         metel_multi_price = self.parse_text_number(
                             line[119:125], logger)
+                        if default_code != 'ITWFTV0165K0194':
+                            import pdb; pdb.set_trace()
                         currency = self.parse_text(
                             line[125:128], logger)
                         uom = self.parse_text(
