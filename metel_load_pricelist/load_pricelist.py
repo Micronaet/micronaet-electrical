@@ -186,8 +186,6 @@ class MetelBase(orm.Model):
                             line[108:119], 2, logger) # public price
                         metel_multi_price = self.parse_text_number(
                             line[119:125], logger)
-                        if default_code != 'ITWFTV0165K0194':
-                            import pdb; pdb.set_trace()
                         currency = self.parse_text(
                             line[125:128], logger)
                         uom = self.parse_text(
@@ -214,6 +212,9 @@ class MetelBase(orm.Model):
                         # Code = PRODUCER || CODE
                         default_code = '%s%s' % (brand_code, default_code)
                         
+                        if default_code != 'ITVFTV0165K0194':
+                            continue
+                        import pdb; pdb.set_trace()
                         # Manage multi price value:
                         if metel_multi_price > 1:
                             metel_list_price /= metel_multi_price
