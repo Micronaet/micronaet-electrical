@@ -212,7 +212,7 @@ class MetelBase(orm.Model):
                         # Code = PRODUCER || CODE
                         default_code = '%s%s' % (brand_code, default_code)
                         
-                        if default_code != 'ITVFTV0165K0194':
+                        if default_code != 'ITWFTV0165K0194':
                             continue
                         import pdb; pdb.set_trace()
                         # Manage multi price value:
