@@ -42,6 +42,26 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
+'''class StockMove(orm.Model):
+    """ Model name: StockMove
+    """
+    
+    _inherit = 'stock.move'
+    
+    def _get_subtotal_total(self, cr, uid, ids, fields, args, context=None):
+        ''' Fields function for calculate 
+        '''
+        res = {}
+        for move in self.browse(cr, uid, ids, context=context):
+            res[move.id] = move.price_unit * move.product_uom_qty
+        return res
+    
+    _columns = {
+        'subtotal': fields.function(
+            _get_subtotal_total, method=True, 
+            type='float', string='Subtotal', 
+            ),
+        }'''
 class StockPicking(orm.Model):
     """ Model name: StockPicking
     """

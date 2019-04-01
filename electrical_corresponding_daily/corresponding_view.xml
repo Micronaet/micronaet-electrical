@@ -1,6 +1,22 @@
 <?xml version="1.0"?>
 <openerp>
-    <data>
+    <data> 
+        <!--
+        fast_stock_move.view_stock_move_fast_tree
+        stock.stock_move_tree
+        stock.view_move_tree
+       	stock.view_move_tree_receipt_picking 
+      	stock.view_move_picking_tree
+      	<record model="ir.ui.view" id="view_stock_move_subtotal_tree">
+      	    <field name="name">stock.move.subtotal.tree</field>
+      	    <field name="model">stock.move</field>
+      	    <field name="inherit_id" ref="fast_stock_move.view_stock_move_fast_tree"/>
+      	    <field name="arch" type="xml">
+      	        <field name="invoice_state" position="after">
+      	            <field name="subtotal" />
+      	        </field>
+      	    </field>
+      	</record>-->
         <record model="ir.ui.view" id="view_stock_picking_corresponding_tree">
             <field name="name">stock.picking.tree</field>            
             <field name="model">stock.picking</field>
@@ -66,8 +82,6 @@
             action="action_stock_picking_form"
             sequence="20"
             groups="electrical_corresponding_daily.group_corresponding_manager"
-            />
-                
+            />      
     </data>
 </openerp>
-
