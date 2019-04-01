@@ -218,7 +218,6 @@ class MetelBase(orm.Model):
                             lst_price /= metel_multi_price
 
                         # TODO use currency    
-                        
                         # Category with Electrocod:
                         if metel_electrocod:
                             categ_id = electrocod_db.get(
