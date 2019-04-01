@@ -53,6 +53,8 @@ class ProductMetelGroupWizard(orm.TransientModel):
     def action_update(self, cr, uid, ids, context=None):
         ''' Event for button done
         '''
+        producer_code = '000'
+        
         if context is None: 
             context = {}        
         
@@ -63,12 +65,15 @@ class ProductMetelGroupWizard(orm.TransientModel):
 
         # Parameters:
         product = wiz_browse.product_id
+        
         # Producer:
-        producer_code = wiz_browse.producer_code.upper()
+        #producer_code = wiz_browse.producer_code.upper()
         metel_producer_id = product.metel_producer_id.id
+        
         # Brand:
         brand_code = wiz_browse.brand_code.upper()
         metel_brand_id = product.metel_brand_id.id
+        
         # Discount:
         discount_code = wiz_browse.discount_code
 
@@ -78,6 +83,7 @@ class ProductMetelGroupWizard(orm.TransientModel):
         category_ids = category_pool.search(cr, uid, [
             ('metel_mode', '=', 'metel'),
             ], context=context)
+        
         if not category_ids:
             raise osv.except_osv(
                 _('Error'), 
@@ -208,8 +214,7 @@ class ProductMetelGroupWizard(orm.TransientModel):
         }
         
     _defaults = {
-        'producer_code': lambda s, cr, uid, ctx: 
-            s.generate_default_code(cr, uid, ctx),
+        'producer_code': lambda *x: '000', # XXX Is always 000
         'brand_code': lambda s, cr, uid, ctx: 
             s.generate_default_code(cr, uid, ctx),
             

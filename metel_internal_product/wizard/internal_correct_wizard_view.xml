@@ -45,7 +45,7 @@
               <field name="default_code" position="after">
                   <field name="metel_auto" invisible="1"/>
                   <button name="%(action_product_metel_group_wizard)d" string="Metel category" 
-                      type="action" attrs="{'invisible': ['|',('metel_auto','=',True),('is_metel','=',False)]}"
+                      type="action" attrs="{'invisible': [('metel_internal','=',False)]}"
                       context="{'default_product_id': active_id}"
                       />
               </field>
