@@ -38,9 +38,7 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
     DATETIME_FORMATS_MAP, 
     float_compare)
 
-
 _logger = logging.getLogger(__name__)
-
 
 class ResPartnerActivityWizard(orm.TransientModel):
     ''' Wizard for partner activity

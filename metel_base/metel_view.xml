@@ -162,6 +162,10 @@
                     <field name="is_metel" />
                     <label for="is_metel" />
                 </field>
+                <field name="default_code" position="before">
+                    <field name="metel_internal" />
+                </field>
+
                 <xpath expr="//page[1]" position="after">                
                     <page string="METEL" name="metel" attrs="{'invisible': [('is_metel','=',False)]}">
                        <group colspan="4" col="5">                            
@@ -235,6 +239,7 @@
                     <field name="metel_kit" invisible="1" />
                     <field name="metel_last_variation" invisible="1" />
                     <field name="is_metel" invisible="1" />
+                    <field name="metel_internal" invisible="1"/>
                     <field name="metel_producer_id" invisible="1" />
                     <field name="metel_brand_id" invisible="1" />
                     <field name="metel_serie_id" invisible="1"/>
@@ -256,6 +261,8 @@
                     <field name="metel_statistic_id" />                       
                     <field name="metel_last_variation" />
 
+                    <filter name="metel_internal_yes" string="Internal" domain="[('metel_internal','=',True)]"/>
+
                     <filter name="product_metel" string="METEL" domain="[('is_metel','=',True)]"/>
                     <filter name="product_metel_kit" string="METEL KIT" domain="[('metel_kit','=',True)]"/>
                 </xpath>    
@@ -266,6 +273,7 @@
                     <filter string='METEL Statistic' name="group_metel_statistic" domain="[]" context="{'group_by': 'metel_statistic_id'}"/>
                     <filter string='METEL State' name="group_metel_state" domain="[]" context="{'group_by': 'metel_state'}"/>
                     <filter string='METEL Last variation' name="group_metel_variation" domain="[]" context="{'group_by' : 'metel_last_variation'}"/>
+                    <filter string='METEL Internal' name="group_metel_internal" domain="[]" context="{'group_by': 'metel_internal'}"/>
                     <filter string='METEL KIT' name="group_metel_kit" domain="[]" context="{'group_by': 'metel_kit'}"/>
                     <filter string='METEL' name="group_metel" domain="[]" context="{'group_by': 'is_metel'}"/>
                 </xpath>
