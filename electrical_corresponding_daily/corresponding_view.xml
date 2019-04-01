@@ -31,8 +31,8 @@
             <field name="arch" type="xml">
                 <notebook position="after">
                     <group colspan="4" col="4">
-                        <field name="corresponding_total" attrs="{'invisible': [('corresponding','=',False)]}" readonly="1"/>
-                        <field name="corresponding_total_vat" attrs="{'invisible': [('corresponding','=',False)]}" readonly="1"/>
+                        <field name="corresponding_total" readonly="1"/> <!--attrs="{'invisible': [('corresponding','=',False)]}"-->
+                        <field name="corresponding_total_vat" /> <!--attrs="{'invisible': [('corresponding','=',False)]}"-->
                         <field name="corresponding" invisible="1" />
                     </group>    
                 </notebook>
