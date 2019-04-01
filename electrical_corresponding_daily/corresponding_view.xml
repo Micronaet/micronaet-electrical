@@ -1,13 +1,7 @@
 <?xml version="1.0"?>
 <openerp>
     <data> 
-        <!--
-        fast_stock_move.view_stock_move_fast_tree
-        stock.stock_move_tree
-        stock.view_move_tree
-       	stock.view_move_tree_receipt_picking 
-      	stock.view_move_picking_tree
-      	<record model="ir.ui.view" id="view_stock_move_subtotal_tree">
+      	<!--<record model="ir.ui.view" id="view_stock_move_subtotal_tree">
       	    <field name="name">stock.move.subtotal.tree</field>
       	    <field name="model">stock.move</field>
       	    <field name="inherit_id" ref="fast_stock_move.view_stock_move_fast_tree"/>
@@ -16,7 +10,48 @@
       	            <field name="subtotal" />
       	        </field>
       	    </field>
+      	</record>
+      	<record model="ir.ui.view" id="view_stock_move_subtotal_1_tree">
+      	    <field name="name">stock.move.subtotal.tree</field>
+      	    <field name="model">stock.move</field>
+      	    <field name="inherit_id" ref="stock.view_move_tree"/>
+      	    <field name="arch" type="xml">
+      	        <field name="state" position="after">
+      	            <field name="subtotal" />
+      	        </field>
+      	    </field>
+      	</record>
+      	<record model="ir.ui.view" id="view_stock_move_subtotal_2_tree">
+      	    <field name="name">stock.move.subtotal.tree</field>
+      	    <field name="model">stock.move</field>
+      	    <field name="inherit_id" ref="stock.stock_move_tree"/>
+      	    <field name="arch" type="xml">
+      	        <field name="state" position="after">
+      	            <field name="subtotal" />
+      	        </field>
+      	    </field>
+      	</record>
+      	<record model="ir.ui.view" id="view_stock_move_subtotal_3_tree">
+      	    <field name="name">stock.move.subtotal.tree</field>
+      	    <field name="model">stock.move</field>
+      	    <field name="inherit_id" ref="stock.view_move_picking_tree"/>
+      	    <field name="arch" type="xml">
+      	        <field name="state" position="after">
+      	            <field name="subtotal" />
+      	        </field>
+      	    </field>
+      	</record>
+      	<record model="ir.ui.view" id="view_stock_move_subtotal_4_tree">
+      	    <field name="name">stock.move.subtotal.tree</field>
+      	    <field name="model">stock.move</field>
+      	    <field name="inherit_id" ref="stock.view_move_tree_receipt_picking"/>
+      	    <field name="arch" type="xml">
+      	        <field name="state" position="after">
+      	            <field name="subtotal" />
+      	        </field>
+      	    </field>
       	</record>-->
+
         <record model="ir.ui.view" id="view_stock_picking_corresponding_tree">
             <field name="name">stock.picking.tree</field>            
             <field name="model">stock.picking</field>
