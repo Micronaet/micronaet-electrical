@@ -60,8 +60,8 @@ class StockPicking(orm.Model):
                 'corresponding_total_vat': 0.0,
                 'corresponding_error': False,
                 }
-            #if not picking.corresponding:
-            #    continue
+            if not picking.corresponding:
+                continue
             for move in picking.move_lines:
                 subtotal = move.price_unit * move.product_uom_qty
                 if not subtotal:
