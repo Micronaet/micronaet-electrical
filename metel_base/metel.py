@@ -95,7 +95,7 @@ class MetelMetel(orm.Model):
                     text[:-decimal],
                     text[-decimal:],
                     ))            
-            else: 
+            else:
                 return int(text)        
         except:
             logger.append(_('Error converting float %s (decimal: %s)') % (

@@ -22,6 +22,7 @@
                                 <field name="product_id" on_change="onchange_product_id(product_id)"/>
                                 <field name="uom_id" />
                                 <field name="qty" />
+                                <!--<field name="standard_price" /-->
                                 <field name="price" />
                                 <field name="price_vat" />
                                 <field name="subtotal" />

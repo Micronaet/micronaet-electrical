@@ -144,7 +144,7 @@ class MetelBase(orm.Model):
                 i = upd = new = 0
                 uom_missed = []
                 f_metel = open(fullname, 'r')
-
+                line_len = 0
                 for line in f_metel:
                     i += 1
                     # ---------------------------------------------------------
@@ -155,59 +155,69 @@ class MetelBase(orm.Model):
                             _logger.info('%s. Read header METEL' % i)
                         # TODO
                         continue
-
+                    
+                    # Check len line:    
+                    if not line_len:
+                        line_len = len(line)
+                    if line_len != len(line):
+                        if verbose:
+                            _logger.error(
+                                '%s. Different lenght: %s' % line_len)
+                        continue
+                    
                     # ---------------------------------------------------------
                     #                    MODE: LSP (Pricelist full)
                     # ---------------------------------------------------------
-                    if file_mode_code == 'LSP':                        
-                    
+                    if file_mode_code == 'LSP':                    
                         # Data row:
                         brand_code = self.parse_text(
-                            line[0:3], logger) # TODO create also category
+                            line[0:3], logger=logger) # TODO create also category
                         default_code = self.parse_text(
-                            line[3:19], logger)
+                            line[3:19], logger=logger)
                         ean13 = self.parse_text(
-                            line[19:32], logger)
+                            line[19:32], logger=logger)
                         name = self.parse_text(
-                            line[32:75], logger)
+                            line[32:75], logger=logger)
                         metel_q_x_pack = self.parse_text(
-                            line[75:80], logger)
+                            line[75:80], logger=logger)
                         metel_order_lot = self.parse_text_number(
-                            line[80:85], logger)
+                            line[80:85], logger=logger)
                         metel_order_min = self.parse_text_number(
-                            line[85:90], logger)
+                            line[85:90], logger=logger)
                         metel_order_max = self.parse_text_number(
-                            line[90:96], logger)
+                            line[90:96], logger=logger)
                         metel_leadtime = self.parse_text_number(
-                            line[96:97], logger)
+                            line[96:97], logger=logger)
+                        # reseller price:    
                         lst_price = self.parse_text_number(
-                            line[97:108], 2, logger) # reseller price
+                            line[97:108], 2, logger=logger) 
+                        # public price:    
                         metel_list_price = self.parse_text_number(
-                            line[108:119], 2, logger) # public price
+                            line[108:119], 2, logger=logger) 
                         metel_multi_price = self.parse_text_number(
-                            line[119:125], logger)
+                            line[119:125], logger=logger)
                         currency = self.parse_text(
-                            line[125:128], logger)
+                            line[125:128], logger=logger)
                         uom = self.parse_text(
-                            line[128:131], logger)
+                            line[128:131], logger=logger)
                         metel_kit = self.parse_text_boolean(
-                            line[131:132], logger)     
+                            line[131:132], logger=logger)     
                         metel_state = self.parse_text(
-                            line[132:133], logger)
+                            line[132:133], logger=logger)
                         metel_last_variation = self.parse_text_date(
                             line[133:141], logger=logger)
                         metel_discount = self.parse_text(
-                            line[141:159], logger)
+                            line[141:159], logger=logger)
                         metel_statistic = self.parse_text(
-                            line[159:177], logger)
+                            line[159:177], logger=logger)
                         metel_electrocod = self.parse_text(
-                            line[177:197], logger)
+                            line[177:197], logger=logger)
                         
                         # Alternate value for EAN code:
                         metel_alternate_barcode = self.parse_text(
-                            line[197:232], logger)
+                            line[197:232], logger=logger)
                         metel_alternate_barcode_type = self.parse_text(
-                            line[232:233], logger)
+                            line[232:233], logger=logger)
                         
                         # Code = PRODUCER || CODE
                         default_code = '%s%s' % (brand_code, default_code)
@@ -245,7 +255,7 @@ class MetelBase(orm.Model):
                         # -----------------------------------------------------
                         # Create record data:
                         # -----------------------------------------------------
-                        # Master data:
+                        # Master data:                        
                         data = {
                             'is_metel': True,
                             'metel_auto': True,
@@ -336,10 +346,14 @@ class MetelBase(orm.Model):
                             metel_mode = 'discount'
                                 
                         # Data row:
-                        producer_code = self.parse_text(line[0:3], logger)
-                        brand_code = self.parse_text(line[3:6], logger)
-                        metel_code = self.parse_text(line[6:24], logger)
-                        name = self.parse_text(line[24:], logger)
+                        producer_code = self.parse_text(
+                            line[0:3], logger=logger)
+                        brand_code = self.parse_text(
+                            line[3:6], logger=logger)
+                        metel_code = self.parse_text(
+                            line[6:24], logger=logger)
+                        name = self.parse_text(
+                            line[24:], logger=logger)
                         
                         # -----------------------------------------------------
                         # Create producer > brand groups:

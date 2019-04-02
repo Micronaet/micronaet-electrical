@@ -242,6 +242,7 @@ class NewReceiptLineWizard(orm.TransientModel):
             type='many2one', relation='product.uom', 
             string='UOM', readonly=True),
         'qty': fields.float('Q.', digits=(16, 2), required=True),
+        #'standard_price': fields.float('Price', digits=(16, 4), required=True),
         'price': fields.float('Price', digits=(16, 4), required=True),
         'price_vat': fields.function(
             _get_subtotal_value, method=True, type='float', string='Price VAT',
