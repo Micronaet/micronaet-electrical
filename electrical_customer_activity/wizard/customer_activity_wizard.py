@@ -1558,6 +1558,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         if report_mode == 'private':
             ws_name = 'Ridotta'
             excel_pool.create_worksheet(ws_name)
+
+            partner = wiz_browse.partner_id # For information
+            company = partner.company_id
+            
             row = 0
 
             f_number = excel_pool.get_format('number')
@@ -1571,7 +1575,51 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             # Setup columns
             excel_pool.column_width(ws_name, [20, 30, 10, 20, 15, 15])
-            
+
+            # -----------------------------------------------------------------
+            # Insert Logo:
+            logo_field = company.logo or company.partner_id.image
+            data_image = excel_pool.clean_odoo_binary(logo_field)
+
+            excel_pool.row_height(ws_name, (row, ), height=105)
+            excel_pool.write_image(ws_name, row, 0, 
+                x_offset=0, y_offset=0, 
+                x_scale=0.5, y_scale=0.5, 
+                positioning=2,
+                filename=False, 
+                data=data_image, 
+                tip='Logo',
+                #url=False, 
+                )
+            excel_pool.write_xls_line(ws_name, row, [
+                '', '',
+                '%s\nIndirizzo: %s %s %s\nE-mail: %s\nTelefono: %s' % (
+                    company.name,
+                    company.street or '',
+                    company.zip or '',
+                    company.city or '',
+                    company.email or '',
+                    company.phone or '',
+                    ),
+                ], default_format=f_title)
+                        
+            row += 2
+            # Partner information:
+            excel_pool.write_xls_line(ws_name, row, [
+                ('Cliente', f_title),
+                partner.name,
+                ], default_format=f_title)
+            row += 1             
+            excel_pool.write_xls_line(ws_name, row, [
+                ('Indirizzo', f_title),
+                'Via %s - %s %s' % (
+                    partner.street or '',
+                    partner.zip or '',
+                    partner.city or '',
+                    )
+                ],default_format=f_title)
+
+            row += 2
             # Filter text:
             excel_pool.write_xls_line(ws_name, row, [
                 filter_text,
@@ -1582,7 +1630,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # A. STOCK MATERIAL:
             # -----------------------------------------------------------------
             # Print header
-            row += 1
+            row += 2
             excel_pool.write_xls_line(
                 ws_name, row, [
                     'MATERIALI', '', '', '', '', '',
