@@ -162,7 +162,7 @@ class MetelBase(orm.Model):
                     if line_len != len(line):
                         if verbose:
                             _logger.error(
-                                '%s. Different lenght: %s' % line_len)
+                                '%s. Different lenght: %s' % (i, line_len))
                         continue
                     
                     # ---------------------------------------------------------
