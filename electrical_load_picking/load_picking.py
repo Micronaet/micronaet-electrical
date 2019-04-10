@@ -42,6 +42,15 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
+class StockPicking(orm.Model):
+    ''' Update fields
+    '''
+    _inherit = 'stock.picking'
+    
+    _columns = {
+        'address_id': fields.many2one('res.partner', 'Destinazione'),
+        }
+        
 class StockPickingFileMode(orm.Model):
     """ Model name: Stock picking input file
     """

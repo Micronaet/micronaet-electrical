@@ -44,12 +44,47 @@ class Parser(report_sxw.rml_parse):
             'get_vector_data': self.get_vector_data,
             'theres_partner_ref': self.theres_partner_ref,
             'get_headers': self.get_headers,
+            'get_partner_address': self.get_partner_address,
             
             # Utility:
             'report_init_reset':  self.report_init_reset,
             'get_partic_description': self.get_partic_description,
         })
         
+    def get_partner_address(self, o):
+        ''' Return partner address with destination:
+        '''        
+        # Readability:
+        partner = o.partner_id
+        address = o.address_id
+        contact = o.contact_id
+        
+        if contact:
+            header = contact
+        else:
+            header = partner
+
+        if address:
+            destination = address
+        else:
+            if contact:
+                destination = contact
+            else:
+                destination = partner
+
+        return '%s\n%s\n\n%s %s %s (%s)\nTelefono: %s' % (
+            # Header:
+            header.name,
+            
+            # Destination:
+            destination.street or '',            
+            destination.zip or '',
+            destination.city or '',
+            destination.country_id.name or '',
+            destination.state_id.code or '',
+            destination.phone or '',
+            )
+
     def get_vector_data(self, o): 
         ''' Reset parameter used in report 
         '''

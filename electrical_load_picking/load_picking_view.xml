@@ -1,6 +1,18 @@
 <?xml version="1.0"?>
 <openerp>
     <data>
+        <!--stock.picking-->
+        <record model="ir.ui.view" id="view_stock_picking_form">
+            <field name="name">stock.picking.form</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <field name="partner_id" position="after">
+                    <field name="address_id" domain="[('parent_id', '=', partner_id)]" />
+                </field>
+            </field>
+        </record>
+
         <!--stock.picking.input.file.mode-->
         <record model="ir.ui.view" id="view_stock_picking_input_file_mode_tree">
             <field name="name">stock.picking.input.file.mode.tree</field>
