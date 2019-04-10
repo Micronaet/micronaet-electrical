@@ -80,10 +80,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
         from_date = wiz_browse.from_date
         to_date = wiz_browse.to_date
         
-        # Report mode_
-        mode = wiz_browse.mode
-        _logger.warning('Report mode: %s' % mode)
-
         # Intervent management:
         intervent_mode = wiz_browse.intervent_mode
 
@@ -129,13 +125,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         domain = [
             ('delivery_date', '>=', '%s 00:00:00' % from_date),
             ('delivery_date', '<=', '%s 23:59:59' % to_date),
+            ('is_invoiced', '=', False),
             #('invoice_id', '=', False), # Not Invoiced
             ]
         
-        # Internal report has all DDT    
-        if mode != 'report': 
-            domain.append(('is_invoiced', '=', False))
-
         ddt_ids = ddt_pool.search(cr, uid, domain, context=context)
         ddt_proxy = ddt_pool.browse(cr, uid, ddt_ids, context=context)
         
@@ -300,6 +293,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         to_date = wiz_browse.to_date
         no_account = wiz_browse.no_account
         report_mode = wiz_browse.mode
+
+        # Report mode:
+        mode = wiz_browse.mode
+        _logger.warning('Report mode: %s' % mode)
 
         # Private report:
         activity_material_discount = wiz_browse.activity_material_discount
@@ -504,9 +501,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('partner_id', '=', partner_id),
             ('delivery_date', '>=', '%s 00:00:00' % from_date),
             ('delivery_date', '<=', '%s 23:59:59' % to_date),
-            ('is_invoiced', '=', False), # Not Invoiced
+            # Not Invoiced
             #('invoice_id', '=', False), # Not Invoiced
             ]
+        
+        if mode != 'report': 
+            domain.append(('is_invoiced', '=', False))
+
         if contact_id:
             domain.append(('contact_id', '=', contact_id))
 
