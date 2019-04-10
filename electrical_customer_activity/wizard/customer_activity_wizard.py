@@ -79,6 +79,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
         from_date = wiz_browse.from_date
         to_date = wiz_browse.to_date
+        mode = wiz_browse.mode
 
         # Intervent management:
         intervent_mode = wiz_browse.intervent_mode
@@ -125,9 +126,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
         domain = [
             ('delivery_date', '>=', '%s 00:00:00' % from_date),
             ('delivery_date', '<=', '%s 23:59:59' % to_date),
-            ('is_invoiced', '=', False), # Not Invoiced
             #('invoice_id', '=', False), # Not Invoiced
             ]
+        
+        # Internal report has all DDT    
+        if intervent_mode != 'report': 
+            domain.append(('is_invoiced', '=', False))
+
         ddt_ids = ddt_pool.search(cr, uid, domain, context=context)
         ddt_proxy = ddt_pool.browse(cr, uid, ddt_ids, context=context)
         
