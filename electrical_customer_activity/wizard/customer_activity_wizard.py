@@ -294,9 +294,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         no_account = wiz_browse.no_account
         report_mode = wiz_browse.mode
 
-        # Report mode:
-        mode = wiz_browse.mode
-        _logger.warning('Report mode: %s' % mode)
+        _logger.warning('Report mode: %s' % report_mode)
 
         # Private report:
         activity_material_discount = wiz_browse.activity_material_discount
@@ -501,11 +499,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('partner_id', '=', partner_id),
             ('delivery_date', '>=', '%s 00:00:00' % from_date),
             ('delivery_date', '<=', '%s 23:59:59' % to_date),
-            # Not Invoiced
             #('invoice_id', '=', False), # Not Invoiced
             ]
-        
-        if mode != 'report': 
+
+        # Not invoiced only if not internal        
+        if report_mode != 'report': 
             domain.append(('is_invoiced', '=', False))
 
         if contact_id:
