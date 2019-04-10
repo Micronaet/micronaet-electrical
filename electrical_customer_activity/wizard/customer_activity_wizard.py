@@ -79,7 +79,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
         from_date = wiz_browse.from_date
         to_date = wiz_browse.to_date
+        
+        # Report mode_
         mode = wiz_browse.mode
+        _logger.warning('Report mode: %s' % mode)
 
         # Intervent management:
         intervent_mode = wiz_browse.intervent_mode
