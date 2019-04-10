@@ -130,7 +130,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ]
         
         # Internal report has all DDT    
-        if intervent_mode != 'report': 
+        if mode != 'report': 
             domain.append(('is_invoiced', '=', False))
 
         ddt_ids = ddt_pool.search(cr, uid, domain, context=context)
