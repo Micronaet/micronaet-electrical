@@ -45,6 +45,42 @@ class ResPartnerActivityWizard(orm.TransientModel):
     '''
     _name = 'res.partner.activity.wizard'
 
+    # -------------------------------------------------------------------------
+    # Utility:
+    # -------------------------------------------------------------------------
+    def material_update(self, material_rows, move):
+        ''' Update total from move:
+        '''
+        product = move.product_id
+        
+        qty = move.product_qty
+        standard_price = product.standard_price 
+        discount_price = product.metel_sale
+        list_price = product.lst_price
+        subtotal1 = standard_price * move.product_qty
+        subtotal2 = discount_price * move.product_qty
+        subtotal3 = list_price * move.product_qty
+        
+        if product in material_rows:
+            material_rows[product][0] += qty
+            material_rows[product][4] += subtotal1
+            material_rows[product][5] += subtotal2
+            material_rows[product][6] += subtotal3
+        else:
+            material_rows[product] = [
+                qty,
+                standard_price,
+                discount_price,
+                list_price,
+                subtotal1,
+                subtotal2,
+                subtotal3,
+                ] 
+        return True
+
+    # -------------------------------------------------------------------------
+    # Onchange:    
+    # -------------------------------------------------------------------------
     def onchange_partner_private(self, cr, uid, ids, partner_id, context=None):
         ''' Change default discount and price for private report
         '''
@@ -345,6 +381,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 '', 11,
                 '', '', 2, # Summary hide col., Summary total
                 ],
+
+            # TODO
+            'Materiali': [
+                False, '', 
+                #'', 11,
+                #'', '', 2, # Summary hide col., Summary total
+                ],
+            
             #'Fatture': [True, '', '', 12],
             
             'Commesse': [
@@ -424,8 +468,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             mask['Interventi'][0] = False
             mask['Consegne'][0] = False
             mask['DDT'][0] = False
-            mask['Commesse'][0] = False
-            
+            mask['Commesse'][0] = False            
+            mask['Materiali'][0] = True
             
         # ---------------------------------------------------------------------
         # Pool used:
@@ -703,6 +747,22 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     ],
                 'total': {},
                 'data': ddt_db, 
+                },
+
+            'Materiali': { # DDT not invoiced
+                'row': 0,
+                'header': [
+                    'Codice', 'Descrizione', 'UM', 'Q.', 
+                    'Costo ultimo', 'Scontato', 'METEL', 
+                    'Sub. ultimo', 'Sub. scontato', 'Sub. METEL',
+                    ],
+                'width': [
+                    15, 35, 5, 10, 
+                    15, 15, 15,
+                    15, 15, 15,
+                    ],
+                #'total': {},
+                #'data': ,
                 },
 
             #'Fatture': { # Invoiced document
@@ -1239,6 +1299,60 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         # D. INTERVENT:
         # ---------------------------------------------------------------------
+        if mask['Materiali'][0]:
+            ws_name = 'Materiali'
+            sheet = sheets[ws_name]            
+            material_rows = {}
+
+            # -----------------------------------------------------------------
+            # Read picking:
+            # -----------------------------------------------------------------
+            for key in picking_db:
+                for picking in picking_db[key]:
+                    if picking.move_lines:
+                        if picking.move_lines:
+                            for move in picking.move_lines:
+                                self.material_update(material_rows, move)
+
+            # -----------------------------------------------------------------
+            # Read DDT:                                        
+            # -----------------------------------------------------------------
+            for key in ddt_db:        
+                for ddt in ddt_db[key]:
+                    if ddt.picking_ids:
+                        for picking in ddt.picking_ids:
+                            if picking.move_lines:
+                                for move in picking.move_lines:
+                                    self.material_update(material_rows, move)
+
+            # -----------------------------------------------------------------
+            # Excel page:
+            # -----------------------------------------------------------------
+            for product in sorted(material_rows, key=lambda x: x.default_code):
+                record = material_rows[product]
+                
+                data = self.data_mask_filter([  
+                    # Move:
+                    product.default_code,
+                    product.name,
+                    move.product_uom.name,
+                    
+                    record[0],
+
+                    record[1], record[2], record[3],
+
+                    record[4], record[5], record[6],
+                    ], mask['Materiali'][1])
+
+                excel_pool.write_xls_line(
+                    ws_name, sheet['row'], data,
+                    default_format=f_text,
+                    )
+                sheet['row'] += 1
+
+        # ---------------------------------------------------------------------
+        # E. INTERVENT:
+        # ---------------------------------------------------------------------
         if mask['Interventi'][0]: # Show / Hide page:
             ws_name = 'Interventi'
             sheet = sheets[ws_name]
@@ -1374,7 +1488,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     col=mask['Interventi'][3])
 
         # ---------------------------------------------------------------------
-        # E. ACCOUNT:
+        # F. ACCOUNT:
         # ---------------------------------------------------------------------
         if mask['Commesse'][0]:
             ws_name = 'Commesse'
