@@ -486,6 +486,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
         intervent_pool = self.pool.get('hr.analytic.timesheet')
         mode_pool = self.pool.get('hr.intervent.user.mode')
 
+        # Create first page for private:
+        if report_mode == 'private':
+            ws_name = 'Ridotta'
+            excel_pool.create_worksheet(ws_name)
+
         # ---------------------------------------------------------------------
         # Startup:
         # ---------------------------------------------------------------------
@@ -838,8 +843,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Interventi', 
             'Consegne', 
             'DDT', 
-            #'Fatture', 
+            #'Fatture',
             'Commesse',
+            'Materiali',
             ]
 
         # -------------------------------------------------------------
@@ -1337,11 +1343,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     product.name,
                     move.product_uom.name,
                     
-                    record[0],
+                    (record[0], f_number),
 
-                    record[1], record[2], record[3],
+                    (record[1], f_number), 
+                    (record[2], f_number),
+                    (record[3], f_number),
 
-                    record[4], record[5], record[6],
+                    (record[4], f_number), 
+                    (record[5], f_number), 
+                    (record[6], f_number),
                     ], mask['Materiali'][1])
 
                 excel_pool.write_xls_line(
@@ -1562,7 +1572,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 filter_text,
                 ],default_format=f_title)
             
-            for block in sheet_order[1:-1]: # Jump TODO commesse?!?
+            for block in sheet_order[1:-2]: # Jump TODO commesse?!?
                 # Check if sheet must be created:
                 if block in mask and not mask[block][0]:
                     continue
@@ -1634,7 +1644,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'total_revenue': 0.0,
                 }
 
-            for block in sheet_order[1:]:
+            for block in sheet_order[1:-1]:
 
                 # -------------------------------------------------------------
                 # Parameters:
@@ -1678,7 +1688,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         if report_mode == 'private':
             ws_name = 'Ridotta'
-            excel_pool.create_worksheet(ws_name)
+            #excel_pool.create_worksheet(ws_name)
 
             partner = wiz_browse.partner_id # For information
             company = partner.company_id
