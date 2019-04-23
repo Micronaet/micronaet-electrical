@@ -37,6 +37,7 @@
              <field name="inherit_id" ref="product.product_normal_form_view"/>
              <field name="arch" type="xml">
                  <field name="lst_price" position="after">
+                     <!--<field name="metel_sale" />-->
                      <button name="metel_cost_management" string="Cost management" type="object" groups="metel_base.group_metel_cost_manager" class="oe_highlight"/>
                  </field>
              </field>
