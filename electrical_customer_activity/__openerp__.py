@@ -38,6 +38,7 @@
         'base',
         'account',
         'analytic',
+        'metel_pricelist',
         
         # Stock operation:
         'electrical_l10n_it_ddt',

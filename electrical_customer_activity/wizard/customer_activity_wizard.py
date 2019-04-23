@@ -48,14 +48,21 @@ class ResPartnerActivityWizard(orm.TransientModel):
     # -------------------------------------------------------------------------
     # Utility:
     # -------------------------------------------------------------------------
-    def material_update(self, material_rows, move):
+    def material_update(self, cr, uid, material_rows, move, context=None):
         ''' Update total from move:
         '''
+        product_pool = self.pool.get('product.product')
         product = move.product_id
+        product_id = product.id
+        extra_data = \
+            product_pool._get_metel_price_data(
+                cr, uid, [product_id], 
+                context=context)[product_id]
+        metel_sale = extra_data.get('metel_sale', 0.0)
         
         qty = move.product_qty
         standard_price = product.standard_price 
-        discount_price = product.metel_sale
+        discount_price = metel_sale
         list_price = product.lst_price
         subtotal1 = standard_price * move.product_qty
         subtotal2 = discount_price * move.product_qty
@@ -481,6 +488,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         ddt_pool = self.pool.get('stock.ddt')
         invoice_pool = self.pool.get('account.invoice')
         account_pool = self.pool.get('account.analytic.account')
+        product_pool = self.pool.get('product.product')
+
 
         # Interventi:
         intervent_pool = self.pool.get('hr.analytic.timesheet')
@@ -915,10 +924,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         if picking.move_lines:
                             for move in picking.move_lines:
                                 product = move.product_id
+                                product_id = product.id
+                                extra_data = \
+                                    product_pool._get_metel_price_data(
+                                        cr, uid, [product_id], 
+                                        context=context)[product_id]
+                                metel_sale = extra_data.get('metel_sale', 0.0)    
                                 
                                 #metel_list_price:
                                 standard_price = product.standard_price 
-                                discount_price = product.metel_sale
+                                discount_price = metel_sale
                                 list_price = product.lst_price
                                 #list_price = move.price_unit
                                 
@@ -1075,10 +1090,17 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             if picking.move_lines:
                                 for move in picking.move_lines:
                                     product = move.product_id
+                                    product_id = product.id
+                                    extra_data = \
+                                        product_pool._get_metel_price_data(
+                                            cr, uid, [product_id], 
+                                            context=context)[product_id]
+                                    metel_sale = extra_data.get(
+                                        'metel_sale', 0.0)    
                                     
                                     #metel_list_price:
                                     standard_price = product.standard_price 
-                                    discount_price = product.metel_sale
+                                    discount_price = metel_sale
                                     list_price = product.lst_price
                                     #list_price = move.price_unit
                                     
@@ -1318,7 +1340,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     if picking.move_lines:
                         if picking.move_lines:
                             for move in picking.move_lines:
-                                self.material_update(material_rows, move)
+                                self.material_update(
+                                    cr, uid, material_rows, move, 
+                                    context=context)
 
             # -----------------------------------------------------------------
             # Read DDT:                                        
@@ -1329,7 +1353,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         for picking in ddt.picking_ids:
                             if picking.move_lines:
                                 for move in picking.move_lines:
-                                    self.material_update(material_rows, move)
+                                    self.material_update(
+                                        cr, uid, material_rows, move,
+                                        context=context)
 
             # -----------------------------------------------------------------
             # Excel page:
@@ -1686,7 +1712,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         # PRIVATE MODE:
         # ---------------------------------------------------------------------
-        if report_mode == 'private':
+        if report_mode == 'private':            
             ws_name = 'Ridotta'
             #excel_pool.create_worksheet(ws_name)
 
@@ -1779,6 +1805,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 for picking in picking_db[key]:
                     if picking.move_lines:
                         for move in picking.move_lines:
+                            product_id = move.product_id.id
+                            extra_data = product_pool._get_metel_price_data(
+                                cr, uid, [product_id], 
+                                context=context)[product_id]
+                            metel_sale = extra_data.get('metel_sale', 0.0)    
                             product = move.product_id
                             
                             #metel_list_price:
@@ -1790,7 +1821,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             if activity_price == 'lst_price':
                                 price = product.lst_price
                             else:    
-                                price = product.metel_sale
+                                price = metel_sale
                             subtotal = price * move.product_qty                            
                             
                             if subtotal:
@@ -1816,9 +1847,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 default_format=f_text_color
                                 )
 
-                            # ---------------------------------------------
+                            # -------------------------------------------------
                             #                    TOTALS:
-                            # ---------------------------------------------
+                            # -------------------------------------------------
                             total += subtotal
 
                 # -------------------------------------------------------------
@@ -1866,19 +1897,24 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 for ddt in ddt_db[key]:
                     if ddt.picking_ids:
                         for picking in ddt.picking_ids:
-                            for move in picking.move_lines:
-                                product = move.product_id
-                                
+                            for move in picking.move_lines:                                
                                 #metel_list_price:
                                 #standard_price = product.standard_price 
                                 #discount_price = product.metel_sale
                                 #list_price = product.lst_price
                                 #list_price = move.price_unit
+                                
+                                product = move.product_id
+                                product_id = product.id
+                                extra_data = product_pool._get_metel_price_data(
+                                    cr, uid, [product_id], 
+                                    context=context)[product_id]
+                                metel_sale = extra_data.get('metel_sale', 0.0)    
 
                                 if activity_price == 'lst_price':
                                     price = product.lst_price
                                 else:    
-                                    price = product.metel_sale
+                                    price = metel_sale
                                 subtotal = price * move.product_qty                            
                                 
                                 if subtotal:
@@ -1905,14 +1941,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     default_format=f_text_color,
                                     )
 
-                                # -----------------------------------------
+                                # ---------------------------------------------
                                 #                    TOTALS:
-                                # -----------------------------------------
+                                # ---------------------------------------------
                                 total += subtotal
                         
-            # -------------------------------------------------------------
+            # -----------------------------------------------------------------
             # Total line at the end of the block:
-            # -------------------------------------------------------------
+            # -----------------------------------------------------------------
             row += 1 
             excel_pool.write_xls_line(
                 ws_name, row, [(total, f_number)], default_format=f_text, 
@@ -2003,9 +2039,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         )
                     total += this_revenue
 
-            # -------------------------------------------------------------
+            # -----------------------------------------------------------------
             # Total line at the end of the block:
-            # -------------------------------------------------------------
+            # -----------------------------------------------------------------
             row += 1
             excel_pool.write_xls_line(
                 ws_name, row, [

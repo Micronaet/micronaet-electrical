@@ -237,7 +237,8 @@ class ProductProduct(orm.Model):
     # -------------------------------------------------------------------------
     # Fields function:
     # -------------------------------------------------------------------------
-    def _get_metel_price_data(self, cr, uid, ids, fields, args, context=None):
+    def _get_metel_price_data(self, cr, uid, ids, fields=None, args=None, 
+            context=None):
         ''' Fields function for calculate 
         '''    
         add_vat = 1.22 # TODO parametrize
@@ -377,6 +378,9 @@ class ProductProduct(orm.Model):
             'METEL Sale force %', digits=(16, 8),
             ),
 
+        #'metel_sale_history': fields.float(
+        #    'METEL Sale history', 
+        #    digits_compute=dp.get_precision('Product Price')),
         # Calculated:
         'metel_sale': fields.function(
             _get_metel_price_data, method=True, 
