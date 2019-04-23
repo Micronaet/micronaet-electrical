@@ -1810,6 +1810,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 cr, uid, [product_id], 
                                 context=context)[product_id]
                             metel_sale = extra_data.get('metel_sale', 0.0)    
+                            metel_sale_vat = extra_data.get(
+                                'metel_sale_vat', 0.0)    
                             product = move.product_id
                             
                             #metel_list_price:
@@ -1820,8 +1822,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                             if activity_price == 'lst_price':
                                 price = product.lst_price
-                            else:    
+                            elif activity_price == 'metel_sale':
                                 price = metel_sale
+                            else: # metel_sale_vat
+                                price = metel_sale_vat
                             subtotal = price * move.product_qty                            
                             
                             if subtotal:
@@ -1910,11 +1914,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     cr, uid, [product_id], 
                                     context=context)[product_id]
                                 metel_sale = extra_data.get('metel_sale', 0.0)    
+                                metel_sale_vat = extra_data.get(
+                                    'metel_sale_vat', 0.0)    
 
                                 if activity_price == 'lst_price':
                                     price = product.lst_price
-                                else:    
+                                elif activity_price == 'metel_sale':
                                     price = metel_sale
+                                else: # metel_sale_vat
+                                    price = metel_sale_vat
+                                        
                                 subtotal = price * move.product_qty                            
                                 
                                 if subtotal:
@@ -2119,6 +2128,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         'activity_material_discount': fields.float(
             'Material discount (report activity)', digits=(16, 4)),
         'activity_price': fields.selection([
+            ('metel_sale_vat', 'Discount price VAT'),
             ('metel_sale', 'Discount price'),
             ('lst_price', 'List price'),
             ], 'Price used (report activity'),

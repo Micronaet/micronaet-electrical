@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-12 14:30+0000\n"
-"PO-Revision-Date: 2019-03-12 15:31+0100\n"
+"POT-Creation-Date: 2019-04-23 12:48+0000\n"
+"PO-Revision-Date: 2019-04-23 14:50+0100\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -69,6 +69,17 @@ msgid "Customer summary"
 msgstr "Riepilogativo (per cliente)"
 
 #. module: electrical_customer_activity
+#: selection:res.partner,activity_price:0
+#: selection:res.partner.activity.wizard,activity_price:0
+msgid "Discount price"
+msgstr "Prezzo scontato"
+
+#. module: electrical_customer_activity
+#: selection:res.partner.activity.wizard,activity_price:0
+msgid "Discount price VAT"
+msgstr "Prezzo scontato Ivato"
+
+#. module: electrical_customer_activity
 #: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
 msgid "Excel configuration:"
 msgstr "Configurazione Excel:"
@@ -119,9 +130,21 @@ msgid "Last Updated on"
 msgstr "Aggiornato il"
 
 #. module: electrical_customer_activity
+#: selection:res.partner,activity_price:0
+#: selection:res.partner.activity.wizard,activity_price:0
+msgid "List price"
+msgstr "Prezzo Metel (listino)"
+
+#. module: electrical_customer_activity
 #: field:res.partner.activity.wizard,mark_invoiced:0
 msgid "Mark intervent as invoiced"
 msgstr "Segna tutti gli interventi selezionati come fatturati"
+
+#. module: electrical_customer_activity
+#: field:res.partner,activity_material_discount:0
+#: field:res.partner.activity.wizard,activity_material_discount:0
+msgid "Material discount (report activity)"
+msgstr "Sconto materiale (report attività)"
 
 #. module: electrical_customer_activity
 #: field:res.partner.activity.wizard,mode:0
@@ -139,6 +162,7 @@ msgid "No account"
 msgstr "Nessun conto analitico"
 
 #. module: electrical_customer_activity
+#: model:ir.model,name:electrical_customer_activity.model_res_partner
 #: field:res.partner.activity.wizard,partner_id:0
 msgid "Partner"
 msgstr "Cliente"
@@ -164,6 +188,12 @@ msgid "Period:"
 msgstr "Periodo:"
 
 #. module: electrical_customer_activity
+#: field:res.partner,activity_price:0
+#: field:res.partner.activity.wizard,activity_price:0
+msgid "Price used (report activity"
+msgstr "Prezzo utilizzato (report attitivà)"
+
+#. module: electrical_customer_activity
 #: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
 msgid "Print partner activity"
 msgstr "Stampa attività clienti"
@@ -172,6 +202,16 @@ msgstr "Stampa attività clienti"
 #: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
 msgid "Print partner touched"
 msgstr "Stampa clienti movimentati"
+
+#. module: electrical_customer_activity
+#: selection:res.partner.activity.wizard,mode:0
+msgid "Private (minimal)"
+msgstr "Interna (minimale)"
+
+#. module: electrical_customer_activity
+#: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
+msgid "Private parameters:"
+msgstr "Parametri interna:"
 
 #. module: electrical_customer_activity
 #: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
