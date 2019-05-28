@@ -507,7 +507,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # Pool used:
         # ---------------------------------------------------------------------
         excel_pool = self.pool.get('excel.writer')
-        
+
         # Account:
         picking_pool = self.pool.get('stock.picking')
         ddt_pool = self.pool.get('stock.ddt')
@@ -847,6 +847,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             # Load formats:
             if load_format:
+                excel_pool.set_format(    
+                    title_font='Arial', 
+                    #title_size=11, title_fg='black', 
+                    header_font='Arial', 
+                    #header_size=9, header_fg='black',
+                    text_font='Arial', 
+                    #text_size=9, text_fg='black',
+                    )
+
                 f_number = excel_pool.get_format('number')
                 f_number_red = excel_pool.get_format('bg_red_number')
                 
