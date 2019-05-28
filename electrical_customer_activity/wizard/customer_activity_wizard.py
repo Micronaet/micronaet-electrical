@@ -1252,9 +1252,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             # Excel page:
             # -----------------------------------------------------------------
-            for (product, product_name, discount_price) in sorted(
-                    material_rows, key=lambda x: x.default_code):
-                record = material_rows[product]
+            for key in sorted(
+                    material_rows, key=lambda x: x[0].default_code):
+                record = material_rows[key]
+
+                # Unpack data:    
+                (product, product_name, discount_price) = key    
                 
                 data = self.data_mask_filter([  
                     # Move:
