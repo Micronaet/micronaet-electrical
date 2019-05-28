@@ -524,6 +524,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         if report_mode == 'private':
             ws_name = 'Ridotta'
             excel_pool.create_worksheet(ws_name)
+            excel_pool.set_margins(ws_name)
 
         # ---------------------------------------------------------------------
         # Startup:
@@ -844,6 +845,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             # Create sheet:
             excel_pool.create_worksheet(ws_name)
+            excel_pool.set_margins(ws_name)
 
             # Load formats:
             if load_format:
@@ -1627,17 +1629,17 @@ class ResPartnerActivityWizard(orm.TransientModel):
             f_text_red = excel_pool.get_format('bg_red')
 
             # Setup columns
-            excel_pool.column_width(ws_name, [20, 30, 10, 20, 15, 15])
+            excel_pool.column_width(ws_name, [16, 30, 5, 12, 12, 12])
 
             # -----------------------------------------------------------------
             # Insert Logo:
             logo_field = company.logo or company.partner_id.image
             data_image = excel_pool.clean_odoo_binary(logo_field)
 
-            excel_pool.row_height(ws_name, (row, ), height=105)
+            excel_pool.row_height(ws_name, (row, ), height=65)
             excel_pool.write_image(ws_name, row, 0, 
                 x_offset=0, y_offset=0, 
-                x_scale=0.5, y_scale=0.5, 
+                x_scale=0.3, y_scale=0.3, 
                 positioning=2,
                 filename=False, 
                 data=data_image, 
@@ -1645,7 +1647,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 #url=False, 
                 )
             excel_pool.write_xls_line(ws_name, row, [
-                '', '',
+                '',
                 '%s\nIndirizzo: %s %s %s\nE-mail: %s\nTelefono: %s' % (
                     company.name,
                     company.street or '',
