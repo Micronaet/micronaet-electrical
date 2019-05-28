@@ -927,7 +927,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 
                                 # Generic product:
                                 if product.is_generic:
-                                    product_name = mode.name
+                                    product_name = move.name
                                 else:
                                     product_name = product.name
                                     
