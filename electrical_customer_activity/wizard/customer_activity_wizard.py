@@ -524,7 +524,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
         if report_mode == 'private':
             ws_name = 'Ridotta'
             excel_pool.create_worksheet(ws_name)
-            excel_pool.set_margins(ws_name)
+            excel_pool.set_margins(ws_name, 0.3, 0.3)
+            #excel_pool.set_print_scale(ws_name, 90)
+            excel_pool.fit_to_pages(ws_name, 1, 0)
 
         # ---------------------------------------------------------------------
         # Startup:
@@ -846,6 +848,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Create sheet:
             excel_pool.create_worksheet(ws_name)
             excel_pool.set_margins(ws_name)
+            #excel_pool.set_print_scale(ws_name, 90)
+            excel_pool.fit_to_pages(ws_name)
 
             # Load formats:
             if load_format:
@@ -1497,11 +1501,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ],default_format=f_title)
             
             for block in sheet_order[1:-2]: # Jump TODO commesse?!?
+                
                 # Check if sheet must be created:
                 if block in mask and not mask[block][0]:
                     continue
 
                 block_record = summary[block]
+                if not block_record['data']:
+                    _logger.warning('No summary block %s' % block)
+                    continue
 
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], ['Blocco: %s' % block],
