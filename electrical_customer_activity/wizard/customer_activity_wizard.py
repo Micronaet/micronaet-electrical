@@ -924,6 +924,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         if picking.move_lines:
                             for move in picking.move_lines:
                                 product = move.product_id
+                                
+                                # Generic product:
+                                if product.is_generic:
+                                    product_name = mode.name
+                                else:
+                                    product_name = product.name
+                                    
                                 product_id = product.id
                                 extra_data = \
                                     product_pool._get_metel_price_data(
@@ -963,7 +970,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     
                                     # Move:
                                     move.product_id.default_code,
-                                    move.product_id.name,
+                                    product_name,
                                     move.product_uom.name,
                                     (move.product_qty, f_number_color),
                                     

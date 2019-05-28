@@ -38,6 +38,7 @@
         'base',
         'account',
         'analytic',
+        'product',
         'metel_pricelist',
         
         # Stock operation:
@@ -51,6 +52,7 @@
     'demo': [],
     'data': [
         'wizard/customer_activity_view.xml',
+        'product_view.xml',
         ],
     'active': False,
     'installable': True,

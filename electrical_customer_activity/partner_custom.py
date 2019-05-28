@@ -42,6 +42,16 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
+class ProductProduct(orm.Model):
+    """ Model name: Product product
+    """
+    
+    _inherit = 'product.product'
+    
+    _columns = {
+        'is_generic': fields.boolean('Generico'),
+        }
+
 class ResPartner(orm.Model):
     """ Model name: ResPartner
     """
