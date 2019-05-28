@@ -372,12 +372,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
         intervent_mode = wiz_browse.intervent_mode
         mark_invoiced = wiz_browse.mark_invoiced
         
+        partner_text = 'Cliente: %s, ' % wiz_browse.partner_id.name
         filter_text = \
-            'Interventi del periodo: [%s - %s], Cliente: %s, Contatto: %s, Commessa: %s%s' % (
+            'Interventi del periodo: [%s - %s], %sContatto: %s, Commessa: %s%s' % (
                 from_date or '...',
                 to_date or '...',
                 
-                wiz_browse.partner_id.name,
+                '' if report_mode == 'private' else partner_text,
                 wiz_browse.contact_id.name if wiz_browse.contact_id else '/',
                 
                 '[%s] %s' % (
@@ -514,7 +515,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
         invoice_pool = self.pool.get('account.invoice')
         account_pool = self.pool.get('account.analytic.account')
         product_pool = self.pool.get('product.product')
-
 
         # Interventi:
         intervent_pool = self.pool.get('hr.analytic.timesheet')
@@ -1672,7 +1672,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ],default_format=f_title)
 
             row += 2
-            # Filter text:
+            # Filter text (merge cell):
+            excel_pool.merge_cell(ws_name, [row, 0, row, 5])
             excel_pool.write_xls_line(ws_name, row, [
                 filter_text,
                 ],default_format=f_title)
