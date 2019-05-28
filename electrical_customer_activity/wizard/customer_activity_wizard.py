@@ -1620,19 +1620,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         if report_mode == 'private':            
             ws_name = 'Ridotta'
-            #excel_pool.create_worksheet(ws_name)
-
-            partner = wiz_browse.partner_id # For information
-            company = partner.company_id
-            
             row = 0
 
+            partner = wiz_browse.partner_id # For information
+            company = partner.company_id            
+
             f_number = excel_pool.get_format('number')
-            f_number_red = excel_pool.get_format('bg_red_number')
-            
+            f_number_red = excel_pool.get_format('bg_red_number')            
             f_title = excel_pool.get_format('title')
-            f_header = excel_pool.get_format('header')
-            
+            f_header = excel_pool.get_format('header')            
             f_text = excel_pool.get_format('text')
             f_text_red = excel_pool.get_format('bg_red')
 
@@ -1692,75 +1688,70 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             # A. STOCK MATERIAL:
             # -----------------------------------------------------------------
-            # Print header
-            row += 2
-            excel_pool.write_xls_line(
-                ws_name, row, [
-                    'MATERIALI', '', '', '', '', '',
-                    ], default_format=f_header)
+            if any(picking_db.values()):
+                # Print header
+                row += 2
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        'MATERIALI', '', '', '', '', '',
+                        ], default_format=f_header)
 
-            row += 1
-            excel_pool.write_xls_line(
-                ws_name, row, [
-                    'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
-                    'Totale',
-                    ], default_format=f_header)
+                row += 1
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
+                        'Totale',
+                        ], default_format=f_header)
 
-            total = 0.0
-            for key in picking_db:  
-                for picking in picking_db[key]:
-                    if picking.move_lines:
-                        for move in picking.move_lines:
-                            product_id = move.product_id.id
-                            extra_data = product_pool._get_metel_price_data(
-                                cr, uid, [product_id], 
-                                context=context)[product_id]
-                            metel_sale = extra_data.get('metel_sale', 0.0)    
-                            metel_sale_vat = extra_data.get(
-                                'metel_sale_vat', 0.0)    
-                            product = move.product_id
-                            
-                            #metel_list_price:
-                            #standard_price = product.standard_price 
-                            #discount_price = product.metel_sale
-                            #list_price = product.lst_price
-                            #list_price = move.price_unit
+                total = 0.0
+                for key in picking_db:  
+                    for picking in picking_db[key]:
+                        if picking.move_lines:
+                            for move in picking.move_lines:
+                                product_id = move.product_id.id
+                                extra_data = \
+                                    product_pool._get_metel_price_data(
+                                        cr, uid, [product_id], 
+                                        context=context)[product_id]
+                                metel_sale = extra_data.get('metel_sale', 0.0)    
+                                metel_sale_vat = extra_data.get(
+                                    'metel_sale_vat', 0.0)    
+                                product = move.product_id
 
-                            if activity_price == 'lst_price':
-                                price = product.lst_price
-                            elif activity_price == 'metel_sale':
-                                price = metel_sale
-                            else: # metel_sale_vat
-                                price = metel_sale_vat
-                            subtotal = price * move.product_qty                            
-                            
-                            if subtotal:
-                                f_number_color = f_number
-                                f_text_color = f_text
-                            else:    
-                                f_number_color = f_number_red
-                                f_text_color = f_text_red
-                                pick_error = True
+                                if activity_price == 'lst_price':
+                                    price = product.lst_price
+                                elif activity_price == 'metel_sale':
+                                    price = metel_sale
+                                else: # metel_sale_vat
+                                    price = metel_sale_vat
+                                subtotal = price * move.product_qty                            
                                 
-                            data = [
-                                move.product_id.default_code,
-                                move.product_id.name,
-                                move.product_uom.name,
-                                (move.product_qty, f_number_color),
-                                
-                                (price, f_number_color),
-                                (subtotal, f_number_color),
-                                ]
-                            row += 1
-                            excel_pool.write_xls_line(
-                                ws_name, row, data,
-                                default_format=f_text_color
-                                )
-
-                            # -------------------------------------------------
-                            #                    TOTALS:
-                            # -------------------------------------------------
-                            total += subtotal
+                                if subtotal:
+                                    f_number_color = f_number
+                                    f_text_color = f_text
+                                else:    
+                                    f_number_color = f_number_red
+                                    f_text_color = f_text_red
+                                    pick_error = True
+                                    
+                                data = [
+                                    move.product_id.default_code,
+                                    move.product_id.name,
+                                    move.product_uom.name,
+                                    (move.product_qty, f_number_color),
+                                    
+                                    (price, f_number_color),
+                                    (subtotal, f_number_color),
+                                    ]
+                                row += 1
+                                excel_pool.write_xls_line(
+                                    ws_name, row, data,
+                                    default_format=f_text_color
+                                    )
+                                # ---------------------------------------------
+                                #                    TOTALS:
+                                # ---------------------------------------------
+                                total += subtotal
 
                 # -------------------------------------------------------------
                 # Total line at the end of the block:
@@ -1788,176 +1779,180 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             # B. DDT MATERIAL:
             # -----------------------------------------------------------------
-            # Print header
-            row += 2
-            excel_pool.write_xls_line(
-                ws_name, row, [
-                    'MATERIALI DDT', '', '', '', '', '',
-                    ], default_format=f_header)
-
-            row += 1
-            excel_pool.write_xls_line(
-                ws_name, row, [
-                    'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
-                    'Totale',
-                    ], default_format=f_header)
-
-            total = 0.0
-            for key in ddt_db:        
-                for ddt in ddt_db[key]:
-                    if ddt.picking_ids:
-                        for picking in ddt.picking_ids:
-                            for move in picking.move_lines:                                
-                                product = move.product_id
-                                product_id = product.id
-                                extra_data = product_pool._get_metel_price_data(
-                                    cr, uid, [product_id], 
-                                    context=context)[product_id]
-                                metel_sale = extra_data.get('metel_sale', 0.0)    
-                                metel_sale_vat = extra_data.get(
-                                    'metel_sale_vat', 0.0)    
-
-                                if activity_price == 'lst_price':
-                                    price = product.lst_price
-                                elif activity_price == 'metel_sale':
-                                    price = metel_sale
-                                else: # metel_sale_vat
-                                    price = metel_sale_vat
-                                        
-                                subtotal = price * move.product_qty                            
-                                
-                                if subtotal:
-                                    f_number_color = f_number
-                                    f_text_color = f_text
-                                else:    
-                                    f_number_color = f_number_red
-                                    f_text_color = f_text_red
-                                    ddt_error = True
-                                
-                                data = [  
-                                    product.default_code,
-                                    product.name,
-                                    move.product_uom.name,
-                                    (move.product_qty, f_number_color),
-
-                                    (price, f_number_color),
-                                    (subtotal, f_number_color),
-                                    ]
-
-                                row += 1
-                                excel_pool.write_xls_line(
-                                    ws_name, row, data,
-                                    default_format=f_text_color,
-                                    )
-
-                                # ---------------------------------------------
-                                #                    TOTALS:
-                                # ---------------------------------------------
-                                total += subtotal
-                        
-            # -----------------------------------------------------------------
-            # Total line at the end of the block:
-            # -----------------------------------------------------------------
-            row += 1 
-            excel_pool.write_xls_line(
-                ws_name, row, [(total, f_number)], default_format=f_text, 
-                col=5)
-
-            # Discount if present:
-            if activity_material_discount:
-                row += 1 
-                discount = total * (
-                    100.0 - activity_material_discount) / 100.0
+            if any(ddt_db.values()):
+                # Print header
+                row += 2
                 excel_pool.write_xls_line(
                     ws_name, row, [
-                        '- %s%% Sconto' % activity_material_discount,
-                        (discount, f_number),
-                        ], default_format=f_text, 
-                    col=4)
-                private_summary.append(('DDT', discount))
-            else:
-                private_summary.append(('DDT', total))
+                        'MATERIALI DDT', '', '', '', '', '',
+                        ], default_format=f_header)
+
+                row += 1
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
+                        'Totale',
+                        ], default_format=f_header)
+
+                total = 0.0
+                for key in ddt_db:        
+                    for ddt in ddt_db[key]:
+                        if ddt.picking_ids:
+                            for picking in ddt.picking_ids:
+                                for move in picking.move_lines:                                
+                                    product = move.product_id
+                                    product_id = product.id
+                                    extra_data = \
+                                        product_pool._get_metel_price_data(
+                                            cr, uid, [product_id], 
+                                            context=context)[product_id]
+                                    metel_sale = extra_data.get(
+                                        'metel_sale', 0.0)    
+                                    metel_sale_vat = extra_data.get(
+                                        'metel_sale_vat', 0.0)    
+
+                                    if activity_price == 'lst_price':
+                                        price = product.lst_price
+                                    elif activity_price == 'metel_sale':
+                                        price = metel_sale
+                                    else: # metel_sale_vat
+                                        price = metel_sale_vat
+                                            
+                                    subtotal = price * move.product_qty                            
+                                    
+                                    if subtotal:
+                                        f_number_color = f_number
+                                        f_text_color = f_text
+                                    else:    
+                                        f_number_color = f_number_red
+                                        f_text_color = f_text_red
+                                        ddt_error = True
+                                    
+                                    data = [  
+                                        product.default_code,
+                                        product.name,
+                                        move.product_uom.name,
+                                        (move.product_qty, f_number_color),
+
+                                        (price, f_number_color),
+                                        (subtotal, f_number_color),
+                                        ]
+
+                                    row += 1
+                                    excel_pool.write_xls_line(
+                                        ws_name, row, data,
+                                        default_format=f_text_color,
+                                        )
+
+                                    # -----------------------------------------
+                                    #                    TOTALS:
+                                    # -----------------------------------------
+                                    total += subtotal
+                            
+                # -------------------------------------------------------------
+                # Total line at the end of the block:
+                # -------------------------------------------------------------
+                row += 1 
+                excel_pool.write_xls_line(
+                    ws_name, row, [(total, f_number)], default_format=f_text, 
+                    col=5)
+
+                # Discount if present:
+                if activity_material_discount:
+                    row += 1 
+                    discount = total * (
+                        100.0 - activity_material_discount) / 100.0
+                    excel_pool.write_xls_line(
+                        ws_name, row, [
+                            '- %s%% Sconto' % activity_material_discount,
+                            (discount, f_number),
+                            ], default_format=f_text, 
+                        col=4)
+                    private_summary.append(('DDT', discount))
+                else:
+                    private_summary.append(('DDT', total))
 
             # -----------------------------------------------------------------
             # C. INTERVENT:
             # -----------------------------------------------------------------
-            partner_forced = False # update first time!        
-            total = 0.0
+            if any(intervent_db.values()):
+                partner_forced = False # update first time!        
+                total = 0.0
 
-            # Print header
-            row += 2
-            excel_pool.write_xls_line(
-                ws_name, row, [
-                    'MANODOPERA', '', '', '', '', 
-                    ], default_format=f_header)
+                # Print header
+                row += 2
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        'MANODOPERA', '', '', '', '', 
+                        ], default_format=f_header)
 
-            row += 1
-            excel_pool.write_xls_line(
-                ws_name, row, [
-                    #'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
-                    #'Totale',
-                    'Data', 'Intervento', 'H.', 'Utente', 'Prezzo totale',
-                    ], default_format=f_header)
+                row += 1
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        #'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
+                        #'Totale',
+                        'Data', 'Intervento', 'H.', 'Utente', 'Prezzo totale',
+                        ], default_format=f_header)
 
-            for key in intervent_db:
-                for intervent in intervent_db[key]:
-                    # Readability:
-                    user = intervent.user_id
-                    partner = intervent.intervent_partner_id
-                    user_mode_id = intervent.user_mode_id.id
-                    
-                    # ---------------------------------------------------------
-                    # Initial setup of mapping and forced price database:
-                    # ---------------------------------------------------------
-                    if partner_forced == False:
-                        partner_forced = {}
-                        for forced in partner.mode_revenue_ids:        
-                            partner_forced[forced.mode_id.id] = \
-                                forced.list_price
-                    # ---------------------------------------------------------
-                    # Read revenue:        
-                    if user_mode_id in partner_forced: # partner forced
-                        unit_revenue = partner_forced[user_mode_id]
-                    else: # read for default list:
-                        unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
+                for key in intervent_db:
+                    for intervent in intervent_db[key]:
+                        # Readability:
+                        user = intervent.user_id
+                        partner = intervent.intervent_partner_id
+                        user_mode_id = intervent.user_mode_id.id
+                        
+                        # ---------------------------------------------------------
+                        # Initial setup of mapping and forced price database:
+                        # ---------------------------------------------------------
+                        if partner_forced == False:
+                            partner_forced = {}
+                            for forced in partner.mode_revenue_ids:        
+                                partner_forced[forced.mode_id.id] = \
+                                    forced.list_price
+                        # ---------------------------------------------------------
+                        # Read revenue:        
+                        if user_mode_id in partner_forced: # partner forced
+                            unit_revenue = partner_forced[user_mode_id]
+                        else: # read for default list:
+                            unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
 
-                    this_revenue = intervent.unit_amount * unit_revenue
-                    #this_cost = -intervent.amount
+                        this_revenue = intervent.unit_amount * unit_revenue
+                        #this_cost = -intervent.amount
 
-                    if this_revenue:
-                        f_number_color = f_number
-                        f_text_color = f_text
-                    else:    
-                        f_number_color = f_number_red
-                        f_text_color = f_text_red
-                        ddt_error = True
+                        if this_revenue:
+                            f_number_color = f_number
+                            f_text_color = f_text
+                        else:    
+                            f_number_color = f_number_red
+                            f_text_color = f_text_red
+                            ddt_error = True
 
-                    data = [
-                        intervent.date_start,
-                        intervent.name,
-                        intervent.intervent_total,
-                        user.name,
-                        #intervent.intervent_duration intervent.unit_amount,
-                        (this_revenue, f_number_color), # total revenue
-                        ]
+                        data = [
+                            intervent.date_start,
+                            intervent.name,
+                            intervent.intervent_total,
+                            user.name,
+                            #intervent.intervent_duration intervent.unit_amount,
+                            (this_revenue, f_number_color), # total revenue
+                            ]
 
-                    row += 1
-                    excel_pool.write_xls_line(
-                        ws_name, row, data,
-                        default_format=f_text_color
-                        )
-                    total += this_revenue
+                        row += 1
+                        excel_pool.write_xls_line(
+                            ws_name, row, data,
+                            default_format=f_text_color
+                            )
+                        total += this_revenue
 
-            # -----------------------------------------------------------------
-            # Total line at the end of the block:
-            # -----------------------------------------------------------------
-            row += 1
-            excel_pool.write_xls_line(
-                ws_name, row, [
-                    (total, f_number),
-                    ], 
-                default_format=f_text, col=4)
-            private_summary.append(('Interventi', total))
+                # -------------------------------------------------------------
+                # Total line at the end of the block:
+                # -------------------------------------------------------------
+                row += 1
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        (total, f_number),
+                        ], 
+                    default_format=f_text, col=4)
+                private_summary.append(('Interventi', total))
 
             # -----------------------------------------------------------------
             # SUMMARY:
