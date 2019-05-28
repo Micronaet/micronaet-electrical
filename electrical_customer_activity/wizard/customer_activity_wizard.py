@@ -493,7 +493,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Total table:
             # -----------------------------------------------------------------
             mask['Total'] = '1001'
-
+        elif report_mode == 'report':
+            mask['Materiali'][0] = True
         elif report_mode == 'private':
             # Hide extra pages:
             mask['Riepilogo'][0] = False
@@ -501,7 +502,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
             mask['Consegne'][0] = False
             mask['DDT'][0] = False
             mask['Commesse'][0] = False            
-            mask['Materiali'][0] = True
             
         # ---------------------------------------------------------------------
         # Pool used:
@@ -525,7 +525,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ws_name = 'Ridotta'
             excel_pool.create_worksheet(ws_name)
             excel_pool.set_margins(ws_name, 0.3, 0.3)
-            #excel_pool.set_print_scale(ws_name, 90)
             excel_pool.fit_to_pages(ws_name, 1, 0)
 
         # ---------------------------------------------------------------------
@@ -854,13 +853,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Load formats:
             if load_format:
                 excel_pool.set_format(    
-                    title_font='Arial', 
-                    #title_size=11, title_fg='black', 
-                    header_font='Arial', 
-                    #header_size=9, header_fg='black',
-                    text_font='Arial', 
-                    #text_size=9, text_fg='black',
-                    )
+                    title_font='Arial', header_font='Arial', text_font='Arial')
 
                 f_number = excel_pool.get_format('number')
                 f_number_red = excel_pool.get_format('bg_red_number')
@@ -1223,7 +1216,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 default_format=f_text, col=mask['DDT'][3])
 
         # ---------------------------------------------------------------------
-        # D. INTERVENT:
+        # D. MATERIAL GROUPED BY:
         # ---------------------------------------------------------------------
         if mask['Materiali'][0]:
             ws_name = 'Materiali'
