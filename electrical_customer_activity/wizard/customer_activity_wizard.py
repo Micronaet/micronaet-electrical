@@ -642,9 +642,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
         intervent_db = {}
         for intervent in intervent_proxy:
             key = (
-                #intervent.intervent_partner_id.name,
                 intervent.account_id.name,
-                intervent.ref, 
+                #intervent.date_start, # XXX error?
+                #intervent.ref,
                 )
             if key not in intervent_db:
                 intervent_db[key] = []
@@ -808,15 +808,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'total_discount': 0.0, 
                 'total_revenue': 0.0, 
                 },
-
-            #'Fatture': {
-            #    'header': ['Commessa', 'Fattura', 'Costo', 'Scontato', 
-            #        'Totale'],
-            #    'data': {},
-            #    'total_cost': 0.0, 
-            #    'total_discount': 0.0, 
-            #    'total_revenue': 0.0, 
-            #    },
 
             'Commesse': {
                 'header': ['Commessa', 'Cliente'],
@@ -1292,7 +1283,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
             cost = sheet['cost']
 
             for key in intervent_db:
-                for intervent in intervent_db[key]:
+                for intervent in sorted(
+                        intervent_db[key], 
+                        key=lambda x: x.date_start,
+                        ):
                     # Readability:
                     user = intervent.user_id
                     partner = intervent.intervent_partner_id
