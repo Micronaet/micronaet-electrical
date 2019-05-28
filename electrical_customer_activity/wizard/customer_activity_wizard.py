@@ -1808,12 +1808,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     if ddt.picking_ids:
                         for picking in ddt.picking_ids:
                             for move in picking.move_lines:                                
-                                #metel_list_price:
-                                #standard_price = product.standard_price 
-                                #discount_price = product.metel_sale
-                                #list_price = product.lst_price
-                                #list_price = move.price_unit
-                                
                                 product = move.product_id
                                 product_id = product.id
                                 extra_data = product_pool._get_metel_price_data(
