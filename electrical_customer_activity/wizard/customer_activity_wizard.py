@@ -1871,19 +1871,19 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 total = 0.0
 
                 # Print header
-                row += 2
-                excel_pool.write_xls_line(
-                    ws_name, row, [
-                        'MANODOPERA', '', '', '', '', 
-                        ], default_format=f_header)
+                #row += 2
+                #excel_pool.write_xls_line(
+                #    ws_name, row, [
+                #        'MANODOPERA', '', '', '', '', 
+                #        ], default_format=f_header)
 
-                row += 1
-                excel_pool.write_xls_line(
-                    ws_name, row, [
-                        #'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
-                        #'Totale',
-                        'Data', 'Intervento', 'H.', 'Utente', 'Prezzo totale',
-                        ], default_format=f_header)
+                #row += 1
+                #excel_pool.write_xls_line(
+                #    ws_name, row, [
+                #        #'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
+                #        #'Totale',
+                #        'Data', 'Intervento', 'H.', 'Utente', 'Prezzo totale',
+                #        ], default_format=f_header)
 
                 for key in intervent_db:
                     for intervent in intervent_db[key]:
@@ -1905,7 +1905,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         if user_mode_id in partner_forced: # partner forced
                             unit_revenue = partner_forced[user_mode_id]
                         else: # read for default list:
-                            unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
+                            unit_revenue = mode_pricelist.get(
+                                user_mode_id, 0.0)
 
                         this_revenue = intervent.unit_amount * unit_revenue
                         #this_cost = -intervent.amount
@@ -1927,11 +1928,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             (this_revenue, f_number_color), # total revenue
                             ]
 
-                        row += 1
-                        excel_pool.write_xls_line(
-                            ws_name, row, data,
-                            default_format=f_text_color
-                            )
+                        #row += 1
+                        #excel_pool.write_xls_line(
+                        #    ws_name, row, data,
+                        #    default_format=f_text_color
+                        #    )
                         total += this_revenue
 
                 # -------------------------------------------------------------
