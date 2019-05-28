@@ -1374,7 +1374,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     sheet['row'] += 1
 
                     # Summary data (Intervent):   
-                    block_key = (account.name, intervent.ref)
+                    #block_key = (account.name, intervent.ref)
+                    block_key = (account.name, intervent.date_start)
                     if block_key not in summary_data:
                         summary_data[block_key] = []
                     summary_data[block_key].append((
