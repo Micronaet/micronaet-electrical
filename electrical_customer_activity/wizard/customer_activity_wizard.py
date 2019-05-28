@@ -51,13 +51,20 @@ class ResPartnerActivityWizard(orm.TransientModel):
     def extract_product_data(self, cr, uid, move, context=None):
         ''' Used for extract data from move of from product 
             depend if generic product
+            (name, sale, last, metel, metel vat
         '''     
         product = move.product_id   
         if product.is_generic: 
             # -----------------------------------------------------------------
             # Generic product:
             # -----------------------------------------------------------------
-            return (move.force_name, move.price_unit, 0.0, 0.0)
+            return (
+                move.force_name, 
+                0.0, 
+                move.price_unit,
+                0.0,
+                0.0,
+                )
         else: 
             # -----------------------------------------------------------------
             # Standard product:
@@ -71,6 +78,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 product.lst_price, 
                 product.standard_price,
                 extra_data.get('metel_sale', 0.0),
+                extra_data.get('metel_sale_vat', 0.0)
                 )
         
     def material_update(self, cr, uid, material_rows, move, context=None):
@@ -84,6 +92,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 cr, uid, [product_id], 
                 context=context)[product_id]
         metel_sale = extra_data.get('metel_sale', 0.0)
+        #metel_sale_vat = extra_data.get('metel_sale_vat', 0.0)
         
         qty = move.product_qty
         standard_price = product.standard_price 
@@ -526,6 +535,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
             excel_pool.create_worksheet(ws_name)
             excel_pool.set_margins(ws_name, 0.3, 0.3)
             excel_pool.fit_to_pages(ws_name, 1, 0)
+            excel_pool.set_format(    
+                title_font='Arial', header_font='Arial', text_font='Arial')
+
 
         # ---------------------------------------------------------------------
         # Startup:
@@ -902,19 +914,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     if picking.move_lines:
                         if picking.move_lines:
                             for move in picking.move_lines:
-                                product = move.product_id
                                 (product_name, list_price, standard_price, 
-                                    discount_price) = \
+                                    discount_price, discount_vat) = \
                                     self.extract_product_data(
                                         cr, uid, move, context=context)
                                     
-                                product_id = product.id
-                                
-                                #metel_list_price:
-                                #standard_price = product.standard_price 
-                                #discount_price = metel_sale
-                                #list_price = product.lst_price
-                                
                                 subtotal1 = standard_price * move.product_qty
                                 subtotal2 = discount_price * move.product_qty
                                 subtotal3 = list_price * move.product_qty
@@ -1069,7 +1073,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 for move in picking.move_lines:
                                     product = move.product_id
                                     (product_name, list_price, standard_price, 
-                                        discount_price) = \
+                                        discount_price, discount_vat) = \
                                         self.extract_product_data(
                                             cr, uid, move, context=context)
 
@@ -1703,22 +1707,18 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     for picking in picking_db[key]:
                         if picking.move_lines:
                             for move in picking.move_lines:
-                                product_id = move.product_id.id
-                                extra_data = \
-                                    product_pool._get_metel_price_data(
-                                        cr, uid, [product_id], 
-                                        context=context)[product_id]
-                                metel_sale = extra_data.get('metel_sale', 0.0)    
-                                metel_sale_vat = extra_data.get(
-                                    'metel_sale_vat', 0.0)    
-                                product = move.product_id
-
+                                # Extract data:
+                                (product_name, list_price, standard_price, 
+                                    discount_price, discount_vat) = \
+                                    self.extract_product_data(
+                                        cr, uid, move, context=context)
+                                
                                 if activity_price == 'lst_price':
-                                    price = product.lst_price
+                                    price = list_price
                                 elif activity_price == 'metel_sale':
-                                    price = metel_sale
-                                else: # metel_sale_vat
-                                    price = metel_sale_vat
+                                    price = discount_price
+                                else: # discount_vat
+                                    price = discount_vat
                                 subtotal = price * move.product_qty                            
                                 
                                 if subtotal:
@@ -1731,7 +1731,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     
                                 data = [
                                     move.product_id.default_code,
-                                    move.product_id.name,
+                                    product_name,
                                     move.product_uom.name,
                                     (move.product_qty, f_number_color),
                                     
@@ -1795,26 +1795,21 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         if ddt.picking_ids:
                             for picking in ddt.picking_ids:
                                 for move in picking.move_lines:                                
+                                    # Extract data:
                                     product = move.product_id
-                                    product_id = product.id
-                                    extra_data = \
-                                        product_pool._get_metel_price_data(
-                                            cr, uid, [product_id], 
-                                            context=context)[product_id]
-                                    metel_sale = extra_data.get(
-                                        'metel_sale', 0.0)    
-                                    metel_sale_vat = extra_data.get(
-                                        'metel_sale_vat', 0.0)    
-
+                                    (product_name, list_price, standard_price, 
+                                        discount_price, discount_vat) = \
+                                        self.extract_product_data(
+                                            cr, uid, move, context=context)
+                                
                                     if activity_price == 'lst_price':
-                                        price = product.lst_price
+                                        price = list_price
                                     elif activity_price == 'metel_sale':
-                                        price = metel_sale
+                                        price = discount_price
                                     else: # metel_sale_vat
-                                        price = metel_sale_vat
+                                        price = discount_vat
                                             
-                                    subtotal = price * move.product_qty                            
-                                    
+                                    subtotal = price * move.product_qty
                                     if subtotal:
                                         f_number_color = f_number
                                         f_text_color = f_text
@@ -1825,7 +1820,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     
                                     data = [  
                                         product.default_code,
-                                        product.name,
+                                        product_name,
                                         move.product_uom.name,
                                         (move.product_qty, f_number_color),
 
