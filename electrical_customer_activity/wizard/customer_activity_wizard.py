@@ -1507,7 +1507,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     )
                 sheet['row'] += 1
                 
-                for key in block_record['data']:
+                for key in sorted(block_record['data']):
                     if report_mode != 'summary':
                         for record in block_record['data'][key]: 
                             excel_pool.write_xls_line(
