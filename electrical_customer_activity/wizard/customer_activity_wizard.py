@@ -1685,6 +1685,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ],default_format=f_title)
 
             private_summary = []
+            
             # -----------------------------------------------------------------
             # A. STOCK MATERIAL:
             # -----------------------------------------------------------------
