@@ -85,30 +85,27 @@ class ResPartnerActivityWizard(orm.TransientModel):
         ''' Update total from move:
         '''
         product_pool = self.pool.get('product.product')
+
+        (product_name, list_price, standard_price, 
+            discount_price, discount_vat) = self.extract_product_data(
+                cr, uid, move, context=context)
+        
         product = move.product_id
-        product_id = product.id
-        extra_data = \
-            product_pool._get_metel_price_data(
-                cr, uid, [product_id], 
-                context=context)[product_id]
-        metel_sale = extra_data.get('metel_sale', 0.0)
-        #metel_sale_vat = extra_data.get('metel_sale_vat', 0.0)
+        # Use also key the product name, cost for XXX product
+        key = (product, product_name, discount_price) 
         
         qty = move.product_qty
-        standard_price = product.standard_price 
-        discount_price = metel_sale
-        list_price = product.lst_price
         subtotal1 = standard_price * move.product_qty
         subtotal2 = discount_price * move.product_qty
         subtotal3 = list_price * move.product_qty
         
-        if product in material_rows:
-            material_rows[product][0] += qty
-            material_rows[product][4] += subtotal1
-            material_rows[product][5] += subtotal2
-            material_rows[product][6] += subtotal3
+        if key in material_rows:
+            material_rows[key][0] += qty
+            material_rows[key][4] += subtotal1
+            material_rows[key][5] += subtotal2
+            material_rows[key][6] += subtotal3
         else:
-            material_rows[product] = [
+            material_rows[key] = [
                 qty,
                 standard_price,
                 discount_price,
@@ -1255,13 +1252,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             # Excel page:
             # -----------------------------------------------------------------
-            for product in sorted(material_rows, key=lambda x: x.default_code):
+            for (product, product_name, discount_price) in sorted(
+                    material_rows, key=lambda x: x.default_code):
                 record = material_rows[product]
                 
                 data = self.data_mask_filter([  
                     # Move:
                     product.default_code,
-                    product.name,
+                    product_name,
                     move.product_uom.name,
                     
                     (record[0], f_number),
