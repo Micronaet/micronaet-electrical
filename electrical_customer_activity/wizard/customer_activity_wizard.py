@@ -48,6 +48,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
     # -------------------------------------------------------------------------
     # Utility:
     # -------------------------------------------------------------------------
+    def extract_product_data(self, move):
+        ''' Used for extract data from move of from product 
+            depend if generic product
+        '''        
+        if product.is_generic: # Generic product:
+            return move.force_name, move.price_unit
+        else: # Standard product:
+            return product.name, product.lst_price # TODO
+        
     def material_update(self, cr, uid, material_rows, move, context=None):
         ''' Update total from move:
         '''
@@ -718,7 +727,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'Fatt.',                                 
                     ], mask['Interventi'][1]),
                 'width': self.data_mask_filter([
-                    35, 20, 15, 15, 20, 15, 20,
+                    35, 20, 10, 15, 20, 15, 20,
                     20, 10, 10, 10, 
                     3, 10, 3, 10,
                     30, 30, 30, 
@@ -738,7 +747,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'Sub. ultimo', 'Sub. scontato', 'Totale',
                     ], mask['Consegne'][1]),
                 'width': self.data_mask_filter([
-                    35, 20, 15, 25, 20, 
+                    35, 20, 15, 10, 20, 
                     20, 35, 15,
                     10, 10, 10, 10, 
                     15, 15, 15, ], mask['Consegne'][1]),
@@ -755,7 +764,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'Sub. ultimo', 'Sub. scontato', 'Sub. METEL',
                     ],
                 'width': [
-                    35, 20, 15, 20, 25, 35, 10, 
+                    35, 20, 15, 10, 25, 35, 10, 
                     15, 15, 15, 15,
                     20, 20, 20,
                     ],
@@ -796,7 +805,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'row': 0,
                 'header': ['Fatturazione', 'Codice', 'Commessa', 'Padre', 
                     'Data', 'Posizione fiscale', 'Ore', 'Stato'],
-                'width': [25, 10, 30, 20, 15, 20, 10, 10],
+                'width': [25, 10, 30, 20, 
+                    10, 20, 10, 10],
                 'total': {},
                 'data': account_db, 
                 },                
@@ -924,12 +934,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         if picking.move_lines:
                             for move in picking.move_lines:
                                 product = move.product_id
-                                
-                                # Generic product:
-                                if product.is_generic:
-                                    product_name = move.name
-                                else:
-                                    product_name = product.name
+                                product_name, list_price = \
+                                    self.extract_product_data(move)
                                     
                                 product_id = product.id
                                 extra_data = \
@@ -941,8 +947,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 #metel_list_price:
                                 standard_price = product.standard_price 
                                 discount_price = metel_sale
-                                list_price = product.lst_price
-                                #list_price = move.price_unit
+                                #list_price = product.lst_price
                                 
                                 subtotal1 = standard_price * move.product_qty
                                 subtotal2 = discount_price * move.product_qty
@@ -965,7 +970,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     picking.account_id.name or 'NON ASSEGNATA',
                                     picking.contact_id.name or '/',
                                     picking.name,
-                                    picking.min_date,
+                                    picking.min_date[:10],
                                     picking.pick_state,
                                     
                                     # Move:
@@ -1010,7 +1015,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 picking.account_id.name or 'NON ASSEGNATA',
                                 picking.contact_id.name or '/',
                                 picking.name,
-                                picking.min_date,
+                                picking.min_date[:10],
                                 picking.pick_state,
                                 
                                 # Move:
@@ -1135,7 +1140,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                         ddt.account_id.name,
                                         ddt.contact_id.name or '/',
                                         ddt.name,
-                                        ddt.delivery_date,
+                                        ddt.delivery_date[:10],
                                         
                                         # Move:
                                         product.default_code,
@@ -1181,7 +1186,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     ddt.account_id.name or 'NON ASSEGNATA',
                                     ddt.contact_id.name or '/',
                                     ddt.name,
-                                    ddt.delivery_date,
+                                    ddt.delivery_date[:10],
                                     
                                     # Move:
                                     'NESSUN MOVIMENTO',
@@ -1202,7 +1207,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             ddt.account_id.name or 'NON ASSEGNATA',
                             ddt.contact_id.name or '/',
                             ddt.name,
-                            ddt.delivery_date,
+                            ddt.delivery_date[:10],
                             
                             # Move:
                             'NESSUN PICKING',
