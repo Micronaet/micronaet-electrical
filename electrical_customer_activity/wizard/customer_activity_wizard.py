@@ -48,14 +48,30 @@ class ResPartnerActivityWizard(orm.TransientModel):
     # -------------------------------------------------------------------------
     # Utility:
     # -------------------------------------------------------------------------
-    def extract_product_data(self, move):
+    def extract_product_data(self, cr, uid, move, context=None):
         ''' Used for extract data from move of from product 
             depend if generic product
-        '''        
-        if product.is_generic: # Generic product:
-            return move.force_name, move.price_unit
-        else: # Standard product:
-            return product.name, product.lst_price # TODO
+        '''     
+        product = move.product_id   
+        if product.is_generic: 
+            # -----------------------------------------------------------------
+            # Generic product:
+            # -----------------------------------------------------------------
+            return (move.force_name, move.price_unit, 0.0, 0.0)
+        else: 
+            # -----------------------------------------------------------------
+            # Standard product:
+            # -----------------------------------------------------------------
+            extra_data = self.pool.get(
+                'product.product')._get_metel_price_data(
+                    cr, uid, [product.id], 
+                    context=context)[product.id]
+            return (
+                product.name, 
+                product.lst_price, 
+                product.standard_price,
+                extra_data.get('metel_sale', 0.0),
+                )
         
     def material_update(self, cr, uid, material_rows, move, context=None):
         ''' Update total from move:
@@ -596,39 +612,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ddt_db[key].append(ddt)
 
         # ---------------------------------------------------------------------
-        # C. COLLECT INVOICED MATERIAL:
-        # ---------------------------------------------------------------------
-        """
-        # Domain:
-        domain = [
-            ('partner_id', '=', partner_id),
-            ('date_invoice', '>=', from_date),
-            ('date_invoice', '<=', to_date),
-            ]
-        if contact_id:
-            domain.append(('contact_id', '=', contact_id))
-
-        if no_account:
-            domain.append(('analytic_id', '=', False))           
-        elif account_id:
-            domain.append(('analytic_id', '=', account_id))
-
-        invoice_ids = invoice_pool.search(cr, uid, domain, context=context)
-        invoice_proxy = invoice_pool.browse(
-            cr, uid, invoice_ids, context=context)
-        invoice_db = {}
-        for invoice in invoice_proxy:
-            key = (
-                #invoice.partner_id.name,
-                invoice.account_id.name,
-                invoice.number, 
-                )
-            if key not in invoice_db:
-                invoice_db[key] = []
-            invoice_db[key].append(invoice)
-        """
-
-        # ---------------------------------------------------------------------
         # D. COLLECT INTERVENT:
         # ---------------------------------------------------------------------
         # Domain:
@@ -747,7 +730,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'Sub. ultimo', 'Sub. scontato', 'Totale',
                     ], mask['Consegne'][1]),
                 'width': self.data_mask_filter([
-                    35, 20, 15, 10, 20, 
+                    30, 30, 15, 10, 20, 
                     20, 35, 15,
                     10, 10, 10, 10, 
                     15, 15, 15, ], mask['Consegne'][1]),
@@ -787,19 +770,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 #'total': {},
                 #'data': ,
                 },
-
-            #'Fatture': { # Invoiced document
-            #    'row': 0,
-            #    'header': [
-            #        'Commessa', 'Fattura', 'Data', 'Posizione', 'Articolo', 
-            #        'UM', 'Q.', 'Prezzo', 'Sconto', 'Subtotale', 
-            #        #'Costo',
-            #        ],
-            #    'width': [35, 15, 15, 20, 20, 10, 10, 10, 10, 15, ],
-            #    'total': {},
-            #    'cost': {},
-            #    'data': invoice_db, 
-            #    },
 
             'Commesse': { # Account
                 'row': 0,
@@ -934,19 +904,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         if picking.move_lines:
                             for move in picking.move_lines:
                                 product = move.product_id
-                                product_name, list_price = \
-                                    self.extract_product_data(move)
+                                (product_name, list_price, standard_price, 
+                                    discount_price) = \
+                                    self.extract_product_data(
+                                        cr, uid, move, context=context)
                                     
                                 product_id = product.id
-                                extra_data = \
-                                    product_pool._get_metel_price_data(
-                                        cr, uid, [product_id], 
-                                        context=context)[product_id]
-                                metel_sale = extra_data.get('metel_sale', 0.0)    
                                 
                                 #metel_list_price:
-                                standard_price = product.standard_price 
-                                discount_price = metel_sale
+                                #standard_price = product.standard_price 
+                                #discount_price = metel_sale
                                 #list_price = product.lst_price
                                 
                                 subtotal1 = standard_price * move.product_qty
@@ -1102,20 +1069,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             if picking.move_lines:
                                 for move in picking.move_lines:
                                     product = move.product_id
-                                    product_id = product.id
-                                    extra_data = \
-                                        product_pool._get_metel_price_data(
-                                            cr, uid, [product_id], 
-                                            context=context)[product_id]
-                                    metel_sale = extra_data.get(
-                                        'metel_sale', 0.0)    
-                                    
-                                    #metel_list_price:
-                                    standard_price = product.standard_price 
-                                    discount_price = metel_sale
-                                    list_price = product.lst_price
-                                    #list_price = move.price_unit
-                                    
+                                    (product_name, list_price, standard_price, 
+                                        discount_price) = \
+                                        self.extract_product_data(
+                                            cr, uid, move, context=context)
+
                                     subtotal1 = \
                                         standard_price * move.product_qty
                                     subtotal2 = \
@@ -1144,7 +1102,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                         
                                         # Move:
                                         product.default_code,
-                                        product.name,
+                                        product_name,
                                         move.product_uom.name,
                                         (move.product_qty, f_number_color),
 
@@ -1257,84 +1215,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     (summary[ws_name]['total_revenue'], f_number),
                     ], mask['DDT'][2]), 
                 default_format=f_text, col=mask['DDT'][3])
-
-        # ---------------------------------------------------------------------
-        # C. INVOICED MATERIAL:
-        # ---------------------------------------------------------------------
-        """ws_name = 'Fatture'
-        sheet = sheets[ws_name]
-        summary_data = summary[ws_name]['data']
-
-        total = sheet['total']
-        cost = sheet['cost']
-        for key in invoice_db:
-            for invoice in invoice_db[key]:
-                document_total = 0.0
-                account = invoice.analytic_id
-                account_id = account.id
-                if account not in account_used:
-                    account_used.append(account)
-
-                if account_id not in total:
-                    total[account_id] = 0.0                
-                    cost[account_id] = 0.0                
-
-                # -------------------------------------------------------------
-                # Cost total from DDT linked:
-                # -------------------------------------------------------------
-                for ddt in invoice.ddt_ids:
-                    if ddt.ddt_lines:
-                        for move in ddt.ddt_lines:
-                            try:
-                                list_price = \
-                                    move.product_id.metel_list_price
-                            except:
-                                list_price = 0.0    
-                            subtotal = list_price * move.product_qty
-                            cost[account_id] += subtotal
-
-                # -------------------------------------------------------------
-                # Invoice line:
-                # -------------------------------------------------------------
-                for line in invoice.invoice_line:
-                    subtotal = line.price_subtotal#quantity * line.price_unit
-                    data = [
-                        # Header
-                        invoice.analytic_id.name or 'NON ASSEGNATA',
-                        invoice.number or 'BOZZA',
-                        invoice.date_invoice,
-                        invoice.fiscal_position.name,
-                        
-                        # Move:
-                        line.product_id.default_code,
-                        line.uos_id.name,
-                        (line.quantity, f_number),
-                        (line.price_unit, f_number),
-                        (line.discount, f_number),
-                        (subtotal, f_number),
-                        ]
-                    
-                    # Total:    
-                    total[account_id] += subtotal
-                    document_total += subtotal
-                    
-                    excel_pool.write_xls_line(
-                        ws_name, sheet['row'], data,
-                        default_format=f_text
-                        )
-                    sheet['row'] += 1
-
-                # Summary data (Invoice):         
-                block_key = (account.name, invoice.number)
-                if block_key not in summary_data:
-                    summary_data[block_key] = []
-                summary_data[block_key].append((
-                    account.name, 
-                    invoice.number, 
-                    (document_total, f_number),
-                    (0.0, f_number), # TODO
-                    )) 
-        """
 
         # ---------------------------------------------------------------------
         # D. INTERVENT:
@@ -1459,7 +1339,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     data = self.data_mask_filter([
                         account.name or 'NON ASSEGNATA',
                         intervent.intervent_contact_id.name or '/',
-                        intervent.date_start,
+                        intervent.date_start[:10],
                         intervent.ref or 'BOZZA',
                         intervent.name,
                         intervent.mode,
@@ -1551,7 +1431,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         account.code,
                         account.name,
                         account.parent_id.name or '/',
-                        account.from_date,
+                        account.from_date[:10],
                         '/', #account.fiscal_position.name,
                         account.total_hours,
                         account.state,
@@ -1586,7 +1466,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     account.code,
                     account.name,
                     account.parent_id.name or '/',
-                    account.from_date,
+                    account.from_date[:10],
                     '/', #account.fiscal_position.name,
                     account.total_hours,
                     account.state,
@@ -2102,14 +1982,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
     _columns = {
         'mode': fields.selection([
             # Internal:
-            ('partner', 'Partners list'), # List custsomer touched
-            ('report', 'Partner report'), # Internal detail
+            ('partner', 'Lista clienti'), # List custsomer touched
+            ('report', 'Stampa interna'), # Internal detail (ex customer)
             
             # Client:
-            ('detail', 'Customer detail'),
-            ('summary', 'Customer summary'),
+            ('detail', 'Dettagliata cliente'),
+            ('summary', 'Riepilogativa cliente'),
 
-            ('private', 'Private (minimal)'),
+            ('private', 'Stampa cliente'),
             ], 'Mode', required=True),
             
         'partner_id': fields.many2one(
