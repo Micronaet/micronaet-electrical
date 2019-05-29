@@ -196,14 +196,29 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         # B. DDT:
         # ---------------------------------------------------------------------
+        # 2 search for different date value
         domain = [
+            ('is_invoiced', '=', False),
             ('delivery_date', '>=', '%s 00:00:00' % from_date),
             ('delivery_date', '<=', '%s 23:59:59' % to_date),
-            ('is_invoiced', '=', False),
-            #('invoice_id', '=', False), # Not Invoiced
-            ]
+            ]        
+        ddt_delivery_ids = set(
+            ddt_pool.search(cr, uid, domain, context=context))
         
-        ddt_ids = ddt_pool.search(cr, uid, domain, context=context)
+        domain = [
+            ('is_invoiced', '=', False),
+            ('date', '>=', '%s 00:00:00' % from_date),
+            ('date', '<=', '%s 23:59:59' % to_date),
+            ]
+        ddt_date_ids = set(
+            ddt_pool.search(cr, uid, domain, context=context))
+        ddt_ids = tuple(ddt_delivery_ids | ddt_date_ids)
+        _logger.warning('List Delivery: %s, Date: %s, Total: %s' % (
+            len(ddt_delivery_ids),
+            len(ddt_date_ids),
+            len(ddt_ids),
+            ))
+
         ddt_proxy = ddt_pool.browse(cr, uid, ddt_ids, context=context)
         
         # Partner:
@@ -593,8 +608,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # Domain:
         domain = [
             ('partner_id', '=', partner_id),
-            #('delivery_date', '>=', '%s 00:00:00' % from_date),
-            #('delivery_date', '<=', '%s 23:59:59' % to_date),
             ('date', '>=', '%s 00:00:00' % from_date),
             ('date', '<=', '%s 23:59:59' % to_date),
             #('invoice_id', '=', False), # Not Invoiced
@@ -616,7 +629,21 @@ class ResPartnerActivityWizard(orm.TransientModel):
         elif account_id:
             domain.append(('account_id', '=', account_id))
 
-        ddt_ids = ddt_pool.search(cr, uid, domain, context=context)
+        ddt_delivery_ids = set(ddt_pool.search(cr, uid, domain + [
+            ('delivery_date', '>=', '%s 00:00:00' % from_date),
+            ('delivery_date', '<=', '%s 23:59:59' % to_date),
+            ], context=context))
+        ddt_date_ids = set(ddt_pool.search(cr, uid, domain + [
+            ('date', '>=', '%s 00:00:00' % from_date),
+            ('date', '<=', '%s 23:59:59' % to_date),
+            ], context=context))
+        ddt_ids = tuple(ddt_delivery_ids | ddt_date_ids)
+        _logger.warning('Delivery: %s, Date: %s, Total: %s' % (
+            len(ddt_delivery_ids),
+            len(ddt_date_ids),
+            len(ddt_ids),
+            ))
+
         ddt_proxy = ddt_pool.browse(
             cr, uid, ddt_ids, context=context)
         ddt_db = {}
@@ -1106,7 +1133,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                         ddt.account_id.name,
                                         ddt.contact_id.name or '/',
                                         ddt.name,
-                                        ddt.delivery_date[:10],
+                                        (ddt.delivery_date or ddt.date)[:10],
                                         
                                         # Move:
                                         product.default_code,
@@ -1152,7 +1179,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     ddt.account_id.name or 'NON ASSEGNATA',
                                     ddt.contact_id.name or '/',
                                     ddt.name,
-                                    ddt.delivery_date[:10],
+                                    (ddt.delivery_date or ddt.date)[:10],
                                     
                                     # Move:
                                     'NESSUN MOVIMENTO',
@@ -1173,7 +1200,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             ddt.account_id.name or 'NON ASSEGNATA',
                             ddt.contact_id.name or '/',
                             ddt.name,
-                            ddt.delivery_date[:10],
+                            (ddt.delivery_date, ddt.date)[:10],
                             
                             # Move:
                             'NESSUN PICKING',
