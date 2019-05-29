@@ -40,6 +40,7 @@
         'analytic',
         'product',
         'metel_pricelist',
+        'electrical_account_expence',
         
         # Stock operation:
         'electrical_l10n_it_ddt',

@@ -538,6 +538,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         invoice_pool = self.pool.get('account.invoice')
         account_pool = self.pool.get('account.analytic.account')
         product_pool = self.pool.get('product.product')
+        expence_pool = self.pool.get('account.analytic.expence')
 
         # Interventi:
         intervent_pool = self.pool.get('hr.analytic.timesheet')
@@ -727,6 +728,39 @@ class ResPartnerActivityWizard(orm.TransientModel):
             account_db[key].append(account)
 
         # ---------------------------------------------------------------------
+        # F. EXPENCES:
+        # ---------------------------------------------------------------------
+        # Domain:
+        # TODO wizard parameter
+        domain = [
+            ('printable', '=', partner_id),
+            ('date', '>=', from_date),
+            ('date', '<=', to_date),
+            ('printable', '!=', 'none'),
+            # TODO printable!
+            ]
+        
+        # No account => all partner expences account    
+        if account_id:
+            domain.append(('account_id', '=', account_id))
+        else:    
+            domain.append(('account_id.partner_id', '=', partner_id))
+
+        expence_ids = expence_pool.search(cr, uid, domain, context=context)
+        expence_proxy = expence_pool.browse(
+            cr, uid, expence_ids, context=context)
+        expence_db = {}
+        for expence in expence_proxy:
+            key = (
+                expence.account_id.name,
+                expence.category_id.name,
+                expence.date,
+                )
+            if key not in expence_db:
+                expence_db[key] = []
+            expence_db[key].append(expence)
+
+        # ---------------------------------------------------------------------
         #                             EXCEL REPORT:
         # ---------------------------------------------------------------------
         sheets = {
@@ -801,7 +835,19 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'data': ddt_db, 
                 },
 
-            'Materiali': { # DDT not invoiced
+            'Spese': { 
+                'row': 0,
+                'header': [
+                    'Data', 'Comessa', 'Categoria', 'Descrizione', 'Totale', 
+                    ],
+                'width': [
+                    12, 20, 20, 30, 10,
+                    ],
+                'total': {},
+                'data': expence_db, 
+                },
+
+            'Materiali': { # List compress for code
                 'row': 0,
                 'header': [
                     'Codice', 'Descrizione', 'UM', 'Q.', 
