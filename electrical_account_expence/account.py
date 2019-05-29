@@ -42,7 +42,7 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
-class AccountAnaliticExpence(orm.Model):
+class AccountAnaliticExpenceCategory(orm.Model):
     """ Model name: AccountAnaliticExpence
     """
     
@@ -57,7 +57,7 @@ class AccountAnaliticExpence(orm.Model):
         }
         
 class AccountAnaliticExpence(orm.Model):
-    """ Model name: AccountAnaliticExpence
+    """ Model name: Account Analitic Expence
     """
     
     _name = 'account.analytic.expence'
@@ -66,11 +66,14 @@ class AccountAnaliticExpence(orm.Model):
     _order = 'date'
     
     _columns = {
+        'account_id': fields.many2one('account.analytic.account', 'Account'),
         'date': fields.date('Date', required=True),
         'category_id': fields.many2one(
             'account.analytic.expence.category', 'Category', required=True),
         'name': fields.char('Description', size=64, required=True),
-        'total': fields.float('Total', digits=(16, 2), required=False),
+        'total': fields.float('Total', digits=(16, 2), required=True),
+        'total_forced': fields.float('Total forced', digits=(16, 2), 
+            help='If present is used instead of total value (as a revenue)'),
         'printable': fields.selection([
             ('always', 'Always'),
             ('conditional', 'Conditional (wizard selection)'),
@@ -83,5 +86,31 @@ class AccountAnaliticExpence(orm.Model):
         'printable': lambda *x: 'always',
         }     
     
+class AccountAnaliticAccount(orm.Model):
+    """ Model name: AccountAnalitic Account
+    """
+    
+    _inherit = 'account.analytic.account'
+    
+    def open_expences_list(self, cr, uid, ids, context=None):
+        ''' Return list of expences:
+        '''
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Expence list'),
+            'view_type': 'form',
+            'view_mode': 'tree',
+            'res_model': 'account.analytic.expence',
+            'view_id': False,
+            'views': [(False, 'tree')],
+            'domain': [('account_id', '=', ids[0])],
+            'context': context,
+            'target': 'current', 
+            'nodestroy': False,
+            }
+    _columns = {
+        'expence_ids': fields.one2many(
+            'account.analytic.expence', 'account_id', 'Expence'),
+        }
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
