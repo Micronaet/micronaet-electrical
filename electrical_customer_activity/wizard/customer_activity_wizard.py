@@ -593,8 +593,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # Domain:
         domain = [
             ('partner_id', '=', partner_id),
-            ('delivery_date', '>=', '%s 00:00:00' % from_date),
-            ('delivery_date', '<=', '%s 23:59:59' % to_date),
+            #('delivery_date', '>=', '%s 00:00:00' % from_date),
+            #('delivery_date', '<=', '%s 23:59:59' % to_date),
+            ('date', '>=', '%s 00:00:00' % from_date),
+            ('date', '<=', '%s 23:59:59' % to_date),
             #('invoice_id', '=', False), # Not Invoiced
             ]
 
@@ -603,8 +605,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         #    domain.append(('is_invoiced', '=', False))
         if ddt_mode == 'ddt':
             domain.append(('is_invoiced', '=', False))
-        else:
-            domain.append(('is_invoiced', '!=', False))
+        #else:
+        #    domain.append(('is_invoiced', '=', True))
             
         if contact_id:
             domain.append(('contact_id', '=', contact_id))
