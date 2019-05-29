@@ -1906,19 +1906,19 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 total = 0.0
 
                 # Print header
-                #row += 2
-                #excel_pool.write_xls_line(
-                #    ws_name, row, [
-                #        'MANODOPERA', '', '', '', '', 
-                #        ], default_format=f_header)
+                row += 2
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        'MANODOPERA', '', '', '', '', 
+                        ], default_format=f_header)
 
-                #row += 1
-                #excel_pool.write_xls_line(
-                #    ws_name, row, [
-                #        #'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
-                #        #'Totale',
-                #        'Data', 'Intervento', 'H.', 'Utente', 'Prezzo totale',
-                #        ], default_format=f_header)
+                row += 1
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        #'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
+                        #'Totale',
+                        'Data', 'Intervento', 'H.', 'Utente', 'Prezzo totale',
+                        ], default_format=f_header)
 
                 for key in intervent_db:
                     for intervent in intervent_db[key]:
@@ -1963,11 +1963,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             (this_revenue, f_number_color), # total revenue
                             ]
 
-                        #row += 1
-                        #excel_pool.write_xls_line(
-                        #    ws_name, row, data,
-                        #    default_format=f_text_color
-                        #    )
+                        row += 1
+                        excel_pool.write_xls_line(
+                            ws_name, row, data,
+                            default_format=f_text_color
+                            )
                         total += this_revenue
 
                 # -------------------------------------------------------------
