@@ -1955,7 +1955,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             ddt_error = True
 
                         data = [
-                            intervent.date_start,
+                            intervent.date_start[:10],
                             intervent.name,
                             intervent.intervent_total,
                             user.name,
