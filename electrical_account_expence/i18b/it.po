@@ -1,0 +1,167 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* electrical_account_expence
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 8.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-05-29 12:45+0000\n"
+"PO-Revision-Date: 2019-05-29 14:47+0100\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"Language: it\n"
+"X-Generator: Poedit 1.6.10\n"
+
+#. module: electrical_account_expence
+#: view:account.analytic.expence:electrical_account_expence.view_account_analytic_expence_search
+#: field:account.analytic.expence,account_id:0
+msgid "Account"
+msgstr "Conto analitico"
+
+#. module: electrical_account_expence
+#: selection:account.analytic.expence,printable:0
+msgid "Always"
+msgstr "Sempre"
+
+#. module: electrical_account_expence
+#: model:ir.model,name:electrical_account_expence.model_account_analytic_account
+msgid "Analytic Account"
+msgstr "Conto Analitico"
+
+#. module: electrical_account_expence
+#: model:ir.model,name:electrical_account_expence.model_account_analytic_expence
+msgid "Analytic expence"
+msgstr "Spese commesse"
+
+#. module: electrical_account_expence
+#: model:ir.model,name:electrical_account_expence.model_account_analytic_expence_category
+msgid "Analytic expence category"
+msgstr "Categoria di spesa"
+
+#. module: electrical_account_expence
+#: view:account.analytic.expence:electrical_account_expence.view_account_analytic_expence_search
+#: field:account.analytic.expence,category_id:0
+msgid "Category"
+msgstr "Categoria"
+
+#. module: electrical_account_expence
+#: selection:account.analytic.expence,printable:0
+msgid "Conditional (wizard selection)"
+msgstr "Condizionale (impostato da wizard)"
+
+#. module: electrical_account_expence
+#: field:account.analytic.expence,create_uid:0
+#: field:account.analytic.expence.category,create_uid:0
+msgid "Created by"
+msgstr "Creato da"
+
+#. module: electrical_account_expence
+#: field:account.analytic.expence,create_date:0
+#: field:account.analytic.expence.category,create_date:0
+msgid "Created on"
+msgstr "Creato il"
+
+#. module: electrical_account_expence
+#: view:account.analytic.expence:electrical_account_expence.view_account_analytic_expence_search
+#: field:account.analytic.expence,date:0
+msgid "Date"
+msgstr "Data"
+
+#. module: electrical_account_expence
+#: field:account.analytic.expence,name:0
+#: field:account.analytic.expence.category,name:0
+msgid "Description"
+msgstr "Descrizione"
+
+#. module: electrical_account_expence
+#: field:account.analytic.account,expence_ids:0
+#: view:account.analytic.expence:electrical_account_expence.view_account_analytic_expence_search
+#: view:account.analytic.expence:electrical_account_expence.view_account_analytic_expence_tree
+#: view:account.analytic.expence.category:electrical_account_expence.view_account_analytic_expence_category_tree
+#: model:ir.actions.act_window,name:electrical_account_expence.action_account_analytic_expence
+#: model:ir.ui.menu,name:electrical_account_expence.menu_action_account_expence_root
+#: model:ir.ui.menu,name:electrical_account_expence.menu_action_account_expence_tree
+msgid "Expence"
+msgstr "Spese"
+
+#. module: electrical_account_expence
+#: model:ir.actions.act_window,name:electrical_account_expence.action_analytic_expence_category
+#: model:ir.ui.menu,name:electrical_account_expence.menu_action_account_expence_category_tree
+msgid "Expence category"
+msgstr "Categoria di spesa"
+
+#. module: electrical_account_expence
+#: view:account.analytic.account:electrical_account_expence.view_account_analytic_expence_form
+msgid "Expences list"
+msgstr "Lista spese"
+
+#. module: electrical_account_expence
+#: view:account.analytic.account:electrical_account_expence.view_account_analytic_expence_form
+msgid "Expences:"
+msgstr "Spese:"
+
+#. module: electrical_account_expence
+#: view:account.analytic.expence:electrical_account_expence.view_account_analytic_expence_search
+msgid "Group By..."
+msgstr "Raggruppa per..."
+
+#. module: electrical_account_expence
+#: field:account.analytic.expence,id:0
+#: field:account.analytic.expence.category,id:0
+msgid "ID"
+msgstr "ID"
+
+#. module: electrical_account_expence
+#: help:account.analytic.expence,total_forced:0
+msgid "If present is used instead of total value (as a revenue)"
+msgstr ""
+"Se presente è utilizzato questo prezzo per esporlo al cliente (come totale "
+"fatturato)"
+
+#. module: electrical_account_expence
+#: field:account.analytic.expence,write_uid:0
+#: field:account.analytic.expence.category,write_uid:0
+msgid "Last Updated by"
+msgstr "Aggiornato da"
+
+#. module: electrical_account_expence
+#: field:account.analytic.expence,write_date:0
+#: field:account.analytic.expence.category,write_date:0
+msgid "Last Updated on"
+msgstr "Aggiornato il"
+
+#. module: electrical_account_expence
+#: selection:account.analytic.expence,printable:0
+msgid "Never"
+msgstr "Mai"
+
+#. module: electrical_account_expence
+#: field:account.analytic.expence.category,note:0
+msgid "Note"
+msgstr "Note"
+
+#. module: electrical_account_expence
+#: view:account.analytic.expence:electrical_account_expence.view_account_analytic_expence_search
+#: field:account.analytic.expence,printable:0
+msgid "Printable"
+msgstr "Stampabile"
+
+#. module: electrical_account_expence
+#: view:account.analytic.account:electrical_account_expence.view_account_analytic_expence_form
+msgid "Spese extra"
+msgstr "Spese extra"
+
+#. module: electrical_account_expence
+#: field:account.analytic.expence,total:0
+msgid "Total"
+msgstr "Totale"
+
+#. module: electrical_account_expence
+#: field:account.analytic.expence,total_forced:0
+msgid "Total forced"
+msgstr "Totale forzato"
