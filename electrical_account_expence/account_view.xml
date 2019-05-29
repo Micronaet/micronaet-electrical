@@ -30,8 +30,8 @@
                      <field name="date" />
                      <field name="category_id" />
                      <field name="name" />
-                     <field name="total" />
-                     <field name="total_forced" />
+                     <field name="total" sum="total"/>
+                     <field name="total_forced" sum="forced" />
                      <field name="printable" />
                 </tree>                            
             </field>
