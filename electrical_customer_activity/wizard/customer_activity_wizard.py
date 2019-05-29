@@ -555,7 +555,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ws_name = 'Ridotta'
             excel_pool.create_worksheet(ws_name)
             excel_pool.set_margins(ws_name, 0.3, 0.3)
-            excel_pool.set_paper() # Set A4
+            excel_pool.set_paper(ws_name) # Set A4
             excel_pool.fit_to_pages(ws_name, 1, 0)
             excel_pool.set_format(    
                 title_font='Arial', header_font='Arial', text_font='Arial')
@@ -955,7 +955,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Create sheet:
             excel_pool.create_worksheet(ws_name)
             excel_pool.set_margins(ws_name)
-            excel_pool.set_paper() # Set A4
+            excel_pool.set_paper(ws_name) # Set A4
             #excel_pool.set_print_scale(ws_name, 90)
             excel_pool.fit_to_pages(ws_name)
 
