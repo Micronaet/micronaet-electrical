@@ -67,6 +67,21 @@
             </field>
         </record>
         
+        <record model="ir.ui.view" id="*">
+            <field name="name">stock.move.ddt.tree</field>
+            <field name="model">stock.move</field>
+            <field name="priority" eval="40" />
+            <field name="arch" type="xml">
+                <tree string="DDT Lines">
+                    <field name="date" />
+                    <field name="product_id" />
+                    <field name="product_uom_qty" />
+                    <field name="product_uom" string="UM" />
+                    <field name="price_unit" />
+                    <field name="state" invisible="1" />
+                </tree>
+            </field>
+        </record>
         <record id="stock_ddt_form" model="ir.ui.view">
             <field name="name">stock.ddt.form</field>
             <field name="model">stock.ddt</field>
@@ -110,7 +125,16 @@
                         </group>
                         <notebook>
                             <page string="DDT Lines">
-                                <field name="ddt_lines"/>
+                                <field name="ddt_lines">
+                                    <tree string="DDT Lines">
+                                        <field name="date" />
+                                        <field name="product_id" />
+                                        <field name="product_uom_qty" />
+                                        <field name="product_uom" string="UM" />
+                                        <field name="price_unit" />
+                                        <field name="state" invisible="1" />
+                                    </tree>
+                                </field>
                             </page>
                             <page string="Pickings">
                                 <field name="picking_ids" domain="[('partner_id', '=', partner_id)]"/>

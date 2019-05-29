@@ -1,0 +1,4 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+access_account_analytic_expence_category_user,account.analytic.expence.category,model_account_analytic_expence_category,base.group_user,1,1,1,1
+access_account_analytic_expence_user,account.analytic.expence,model_account_analytic_expence,base.group_user,1,1,1,1
+
