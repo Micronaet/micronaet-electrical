@@ -1666,7 +1666,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             f_text_red = excel_pool.get_format('bg_red')
 
             # Setup columns
-            excel_pool.column_width(ws_name, [16, 30, 5, 12, 12, 12])
+            excel_pool.column_width(ws_name, [14, 30, 5, 14, 12, 12])
 
             # -----------------------------------------------------------------
             # Insert Logo:
