@@ -376,9 +376,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         # Intervent management:
         intervent_mode = wiz_browse.intervent_mode
+        ddt_mode = wiz_browse.ddt_mode
         mark_invoiced = wiz_browse.mark_invoiced
         
         partner_text = 'Cliente: %s, ' % wiz_browse.partner_id.name
+        # TODO intervent_mode, ddt_mode
         filter_text = \
             'Interventi del periodo: [%s - %s], %sContatto: %s, Commessa: %s%s' % (
                 from_date or '...',
@@ -596,10 +598,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
             #('invoice_id', '=', False), # Not Invoiced
             ]
 
-        # Not invoiced only if not internal        
-        if report_mode != 'report': 
+        # Not invoiced only if not internal
+        #if report_mode != 'report': 
+        #    domain.append(('is_invoiced', '=', False))
+        if ddt_mode == 'ddt':
             domain.append(('is_invoiced', '=', False))
-
+        else:
+            domain.append(('is_invoiced', '!=', False))
+            
         if contact_id:
             domain.append(('contact_id', '=', contact_id))
 
@@ -2000,7 +2006,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
         'to_date': fields.date('To date <', required=True),
         'float_time': fields.boolean('Formatted hour', 
             help='If checked print hour in HH:MM format'),
-         
+
+        # DDT management:         
+        'ddt_mode': fields.selection([
+            ('ddt', 'DDT non fatturati'),
+            ('all', 'Tutto'),
+            ], 'Modo DDT', required=True,
+            help='Stampa anche i DDT non fatturati o fatturati'),
+
         # Intervent management:
         'intervent_mode': fields.selection([
             ('pending', 'Pending'),
@@ -2008,6 +2021,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('all', 'All'),
             ], 'Intervent mode', required=True,
             help='Select intervent depend on invoice mode'),
+
         'mark_invoiced': fields.boolean('Mark intervent as invoiced', 
             help='All selected intervent will be marked as invoiced'),
 
@@ -2027,6 +2041,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         'from_date': lambda *x: datetime.now().strftime('%Y-%m-01'),
         'to_date': lambda *x: (
             datetime.now() + relativedelta(months=1)).strftime('%Y-%m-01'),
+        'ddt_mode': lambda *x: 'ddt',
         'intervent_mode': lambda *x: 'pending',
         }
 
