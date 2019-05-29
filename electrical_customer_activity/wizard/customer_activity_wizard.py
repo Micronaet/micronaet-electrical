@@ -435,10 +435,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'DDT': [
                 True, '', 
                 '', 11,
-                '', '', 2, # Summary hide col., Summary total
+                '', '001', 2, # Summary hide col., Summary total
                 ],
 
-            # TODO
+            'Spese': [
+                True, '', 
+                '', 4, # Total line hide, Total position
+                '', '', 2, # TODO CHECK HERE!! # Summary hide col.
+                ],
+
             'Materiali': [
                 False, '', 
                 #'', 11,
@@ -525,6 +530,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             mask['Interventi'][0] = False
             mask['Consegne'][0] = False
             mask['DDT'][0] = False
+            mask['Spese'][0] = False
             mask['Commesse'][0] = False            
             
         # ---------------------------------------------------------------------
@@ -552,7 +558,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
             excel_pool.fit_to_pages(ws_name, 1, 0)
             excel_pool.set_format(    
                 title_font='Arial', header_font='Arial', text_font='Arial')
-
 
         # ---------------------------------------------------------------------
         # Startup:
@@ -733,7 +738,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # Domain:
         # TODO wizard parameter
         domain = [
-            ('printable', '=', partner_id),
             ('date', '>=', from_date),
             ('date', '<=', to_date),
             ('printable', '!=', 'none'),
@@ -838,7 +842,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Spese': { 
                 'row': 0,
                 'header': [
-                    'Data', 'Comessa', 'Categoria', 'Descrizione', 'Totale', 
+                    'Data', 'Comessa', 'Categoria', 'Descrizione', 
+                    'Costo ultimo', 'Scontato', 'Totale', 
                     ],
                 'width': [
                     12, 20, 20, 30, 10,
@@ -900,7 +905,18 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'total_discount': 0.0, 
                 'total_revenue': 0.0, 
                 },
-
+                
+            # TODO Spese!!!
+            'Spese': {
+                'header': ['Commessa', 'Categoria', 'Costo', 'Scontato', 
+                    'Totale'],
+                'data': {},
+                'total_cost': 0.0, 
+                'total_discount': 0.0, 
+                'total_revenue': 0.0, 
+                },
+                
+            
             'Commesse': {
                 'header': ['Commessa', 'Cliente'],
                 'data': {},
@@ -915,6 +931,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Interventi', 
             'Consegne', 
             'DDT', 
+            'Spese',
             #'Fatture',
             'Commesse',
             'Materiali',
@@ -1144,7 +1161,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     if account not in account_used:
                         account_used.append(account)
                     if account_id not in total:
-                        total[account_id] = 0.0                
+                        total[account_id] = 0.0
                     if ddt.picking_ids:
                         for picking in ddt.picking_ids:
                             if picking.move_lines:
@@ -1296,6 +1313,83 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     (summary[ws_name]['total_revenue'], f_number),
                     ], mask['DDT'][2]), 
                 default_format=f_text, col=mask['DDT'][3])
+
+
+        # ---------------------------------------------------------------------
+        # C. EXPENCE GROUPED BY:
+        # ---------------------------------------------------------------------
+        if mask['Spese'][0]:
+            ws_name = 'Spese'
+            sheet = sheets[ws_name]
+            summary_data = summary[ws_name]['data']
+            total = sheet['total']
+            for key in expence_db:
+                for expence in expence_db[key]:
+                    account = expence.account_id
+                    category = expence.category_id
+                    subtotal1 = expence.total
+                    subtotal2 = 0.0
+                    subtotal3 = expence.total_forced or expence.total
+
+                    if category.id not in total: # TODO
+                        total[category.id] = 0.0
+                    
+                    data = self.data_mask_filter([  
+                        account.name or '',
+                        expence.date,
+                        category.name or '',
+                        expence.name or '',
+                        (subtotal1, f_number),
+                        (subtotal2, f_number),
+                        (subtotal3, f_number),
+                        ], mask['Spese'][1])
+
+                    excel_pool.write_xls_line(
+                        ws_name, sheet['row'], data,
+                        default_format=f_text,
+                        )
+                    sheet['row'] += 1
+
+                    # ---------------------------------------------------------
+                    # Summary data (expence):         
+                    # ---------------------------------------------------------
+                    block_key = (account, category)
+                    if block_key not in summary_data:
+                        summary_data[block_key] = []
+                        
+                    summary_data[block_key].append((
+                        (account.name, f_text), 
+                        (category.name, f_text),                         
+                        (subtotal1, f_number),
+                        (subtotal2, f_number),
+                        (subtotal3, f_number),
+                        )) 
+                        
+                    # ---------------------------------------------
+                    #                    TOTALS:
+                    # ---------------------------------------------
+                    # A. Total per account:                            
+                    total[category.id] += subtotal1
+
+                    # B. Line total in same sheet:
+                    summary[ws_name]['total_cost'] += subtotal1
+                    summary[ws_name]['total_discount'] += 0.0
+                    summary[ws_name]['total_revenue'] += subtotal3
+
+
+            # -------------------------------------------------------------
+            # Total line at the end of the block:
+            # -------------------------------------------------------------
+            excel_pool.write_xls_line(
+                ws_name, 
+                sheet['row'], 
+                self.data_mask_filter([
+                    (summary[ws_name]['total_cost'], f_number),
+                    (summary[ws_name]['total_discount'], f_number),
+                    (summary[ws_name]['total_revenue'], f_number),                    
+                    ], mask['Spese'][2]), 
+                default_format=f_text, 
+                col=mask['Spese'][3])
 
         # ---------------------------------------------------------------------
         # D. MATERIAL GROUPED BY:
@@ -1656,7 +1750,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 }
 
             for block in sheet_order[1:-1]:
-
                 # -------------------------------------------------------------
                 # Parameters:
                 # -------------------------------------------------------------
