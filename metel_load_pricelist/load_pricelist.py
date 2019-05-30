@@ -267,7 +267,9 @@ class MetelBase(orm.Model):
         electrocod_start_char = param_proxy.electrocod_start_char
         electrocod_file = param_proxy.electrocod_file
         
-        if electrocod_code and electrocod_start_char and electrocod_file:
+        
+        if not update_mode and electrocod_code and electrocod_start_char and \
+                electrocod_file:
             electrocod_file = os.path.expanduser(electrocod_file)
             electrocod_db = category_pool.scheduled_electrocod_import_data(
                 cr, uid, 
@@ -280,7 +282,7 @@ class MetelBase(orm.Model):
             _logger.error('''
                 Setup Electrocod parameter for get correct management!
                 (no group Electrocod structure created, no association with 
-                product created)''')
+                product created), or update mode''')
         
         # If not fount Code category (new code) use a missed one!        
         missed_id = category_pool.get_electrocod_category(
@@ -296,6 +298,7 @@ class MetelBase(orm.Model):
         # 1. Loop pricelist folder:
         created_group = []        
         if update_mode:
+            _logger.warning('Update mode: %s' % (update_mode, ))
             file_ids = update_mode
         else:    
             file_ids = file_pool.search(cr, uid, [
@@ -364,8 +367,6 @@ class MetelBase(orm.Model):
                             line[19:32], logger=logger)
                         name = self.parse_text(
                             line[32:75], logger=logger)
-                        metel_q_x_pack = self.parse_text(
-                            line[75:80], logger=logger)
                         metel_order_lot = self.parse_text_number(
                             line[80:85], logger=logger)
                         metel_order_min = self.parse_text_number(
@@ -397,18 +398,20 @@ class MetelBase(orm.Model):
                     # ---------------------------------------------------------
                     # Update mode:
                     # ---------------------------------------------------------
-                    # UOM Mode:
-                    if not update_mode or force_update_mode == 'uom':
-                        uom = self.parse_text(
-                            line[128:131], logger=logger)
+                    # UOM Mode (always is mandatory field!):
+                    uom = self.parse_text(
+                        line[128:131], logger=logger)
 
-                        # UOM manage:
-                        uom_id = uom_db.get(uom, False)
-                        if not uom_id and uom not in uom_missed: # Log missed
-                            uom_missed.append(uom)
+                    # UOM manage:
+                    uom_id = uom_db.get(uom, 1) # XXX change in 1!!!
+                    if not uom_id and uom not in uom_missed: # Log missed
+                        uom_missed.append(uom)
 
                     # Reseller price mode:    
                     if not update_mode or force_update_mode == 'price':
+                        metel_q_x_pack = self.parse_text(
+                            line[75:80], logger=logger)
+
                         lst_price = self.parse_text_number(
                             line[97:108], 2, logger=logger) 
                         # public price:    
@@ -464,11 +467,12 @@ class MetelBase(orm.Model):
                     # Update mode:
                     # ---------------------------------------------------------
                     # UOM:
-                    if not update_mode or force_update_mode == 'uom':
-                        data.update({    
-                            # Update mode (all cases):
-                            'metel_uom': uom,
-                            })
+                    #if not update_mode or force_update_mode == 'uom':
+                    data.update({    
+                        # Update mode (all cases):
+                        'metel_uom': uom,
+                        })
+
                     # Price:        
                     if not update_mode or force_update_mode == 'price':
                         data.update({    
@@ -476,7 +480,7 @@ class MetelBase(orm.Model):
                             'lst_price': lst_price,
                             'metel_multi_price': metel_multi_price,    
                             'metel_list_price': metel_list_price,
-                            }
+                            })
                         
                     # ---------------------------------------------------------
                     # Standard mode:
@@ -521,8 +525,8 @@ class MetelBase(orm.Model):
                     if product_ids: 
                         #`TODO update forced UM:
                         if update_mode:
-                            self.update_force_uom_id(
-                                cr, uid, ids, product_ids, context=context)
+                            product_pool.update_force_uom_id(
+                                cr, uid, product_ids, uom_id, context=context)
                         try:
                             product_pool.write(
                                 cr, uid, product_ids, data, 
@@ -659,9 +663,13 @@ class MetelBase(orm.Model):
             # Write log status if present:
             if logger:
                 file_pool.write(cr, uid, [record.id], {
-                    'log': '\n'.join(tuple(logger))
+                    'log': '\n'.join(tuple(logger)),
                     }, context=context)
-           
+            else:
+                file_pool.write(cr, uid, [record.id], {
+                    'log': False,
+                    }, context=context)
+            
             # Update mode clean record:         
             if update_mode:
                 file_pool.write(cr, uid, [record.id], {
