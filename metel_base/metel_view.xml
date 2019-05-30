@@ -230,7 +230,7 @@
                 </xpath>
             </field>
         </record>        
-        <record model="ir.ui.view" id="view_product_product_metel_page_tree">
+        <!--<record model="ir.ui.view" id="view_product_product_metel_page_tree">
             <field name="name">product.product.metel.tree</field>
             <field name="model">product.product</field>
             <field name="inherit_id" ref="product.product_product_tree_view"/>
@@ -246,7 +246,7 @@
                     <field name="metel_statistic_id" invisible="1"/>                       
                 </field>
             </field>
-        </record>        
+        </record>-->        
         <record model="ir.ui.view" id="view_product_product_metel_search">
             <field name="name">product.product.metel.search</field>
             <field name="model">product.product</field>
