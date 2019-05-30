@@ -72,7 +72,6 @@ class LogCrud(orm.Model):
             cr, uid, 'log_crud_base', 'group_log_crud')[1]
         group = group_pool.browse(cr, uid, group_id, context=context)
         #partner_ids = [user_proxy.company_id.partner_id.id, ]
-        import pdb; pdb.set_trace()
         return [user.partner_id.id for user in group.users]
 
     _columns = {
