@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="view_log_crud_tree">
+            <field name="name">log.crud.tree</field>
+            <field name="model">log.crud</field>
+            <field name="arch" type="xml">
+                <tree string="Log operation" colors="green:mode=='create';blue:mode=='write';red:mode=='unlink'"> 
+                    <field name="datetime" readonly="1" />
+                    <field name="name" readonly="1" />
+                    <field name="user_id" readonly="1"/>
+                    <field name="model_id" readonly="1"/>
+                    <field name="model_name" readonly="1"/>
+                    <field name="mode" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="view_log_crud_form">
+            <field name="name">log.crud.tree</field>
+            <field name="model">log.crud</field>
+            <field name="arch" type="xml">
+                <form string="Log operation" colors="green:mode=='create';blue:mode=='write';red:mode=='unlink'" version="7.0"> 
+                    <sheet>
+                        <group col="4" colspan="4">
+                            <field name="datetime" readonly="1" />
+                            <field name="name" readonly="1" />
+                            <field name="user_id" readonly="1"/>
+                            <field name="model_id" readonly="1"/>
+                            <field name="model_name" readonly="1"/>
+                            <field name="mode" readonly="1"/>
+                            <separator string="Note:" colspan="4"/>
+                            <field name="note" colspan="4" nolabel="1" readonly="1"/>
+                        </group>    
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_log_crud">
+            <field name="name">Log operation</field>
+            <field name="res_model">log.crud</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_log_crud_tree"/>
+            <field name="context">{}</field>
+            <field name="domain">[]</field>
+        </record>
+        <menuitem 
+            parent="mail.mail_feeds" 
+            id="menu_log_crud_tree" 
+            action="action_log_crud"
+            sequence="40"
+            groups="group_log_crud"/>
+        
+    </data>
+</openerp>
+

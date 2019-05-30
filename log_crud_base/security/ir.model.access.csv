@@ -1,0 +1,3 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+access_log_crud_user,log.crud,model_log_crud,base.group_user,1,0,1,0
+
