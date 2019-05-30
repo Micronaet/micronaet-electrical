@@ -135,7 +135,7 @@
             parent="metel_base.menu_action_metel_root_config" 
             id="menu_metel_producer_file_update_mode" 
             action="action_metel_producer_file_update_form"
-            sequence="20"
+            sequence="11"
             />
         
     </data>

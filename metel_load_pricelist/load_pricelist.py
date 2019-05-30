@@ -238,10 +238,15 @@ class MetelBase(orm.Model):
                 
         return True
 
+    # Scheduled event:
     def schedule_import_pricelist_action(self, cr, uid, verbose=True, 
             context=None):
         ''' Schedule import of pricelist METEL
         '''
+        if context is None:
+            context = {}
+        update_mode = context.get('update_mode', False)    
+
         # Pool used:
         product_pool = self.pool.get('product.product') 
         category_pool = self.pool.get('product.category')
@@ -290,15 +295,19 @@ class MetelBase(orm.Model):
         # --------------------------------------------------------------------- 
         # 1. Loop pricelist folder:
         created_group = []        
-        file_ids = file_pool.search(cr, uid, [
-            ('state', '=', 'draft'),
-            ('timestamp', '=', False),
-            ], context=context)
+        if update_mode:
+            file_ids = update_mode
+        else:    
+            file_ids = file_pool.search(cr, uid, [
+                ('state', '=', 'draft'),
+                ('timestamp', '=', False),
+                ], context=context)
 
         for record in file_pool.browse(cr, uid, file_ids, context=context):
             logger = [] # List of error (reset every file)
             filename = record.filename
             fullname = record.fullname
+            force_update_mode = record.force_update_mode
                             
             # Parse filename:
             file_producer_code = filename[:3]
@@ -346,123 +355,159 @@ class MetelBase(orm.Model):
                         line[0:3], logger=logger) # TODO create also category
                     default_code = self.parse_text(
                         line[3:19], logger=logger)
-                    ean13 = self.parse_text(
-                        line[19:32], logger=logger)
-                    name = self.parse_text(
-                        line[32:75], logger=logger)
-                    metel_q_x_pack = self.parse_text(
-                        line[75:80], logger=logger)
-                    metel_order_lot = self.parse_text_number(
-                        line[80:85], logger=logger)
-                    metel_order_min = self.parse_text_number(
-                        line[85:90], logger=logger)
-                    metel_order_max = self.parse_text_number(
-                        line[90:96], logger=logger)
-                    metel_leadtime = self.parse_text_number(
-                        line[96:97], logger=logger)
-                    # reseller price:    
-                    lst_price = self.parse_text_number(
-                        line[97:108], 2, logger=logger) 
-                    # public price:    
-                    metel_list_price = self.parse_text_number(
-                        line[108:119], 2, logger=logger) 
-                    metel_multi_price = self.parse_text_number(
-                        line[119:125], logger=logger)
-                    currency = self.parse_text(
-                        line[125:128], logger=logger)
-                    uom = self.parse_text(
-                        line[128:131], logger=logger)
-                    metel_kit = self.parse_text_boolean(
-                        line[131:132], logger=logger)     
-                    metel_state = self.parse_text(
-                        line[132:133], logger=logger)
-                    metel_last_variation = self.parse_text_date(
-                        line[133:141], logger=logger)
-                    metel_discount = self.parse_text(
-                        line[141:159], logger=logger)
-                    metel_statistic = self.parse_text(
-                        line[159:177], logger=logger)
-                    metel_electrocod = self.parse_text(
-                        line[177:197], logger=logger)
                     
-                    # Alternate value for EAN code:
-                    metel_alternate_barcode = self.parse_text(
-                        line[197:232], logger=logger)
-                    metel_alternate_barcode_type = self.parse_text(
-                        line[232:233], logger=logger)
+                    # ---------------------------------------------------------    
+                    # Standard mode:
+                    # ---------------------------------------------------------    
+                    if not update_mode:
+                        ean13 = self.parse_text(
+                            line[19:32], logger=logger)
+                        name = self.parse_text(
+                            line[32:75], logger=logger)
+                        metel_q_x_pack = self.parse_text(
+                            line[75:80], logger=logger)
+                        metel_order_lot = self.parse_text_number(
+                            line[80:85], logger=logger)
+                        metel_order_min = self.parse_text_number(
+                            line[85:90], logger=logger)
+                        metel_order_max = self.parse_text_number(
+                            line[90:96], logger=logger)
+                        metel_leadtime = self.parse_text_number(
+                            line[96:97], logger=logger)
+
+                        metel_kit = self.parse_text_boolean(
+                            line[131:132], logger=logger)     
+                        metel_state = self.parse_text(
+                            line[132:133], logger=logger)
+                        metel_last_variation = self.parse_text_date(
+                            line[133:141], logger=logger)
+                        metel_discount = self.parse_text(
+                            line[141:159], logger=logger)
+                        metel_statistic = self.parse_text(
+                            line[159:177], logger=logger)
+                        metel_electrocod = self.parse_text(
+                            line[177:197], logger=logger)
+                    
+                        # Alternate value for EAN code:
+                        metel_alternate_barcode = self.parse_text(
+                            line[197:232], logger=logger)
+                        metel_alternate_barcode_type = self.parse_text(
+                            line[232:233], logger=logger)
+                    
+                    # ---------------------------------------------------------
+                    # Update mode:
+                    # ---------------------------------------------------------
+                    # UOM Mode:
+                    if not update_mode or force_update_mode == 'uom':
+                        uom = self.parse_text(
+                            line[128:131], logger=logger)
+
+                        # UOM manage:
+                        uom_id = uom_db.get(uom, False)
+                        if not uom_id and uom not in uom_missed: # Log missed
+                            uom_missed.append(uom)
+
+                    # Reseller price mode:    
+                    if not update_mode or force_update_mode == 'price':
+                        lst_price = self.parse_text_number(
+                            line[97:108], 2, logger=logger) 
+                        # public price:    
+                        metel_list_price = self.parse_text_number(
+                            line[108:119], 2, logger=logger) 
+                        metel_multi_price = self.parse_text_number(
+                            line[119:125], logger=logger)
+                        currency = self.parse_text(
+                            line[125:128], logger=logger)
+                        
+                        # Manage multi price value:
+                        if metel_multi_price > 1:
+                            metel_list_price /= metel_multi_price
+                            lst_price /= metel_multi_price
+                        # TODO use currency    
+
+                    # ---------------------------------------------------------
                     
                     # Code = PRODUCER || CODE
                     default_code = '%s%s' % (brand_code, default_code)
-                    
-                    # Manage multi price value:
-                    if metel_multi_price > 1:
-                        metel_list_price /= metel_multi_price
-                        lst_price /= metel_multi_price
 
-                    # TODO use currency    
-                    # Category with Electrocod:
-                    if metel_electrocod:
-                        categ_id = electrocod_db.get(
-                            metel_electrocod, missed_id)                    
-                    else:    
-                        categ_id = missed_id 
+                    if not update_mode:
+                        # Category with Electrocod:
+                        if metel_electrocod:
+                            categ_id = electrocod_db.get(
+                                metel_electrocod, missed_id)                    
+                        else:    
+                            categ_id = missed_id 
                         
-                    # Create brand group:
-                    if (file_producer_code, brand_code) in created_group: 
-                        metel_brand_id = created_group[
-                            (file_producer_code, brand_code)]
-                    else:
-                        metel_brand_id = \
-                            category_pool.get_create_brand_group(
-                                cr, uid, file_producer_code, brand_code, 
-                                brand_code, 
-                                # name = code (modify in anagraphic)
-                                context=context)
-
-                    # UOM manage:
-                    uom_id = uom_db.get(uom, False)
-                    if not uom_id and uom not in uom_missed: # Log missed
-                        uom_missed.append(uom)
+                        # Create brand group:
+                        if (file_producer_code, brand_code) in created_group: 
+                            metel_brand_id = created_group[
+                                (file_producer_code, brand_code)]
+                        else:
+                            metel_brand_id = \
+                                category_pool.get_create_brand_group(
+                                    cr, uid, file_producer_code, brand_code, 
+                                    brand_code, 
+                                    # name = code (modify in anagraphic)
+                                    context=context)
 
                     # -----------------------------------------------------
                     # Create record data:
                     # -----------------------------------------------------
-                    # Master data:                        
+                    # Master data (common part):
                     data = {
                         'is_metel': True,
                         'metel_auto': True,
                         'default_code': default_code,
-                        
-                        'metel_producer_id': metel_producer_id,
-                        'metel_brand_id': metel_brand_id,                                                
-                        'metel_producer_code': file_producer_code,
-                        'metel_brand_code': brand_code,
-                        'metel_uom': uom,
-
-                        'ean13': ean13,
-                        'name': name,
-                        'categ_id': categ_id,
-                        'lst_price': lst_price,
-                        'type': 'product', 
-                        'metel_q_x_pack': metel_q_x_pack,
-                        'metel_order_lot': metel_order_lot,
-                        'metel_order_min': metel_order_min,
-                        'metel_order_max': metel_order_max,
-                        'metel_leadtime': metel_leadtime,
-                        'metel_multi_price': metel_multi_price,    
-                        'metel_list_price': metel_list_price,
-                        'metel_kit': metel_kit,
-                        'metel_state': metel_state,
-                        'metel_last_variation': metel_last_variation,
-                        'metel_discount': metel_discount,
-                        'metel_statistic': metel_statistic,                        
-                        'metel_electrocod': metel_electrocod,
-                        'metel_alternate_barcode': 
-                            metel_alternate_barcode,
-                        'metel_alternate_barcode_type': 
-                            metel_alternate_barcode_type,
                         }
+
+                    # ---------------------------------------------------------
+                    # Update mode:
+                    # ---------------------------------------------------------
+                    # UOM:
+                    if not update_mode or force_update_mode == 'uom':
+                        data.update({    
+                            # Update mode (all cases):
+                            'metel_uom': uom,
+                            })
+                    # Price:        
+                    if not update_mode or force_update_mode == 'price':
+                        data.update({    
+                            'metel_q_x_pack': metel_q_x_pack,
+                            'lst_price': lst_price,
+                            'metel_multi_price': metel_multi_price,    
+                            'metel_list_price': metel_list_price,
+                            }
                         
+                    # ---------------------------------------------------------
+                    # Standard mode:
+                    # ---------------------------------------------------------
+                    if not update_mode:
+                        data.update({    
+                            'type': 'product', 
+                            'metel_producer_id': metel_producer_id,
+                            'metel_brand_id': metel_brand_id,                                                
+                            'metel_producer_code': file_producer_code,
+                            'metel_brand_code': brand_code,
+
+                            'ean13': ean13,
+                            'name': name,
+                            'categ_id': categ_id,
+                            'metel_order_lot': metel_order_lot,
+                            'metel_order_min': metel_order_min,
+                            'metel_order_max': metel_order_max,
+                            'metel_leadtime': metel_leadtime,
+                            'metel_kit': metel_kit,
+                            'metel_state': metel_state,
+                            'metel_last_variation': metel_last_variation,
+                            'metel_discount': metel_discount,
+                            'metel_statistic': metel_statistic,                        
+                            'metel_electrocod': metel_electrocod,
+                            'metel_alternate_barcode': 
+                                metel_alternate_barcode,
+                            'metel_alternate_barcode_type': 
+                                metel_alternate_barcode_type,
+                        })
+
                     # TODO Extra data: discount management for price?    
                     # -----------------------------------------------------
                     # Update database:
@@ -475,8 +520,9 @@ class MetelBase(orm.Model):
 
                     if product_ids: 
                         #`TODO update forced UM:
-                        #update_force_uom_id(
-                        #    cr, uid, ids, uom_id, context=context)
+                        if update_mode:
+                            self.update_force_uom_id(
+                                cr, uid, ids, product_ids, context=context)
                         try:
                             product_pool.write(
                                 cr, uid, product_ids, data, 
@@ -587,32 +633,41 @@ class MetelBase(orm.Model):
                         _logger.info('%s. Update # %s with %s' % (
                             i, len(product_ids), metel_code))
 
-                # ---------------------------------------------------------
+                # -------------------------------------------------------------
                 #                    MODE: UNMANAGED!
-                # ---------------------------------------------------------
+                # -------------------------------------------------------------
                 else:
                     if verbose:
                         _logger.info(
                             'Unmanaged file code: %s' % file_mode_code)
                                             
-            # -------------------------------------------------------------
+            # -----------------------------------------------------------------
             #                      COMMON PART:
-            # -------------------------------------------------------------
+            # -----------------------------------------------------------------
             f_metel.close()
             
-            # -------------------------------------------------------------
+            # -----------------------------------------------------------------
             # Log operation
-            # -------------------------------------------------------------
+            # -----------------------------------------------------------------
             # Add extra log for UOM:
             if uom_missed:
                 logger.append(_('Missed UOM code: %s') % uom_missed)
-            
+
+            # -----------------------------------------------------------------
+            # Update file record for operazion:
+            # -----------------------------------------------------------------
             # Write log status if present:
             if logger:
                 file_pool.write(cr, uid, [record.id], {
                     'log': '\n'.join(tuple(logger))
                     }, context=context)
-            
+           
+            # Update mode clean record:         
+            if update_mode:
+                file_pool.write(cr, uid, [record.id], {
+                    'force_update_mode': False
+                    }, context=context)
+                
             # Mark as updated:
             file_pool.wf_mark_updated(cr, uid, [record.id], context=context)
             
