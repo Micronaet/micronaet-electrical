@@ -39,11 +39,70 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
+class MetelProducerFile(orm.Model):
+    """ Model name: MetelProducerFile
+    """
+    
+    _name = 'metel.producer.file'
+    _description = 'Metel file'
+    _rec_name = 'name'
+    _order = 'name'
+    
+    # Workflow event:
+    def wf_force_reload(self, cr, uid, ids, context=None):
+        ''' WF: Force button 
+        '''
+        return self.write(cr, uid, ids, {
+            'state': 'draft',
+            'timestamp': False, # Reset timestamp
+            }, context=context)
+        
+    def wf_set_obsolete(self, cr, uid, ids, context=None):
+        ''' WF: Obsolete button 
+        '''
+        return self.write(cr, uid, ids, {
+            'state': 'obsolete',
+            }, context=context)
+        
+    def wf_set_draft(self, cr, uid, ids, context=None):
+        ''' WF: Restart button 
+        '''
+        return self.write(cr, uid, ids, {
+            'state': 'draft',
+            }, context=context)
+
+    _columns = {
+        'name': fields.char('Filename', size=80, required=True),
+        'timestamp': fields.char('Timestamp', size=64),
+        'datetime': fields.date('Timestamp'),
+        'log': fields.text('Log', help='Log last import event'),
+        'state': fields.selection([
+            ('draft', 'New'), # New files was found
+            ('updated', 'Updated'), # Update after import
+
+            ('forced', 'Force reload'), # Force reload when scheduled
+            ('wrong', 'Wrong format'), # Not correct format or name
+            ('obsolete', 'Obsolete or not used'), # No more used
+            ], 'State'),
+        }
+    _defaults = {
+        'state': lambda *x: 'draft',
+        }    
+
 class MetelBase(orm.Model):
     """ Model name: MetelBase
     """
     
     _inherit = 'metel.parameter'
+    
+    # -------------------------------------------------------------------------
+    # Button event:
+    # -------------------------------------------------------------------------
+    def force_init_load(self, cr, uid, ids, context=None):
+        ''' Force init setup, load all file present and mark as imported
+        '''
+        # TODO 
+        return True
     
     def schedule_import_pricelist_action(self, cr, uid, verbose=True, 
             context=None):

@@ -1,6 +1,55 @@
 <?xml version="1.0"?>
 <openerp>
     <data>
+        <!--metel.producer.file-->
+        <record model="ir.ui.view" id="view_metel_producer_file_tree">
+            <field name="name">metel.producer.file.tree</field>
+            <field name="model">metel.producer.file</field>
+            <field name="arch" type="xml">
+                <tree string="Metel files" colors="grey:state=='obsolete';green:state=='updated';red:state=='wrong';blue:state=='forced';yellow:state=='draft'">
+                    <field name="name" />
+                    <field name="timestamp" />
+                    <field name="datetime" />
+                    <field name="state" />
+                    <button name="wf_force_reload" string="Force reload" type="object" attrs="{'invisible': [('state','not in',('updated',))]}"/>
+                    <button name="wf_set_obsolete" string="Obsolete" type="object" attrs="{'invisible': [('state','not in',('obsolete','wrong',))]}"/>
+                    <button name="wf_set_draft" string="Restart" type="object" attrs="{'invisible': [('state','not in',('draft',))]}"/>
+                </tree>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="view_metel_producer_file_form">
+            <field name="name">metel.producer.file.form</field>
+            <field name="model">metel.producer.file</field>
+            <field name="arch" type="xml">
+                <form string="Metel files">
+                    <header>
+                        <button name="wf_force_reload" string="Force reload" type="object" attrs="{'invisible': [('state','not in',('updated',))]}"/>
+                        <button name="wf_set_obsolete" string="Obsolete" type="object" attrs="{'invisible': [('state','not in',('obsolete','wrong',))]}"/>
+                        <button name="wf_set_draft" string="Restart" type="object" attrs="{'invisible': [('state','not in',('draft',))]}"/>
+                    </header>
+                    <sheet>
+                        <group colspan="4" col="4">
+                            <field name="name" readonly="1"/>
+                            <field name="timestamp" readonly="1" />
+                            <field name="datetime" readonly="1" />
+                            <field name="state" readonly="1" />
+                            <separator string="Log" colspan="4" />
+                            <field name="log" nolabel="1" colspan="4" readonly="1" />
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_metel_producer_file_form">
+            <field name="name">METEL files</field>
+            <field name="res_model">metel.producer.file</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_metel_producer_file_tree"/>
+            <field name="context">{}</field>
+            <field name="domain">[]</field>
+        </record>
+        
         <!--metel.parameter-->
         <record model="ir.ui.view" id="view_metel_parameter_path_tree">
             <field name="name">metel.parameter.tree</field>
@@ -15,7 +64,7 @@
                     <field name="electrocod_code" />
                     <field name="electrocod_start_char" />
                     <field name="electrocod_file" />
-                    
+                    <button name="force_init_load" string="Read file folder" type="object" icon="gtk-refresh" confirm="Reload files and mark as imported (init setup), confirm?" />
                 </field>
             </field>
         </record>
@@ -40,6 +89,13 @@
                 </field>                            
             </field>
         </record>    
+
+            <menuitem 
+                parent="metel_base.menu_action_metel_root_config" 
+                id="menu_metel_producer_file" 
+                action="action_metel_producer_file_form"
+                sequence="10"
+                />
         
     </data>
 </openerp>

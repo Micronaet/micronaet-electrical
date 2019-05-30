@@ -270,7 +270,7 @@ msgstr "METEL management user groups"
 #: model:ir.actions.act_window,name:metel_base.action_metel_parameter_tree
 #: model:ir.ui.menu,name:metel_base.menu_action_metel_parameter
 msgid "METEL parameter"
-msgstr "METEL parametero"
+msgstr "METEL parametro"
 
 #. module: metel_base
 #: model:res.groups,name:metel_base.group_metel_user
@@ -377,7 +377,7 @@ msgstr "Metel nome; produttore o marchio"
 #. module: metel_base
 #: model:ir.model,name:metel_base.model_metel_parameter
 msgid "Metel parameter"
-msgstr "Metel parametero"
+msgstr "Metel parametro"
 
 #. module: metel_base
 #: field:product.product,metel_list_price:0
