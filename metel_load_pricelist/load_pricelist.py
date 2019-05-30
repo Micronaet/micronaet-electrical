@@ -39,6 +39,17 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
+
+# Module parameters: Mode list for file
+file_mode = [
+    'LSP', # 1. Public pricelist
+    'FST', # 2. Statistic family
+    'FSC', # 3. Discount family
+    #'LSG', #Reseller pricelist
+    #'RIC', #Recode
+    #'BAR', #Barcode
+    ]
+
 class MetelProducerFile(orm.Model):
     """ Model name: MetelProducerFile
     """
@@ -52,29 +63,40 @@ class MetelProducerFile(orm.Model):
     def wf_force_reload(self, cr, uid, ids, context=None):
         ''' WF: Force button 
         '''
+        #param_pool = self.pool.get('metel.parameter')
+        #timestamp = param_pool.get_modify_date(current.fullname)                
         return self.write(cr, uid, ids, {
             'state': 'draft',
+            #'datetime': timestamp,
             'timestamp': False, # Reset timestamp
             }, context=context)
-        
+            
+    def wf_mark_updated(self, cr, uid, ids, context=None):
+        ''' WF: Force updated 
+        '''
+        current = self.browse(cr, uid, ids, context=context)
+        param_pool = self.pool.get('metel.parameter')
+        timestamp = param_pool.get_modify_date(current.fullname)                
+        return self.write(cr, uid, ids, {
+            'state': 'updated',
+            'timestamp': timestamp,
+            'datetime': timestamp,
+            }, context=context)
+            
     def wf_set_obsolete(self, cr, uid, ids, context=None):
         ''' WF: Obsolete button 
         '''
         return self.write(cr, uid, ids, {
             'state': 'obsolete',
             }, context=context)
-        
-    def wf_set_draft(self, cr, uid, ids, context=None):
-        ''' WF: Restart button 
-        '''
-        return self.write(cr, uid, ids, {
-            'state': 'draft',
-            }, context=context)
 
     _columns = {
         'name': fields.char('Filename', size=80, required=True),
-        'timestamp': fields.char('Timestamp', size=64),
-        'datetime': fields.date('Timestamp'),
+        'fullname': fields.char('Fullname', size=200, required=True, 
+            help='Real file name in case sensitive!'),
+        'timestamp': fields.datetime('Updated confirm'),
+        'init': fields.datetime('Init timestamp'),
+        'datetime': fields.datetime('Current timestamp'),
         'log': fields.text('Log', help='Log last import event'),
         'state': fields.selection([
             ('draft', 'New'), # New files was found
@@ -82,7 +104,7 @@ class MetelProducerFile(orm.Model):
 
             ('forced', 'Force reload'), # Force reload when scheduled
             ('wrong', 'Wrong format'), # Not correct format or name
-            ('obsolete', 'Obsolete or not used'), # No more used
+            ('obsolete', 'Obsolete or deleted'), # No more used
             ], 'State'),
         }
     _defaults = {
@@ -94,14 +116,77 @@ class MetelBase(orm.Model):
     """
     
     _inherit = 'metel.parameter'
+
+    # -------------------------------------------------------------------------
+    # Utility:    
+    # -------------------------------------------------------------------------
+    def get_modify_date(self, fullname):
+        ''' Return modify date for file
+        '''
+        st_mtime = os.stat(fullname).st_mtime
+        return datetime.fromtimestamp(st_mtime).strftime(
+            DEFAULT_SERVER_DATETIME_FORMAT)
     
     # -------------------------------------------------------------------------
     # Button event:
     # -------------------------------------------------------------------------
-    def force_init_load(self, cr, uid, ids, context=None):
+    def update_file_record_from_folder(self, cr, uid, ids, context=None):
         ''' Force init setup, load all file present and mark as imported
         '''
-        # TODO 
+        file_pool = self.pool.get('metel.producer.file')
+
+        # Read parameter
+        param_ids = self.search(cr, uid, [], context=context)
+        param_proxy = self.browse(cr, uid, param_ids, context=context)[0]
+        data_folder = os.path.expanduser(param_proxy.root_data_folder)
+        
+        # ---------------------------------------------------------------------
+        # Load current ODOO:
+        # ---------------------------------------------------------------------
+        odoo_files = {}
+        file_ids = file_pool.search(cr, uid, [], context=None)
+        for record in file_pool.browse(
+                cr, uid, file_ids, context=context):
+            odoo_files[record.fullname] = record    
+            
+        # ---------------------------------------------------------------------
+        # Read input master folder:
+        # ---------------------------------------------------------------------
+        for root, dirs, files in os.walk(data_folder):
+            for filename in files:
+                fullname = os.path.join(root, filename)          
+                file_mode_code = filename[3:6]
+
+                if filename.endswith('~') or filename.startswith('.'):
+                    _logger.warning('Jump TEMP/HIDDEN file: %s' % fullname)
+                    continue
+                    
+                if file_mode_code not in file_mode: # Not imported
+                    _logger.warning('Jump METEL file: %s (not in %s)' % (
+                        fullname, file_mode,
+                        ))
+                    continue    
+
+                timestamp = self.get_modify_date(fullname)                
+                if fullname in odoo_files:
+                    # Update and check
+                    record = odoo_files[fullname]
+                    if record.timestamp != timestamp:
+                        # reload delete record timestamp!
+                        file_pool.wf_force_reload(
+                            cr, uid, [record.id], context=context)
+                else:
+                    file_pool.create(cr, uid, {
+                        'name': filename.upper(),
+                        'fullname': fullname,
+                        'init': timestamp,
+                        'datetime': timestamp,
+                        #'timestamp': timestamp_value, # will be reloaded!
+                        #'log': fields.text('Log', help='Log last import event'),
+                        #'state'
+                        }, context=context)
+
+            break # only master folder
         return True
     
     def schedule_import_pricelist_action(self, cr, uid, verbose=True, 
@@ -111,6 +196,9 @@ class MetelBase(orm.Model):
         # Pool used:
         product_pool = self.pool.get('product.product') 
         category_pool = self.pool.get('product.category')
+
+        # Update record from folder:
+        self.update_file_record_from_folder(cr, uid, ids, context=context)
 
         # --------------------------------------------------------------------- 
         # Read parameter
@@ -151,16 +239,6 @@ class MetelBase(orm.Model):
         now = '%s' % datetime.now()
         now = now.replace('-', '_').replace(':', '.').replace('/', '.')
 
-        # Mode list for file:        
-        file_mode = [
-            'LSP', # 1. Public pricelist
-            'FST', # 2. Statistic family
-            'FSC', # 3. Discount family
-            #'LSG', #Reseller pricelist
-            #'RIC', #Recode
-            #'BAR', #Barcode
-            ]
-        
         # Currency database:    
         currency_db = self.load_parse_text_currency(cr, uid, context=context)
         uom_db = self.load_parse_text_uom(cr, uid, context=context)

@@ -6,14 +6,16 @@
             <field name="name">metel.producer.file.tree</field>
             <field name="model">metel.producer.file</field>
             <field name="arch" type="xml">
-                <tree string="Metel files" colors="grey:state=='obsolete';green:state=='updated';red:state=='wrong';blue:state=='forced';yellow:state=='draft'">
+                <tree string="Metel files" colors="grey:state=='obsolete';green:state=='updated';red:state=='wrong';blue:state=='forced';orange:state=='draft'">
                     <field name="name" />
-                    <field name="timestamp" />
+                    <field name="init" readonly="1" />
                     <field name="datetime" />
+                    <field name="timestamp" />
                     <field name="state" />
-                    <button name="wf_force_reload" string="Force reload" type="object" attrs="{'invisible': [('state','not in',('updated',))]}"/>
-                    <button name="wf_set_obsolete" string="Obsolete" type="object" attrs="{'invisible': [('state','not in',('obsolete','wrong',))]}"/>
-                    <button name="wf_set_draft" string="Restart" type="object" attrs="{'invisible': [('state','not in',('draft',))]}"/>
+                    
+                    <button name="wf_force_reload" string="Force reload" type="object" attrs="{'invisible': [('state','in',('draft',))]}" icon="gtk-refresh" />
+                    <button name="wf_mark_updated" string="Mark updated" type="object" attrs="{'invisible': [('state','not in',('draft',))]}" icon="gtk-ok" />
+                    <button name="wf_set_obsolete" string="Obsolete" type="object" attrs="{'invisible': [('state','in',('obsolete','wrong',))]}" icon="gtk-no"/>
                 </tree>
             </field>
         </record>
@@ -23,16 +25,19 @@
             <field name="arch" type="xml">
                 <form string="Metel files">
                     <header>
-                        <button name="wf_force_reload" string="Force reload" type="object" attrs="{'invisible': [('state','not in',('updated',))]}"/>
-                        <button name="wf_set_obsolete" string="Obsolete" type="object" attrs="{'invisible': [('state','not in',('obsolete','wrong',))]}"/>
-                        <button name="wf_set_draft" string="Restart" type="object" attrs="{'invisible': [('state','not in',('draft',))]}"/>
+                        <button name="wf_force_reload" string="Force reload" type="object" attrs="{'invisible': [('state','in',('draft',))]}" icon="gtk-refresh" />
+                        <button name="wf_mark_updated" string="Mark updated" type="object" attrs="{'invisible': [('state','not in',('draft',))]}" icon="gtk-ok" />
+                        <button name="wf_set_obsolete" string="Obsolete" type="object" attrs="{'invisible': [('state','in',('obsolete','wrong',))]}" icon="gtk-no"/>
+                        <field name="state" widget="statusbar"/>
+                    
                     </header>
                     <sheet>
                         <group colspan="4" col="4">
                             <field name="name" readonly="1"/>
-                            <field name="timestamp" readonly="1" />
+                            <field name="init" readonly="1" />
                             <field name="datetime" readonly="1" />
-                            <field name="state" readonly="1" />
+                            <field name="timestamp" readonly="1" />
+                            <field name="fullname" colspan="4" readonly="1" />
                             <separator string="Log" colspan="4" />
                             <field name="log" nolabel="1" colspan="4" readonly="1" />
                         </group>
@@ -64,7 +69,7 @@
                     <field name="electrocod_code" />
                     <field name="electrocod_start_char" />
                     <field name="electrocod_file" />
-                    <button name="force_init_load" string="Read file folder" type="object" icon="gtk-refresh" confirm="Reload files and mark as imported (init setup), confirm?" />
+                    <button name="update_file_record_from_folder" string="Update file record" type="object" icon="gtk-refresh" confirm="Reload files and set status from Metel folder, confirm?" />
                 </field>
             </field>
         </record>
