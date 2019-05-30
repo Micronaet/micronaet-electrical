@@ -58,8 +58,41 @@ class MetelProducerFile(orm.Model):
     _description = 'Metel file'
     _rec_name = 'name'
     _order = 'name'
-    
+
+    # -------------------------------------------------------------------------    
+    # Button event:
+    # -------------------------------------------------------------------------    
+    def dummy(self, cr, uid, ids, context=None):
+        """ dummy event
+        """       
+        return True    
+
+    def update_mode_this(self, cr, uid, ids, context=None):
+        ''' Launch update mode 
+        '''
+        param_pool = self.pool.get('metel.parameter')
+        if context is None:
+            context = {}
+        context['update_mode'] = ids # only this
+        return param_pool.schedule_import_pricelist_action(
+            cr, uid, verbose=True, context=context)
+
+    def update_mode_all(self, cr, uid, ids, context=None):
+        ''' Launch update mode 
+        '''        
+        param_pool = self.pool.get('metel.parameter')
+        if context is None:
+            context = {}
+        context['update_mode'] = self.search(cr, uid, [
+            ('state', '=', 'updated'),
+            ('force_update_mode', '!=', False),
+            ], context=context)
+        return param_pool.schedule_import_pricelist_action(
+            cr, uid, verbose=True, context=context)
+
+    # -------------------------------------------------------------------------    
     # Workflow event:
+    # -------------------------------------------------------------------------    
     def wf_force_reload(self, cr, uid, ids, context=None):
         ''' WF: Force button 
         '''
@@ -92,12 +125,18 @@ class MetelProducerFile(orm.Model):
 
     _columns = {
         'name': fields.char('Filename', size=80, required=True),
-        'fullname': fields.char('Fullname', size=200, required=True, 
+        'filename': fields.char('Filename', size=80, required=True, 
             help='Real file name in case sensitive!'),
+        'fullname': fields.char('Fullname', size=200, required=True, 
+            help='Real fullname in case sensitive!'),
         'timestamp': fields.datetime('Updated confirm'),
         'init': fields.datetime('Init timestamp'),
         'datetime': fields.datetime('Current timestamp'),
         'log': fields.text('Log', help='Log last import event'),
+        'force_update_mode': fields.selection([
+            ('uom', 'UOM'), # New files was found
+            ('price', 'Price'), # Update after import
+            ], 'Fast update'),
         'state': fields.selection([
             ('draft', 'New'), # New files was found
             ('updated', 'Updated'), # Update after import
@@ -107,6 +146,7 @@ class MetelProducerFile(orm.Model):
             ('obsolete', 'Obsolete or deleted'), # No more used
             ], 'State'),
         }
+
     _defaults = {
         'state': lambda *x: 'draft',
         }    
@@ -152,6 +192,7 @@ class MetelBase(orm.Model):
         # ---------------------------------------------------------------------
         # Read input master folder:
         # ---------------------------------------------------------------------
+        # TODO mark no mode present
         for root, dirs, files in os.walk(data_folder):
             for filename in files:
                 fullname = os.path.join(root, filename)          
@@ -175,9 +216,11 @@ class MetelBase(orm.Model):
                         # reload delete record timestamp!
                         file_pool.wf_force_reload(
                             cr, uid, [record.id], context=context)
+                    del(odoo_files[fullname]) # remove for check 
                 else:
                     file_pool.create(cr, uid, {
                         'name': filename.upper(),
+                        'filename': filename,
                         'fullname': fullname,
                         'init': timestamp,
                         'datetime': timestamp,
@@ -187,8 +230,14 @@ class MetelBase(orm.Model):
                         }, context=context)
 
             break # only master folder
+            
+        # Update no more present files:
+        if odoo_files:
+            file_pool.wf_set_obsolete(cr, uid, [
+                record.id for record in odoo_files.values()], context=context)
+                
         return True
-    
+
     def schedule_import_pricelist_action(self, cr, uid, verbose=True, 
             context=None):
         ''' Schedule import of pricelist METEL
@@ -196,9 +245,10 @@ class MetelBase(orm.Model):
         # Pool used:
         product_pool = self.pool.get('product.product') 
         category_pool = self.pool.get('product.category')
+        file_pool = self.pool.get('metel.producer.file')
 
         # Update record from folder:
-        self.update_file_record_from_folder(cr, uid, ids, context=context)
+        self.update_file_record_from_folder(cr, uid, False, context=context)
 
         # --------------------------------------------------------------------- 
         # Read parameter
@@ -207,11 +257,6 @@ class MetelBase(orm.Model):
         param_ids = self.search(cr, uid, [], context=context)
         param_proxy = self.browse(cr, uid, param_ids, context=context)[0]
 
-        # 3 folder used:
-        data_folder = os.path.expanduser(param_proxy.root_data_folder)
-        history_folder = os.path.expanduser(param_proxy.root_history_folder)
-        log_folder = os.path.expanduser(param_proxy.root_log_folder)
-        
         # Electrocod data:
         electrocod_code = param_proxy.electrocod_code
         electrocod_start_char = param_proxy.electrocod_start_char
@@ -231,15 +276,12 @@ class MetelBase(orm.Model):
                 Setup Electrocod parameter for get correct management!
                 (no group Electrocod structure created, no association with 
                 product created)''')
+        
         # If not fount Code category (new code) use a missed one!        
         missed_id = category_pool.get_electrocod_category(
             cr, uid, code='NOTFOUND', context=context)        
                 
-        # Now for name log:
-        now = '%s' % datetime.now()
-        now = now.replace('-', '_').replace(':', '.').replace('/', '.')
-
-        # Currency database:    
+        # Linked object DB:
         currency_db = self.load_parse_text_currency(cr, uid, context=context)
         uom_db = self.load_parse_text_uom(cr, uid, context=context)
         
@@ -247,384 +289,348 @@ class MetelBase(orm.Model):
         # Import procecedure:
         # --------------------------------------------------------------------- 
         # 1. Loop pricelist folder:
-        created_group = []
-        for root, dirs, files in os.walk(data_folder):
-            for filename in files:
-                logger = [] # List of error (reset every file)
-                                
-                # Parse filename:
-                file_producer_code = filename[:3]
-                file_mode_code = filename[3:6]
-                # TODO version?
-                currency = (filename.split('.')[0])[6:]
-                metel_producer_id = category_pool.get_create_producer_group(
-                    cr, uid, file_producer_code, file_producer_code,
-                    context=context)
-                fullname = os.path.join(root, filename)                
+        created_group = []        
+        file_ids = file_pool.search(cr, uid, [
+            ('state', '=', 'draft'),
+            ('timestamp', '=', False),
+            ], context=context)
 
-                # Jump temp and hidden file:
-                if filename.endswith('~') or filename.startswith('.'):
+        for record in file_pool.browse(cr, uid, file_ids, context=context):
+            logger = [] # List of error (reset every file)
+            filename = record.filename
+            fullname = record.fullname
+                            
+            # Parse filename:
+            file_producer_code = filename[:3]
+            file_mode_code = filename[3:6]
+
+            # TODO version?
+            currency = (filename.split('.')[0])[6:]
+            metel_producer_id = category_pool.get_create_producer_group(
+                cr, uid, file_producer_code, file_producer_code,
+                context=context)
+
+            if verbose:
+                _logger.info('Read METEL file: %s' % fullname)
+
+            i = upd = new = 0
+            uom_missed = []
+            f_metel = open(fullname, 'r')
+            line_len = 0
+            for line in f_metel:
+                i += 1
+                # ---------------------------------------------------------
+                # Header:
+                # ---------------------------------------------------------
+                if i == 1:
                     if verbose:
-                        _logger.info('Jump TEMP/HIDDEN file: %s' % fullname)
+                        _logger.info('%s. Read header METEL' % i)
+                    # TODO
                     continue
-                    
-                if file_mode_code not in file_mode:
-                    if verbose:
-                        _logger.info('Jump METEL file: %s (not in %s)' % (
-                            fullname, file_mode,
-                            ))
-                    continue    
-                    
-                if verbose:
-                    _logger.info('Read METEL file: %s' % fullname)
-
-                i = upd = new = 0
-                uom_missed = []
-                f_metel = open(fullname, 'r')
-                line_len = 0
-                for line in f_metel:
-                    i += 1
-                    # ---------------------------------------------------------
-                    # Header:
-                    # ---------------------------------------------------------
-                    if i == 1:
-                        if verbose:
-                            _logger.info('%s. Read header METEL' % i)
-                        # TODO
-                        continue
-                    
-                    # Check len line:    
-                    if not line_len:
-                        line_len = len(line)
-                    if line_len != len(line):
-                        if verbose:
-                            _logger.error(
-                                '%s. Different lenght: %s' % (i, line_len))
-                        continue
-                    
-                    # ---------------------------------------------------------
-                    #                    MODE: LSP (Pricelist full)
-                    # ---------------------------------------------------------
-                    if file_mode_code == 'LSP':                    
-                        # Data row:
-                        brand_code = self.parse_text(
-                            line[0:3], logger=logger) # TODO create also category
-                        default_code = self.parse_text(
-                            line[3:19], logger=logger)
-                        ean13 = self.parse_text(
-                            line[19:32], logger=logger)
-                        name = self.parse_text(
-                            line[32:75], logger=logger)
-                        metel_q_x_pack = self.parse_text(
-                            line[75:80], logger=logger)
-                        metel_order_lot = self.parse_text_number(
-                            line[80:85], logger=logger)
-                        metel_order_min = self.parse_text_number(
-                            line[85:90], logger=logger)
-                        metel_order_max = self.parse_text_number(
-                            line[90:96], logger=logger)
-                        metel_leadtime = self.parse_text_number(
-                            line[96:97], logger=logger)
-                        # reseller price:    
-                        lst_price = self.parse_text_number(
-                            line[97:108], 2, logger=logger) 
-                        # public price:    
-                        metel_list_price = self.parse_text_number(
-                            line[108:119], 2, logger=logger) 
-                        metel_multi_price = self.parse_text_number(
-                            line[119:125], logger=logger)
-                        currency = self.parse_text(
-                            line[125:128], logger=logger)
-                        uom = self.parse_text(
-                            line[128:131], logger=logger)
-                        metel_kit = self.parse_text_boolean(
-                            line[131:132], logger=logger)     
-                        metel_state = self.parse_text(
-                            line[132:133], logger=logger)
-                        metel_last_variation = self.parse_text_date(
-                            line[133:141], logger=logger)
-                        metel_discount = self.parse_text(
-                            line[141:159], logger=logger)
-                        metel_statistic = self.parse_text(
-                            line[159:177], logger=logger)
-                        metel_electrocod = self.parse_text(
-                            line[177:197], logger=logger)
-                        
-                        # Alternate value for EAN code:
-                        metel_alternate_barcode = self.parse_text(
-                            line[197:232], logger=logger)
-                        metel_alternate_barcode_type = self.parse_text(
-                            line[232:233], logger=logger)
-                        
-                        # Code = PRODUCER || CODE
-                        default_code = '%s%s' % (brand_code, default_code)
-                        
-                        # Manage multi price value:
-                        if metel_multi_price > 1:
-                            metel_list_price /= metel_multi_price
-                            lst_price /= metel_multi_price
-
-                        # TODO use currency    
-                        # Category with Electrocod:
-                        if metel_electrocod:
-                            categ_id = electrocod_db.get(
-                                metel_electrocod, missed_id)                    
-                        else:    
-                            categ_id = missed_id 
-                            
-                        # Create brand group:
-                        if (file_producer_code, brand_code) in created_group: 
-                            metel_brand_id = created_group[
-                                (file_producer_code, brand_code)]
-                        else:
-                            metel_brand_id = \
-                                category_pool.get_create_brand_group(
-                                    cr, uid, file_producer_code, brand_code, 
-                                    brand_code, 
-                                    # name = code (modify in anagraphic)
-                                    context=context)
-
-                        # UOM manage:
-                        uom_id = uom_db.get(uom, False)
-                        if not uom_id and uom not in uom_missed: # Log missed
-                            uom_missed.append(uom)
-
-                        # -----------------------------------------------------
-                        # Create record data:
-                        # -----------------------------------------------------
-                        # Master data:                        
-                        data = {
-                            'is_metel': True,
-                            'metel_auto': True,
-                            'default_code': default_code,
-                            
-                            'metel_producer_id': metel_producer_id,
-                            'metel_brand_id': metel_brand_id,                                                
-                            'metel_producer_code': file_producer_code,
-                            'metel_brand_code': brand_code,
-                            'metel_uom': uom,
-
-                            'ean13': ean13,
-                            'name': name,
-                            'categ_id': categ_id,
-                            'lst_price': lst_price,
-                            'type': 'product', 
-                            'metel_q_x_pack': metel_q_x_pack,
-                            'metel_order_lot': metel_order_lot,
-                            'metel_order_min': metel_order_min,
-                            'metel_order_max': metel_order_max,
-                            'metel_leadtime': metel_leadtime,
-                            'metel_multi_price': metel_multi_price,    
-                            'metel_list_price': metel_list_price,
-                            'metel_kit': metel_kit,
-                            'metel_state': metel_state,
-                            'metel_last_variation': metel_last_variation,
-                            'metel_discount': metel_discount,
-                            'metel_statistic': metel_statistic,                        
-                            'metel_electrocod': metel_electrocod,
-                            'metel_alternate_barcode': 
-                                metel_alternate_barcode,
-                            'metel_alternate_barcode_type': 
-                                metel_alternate_barcode_type,
-                            }
-                            
-                        # TODO Extra data: discount management for price?    
-                        # -----------------------------------------------------
-                        # Update database:
-                        # -----------------------------------------------------
-                        product_ids = product_pool.search(cr, uid, [
-                             ('default_code','=', default_code),
-                             # Not necessary, code has brand code in it
-                             #('metel_brand_code', '=', brand_code),
-                             ], context=context)
-
-                        if product_ids: 
-                            #`TODO update forced UM:
-                            #update_force_uom_id(
-                            #    cr, uid, ids, uom_id, context=context)
-                            try:
-                                product_pool.write(
-                                    cr, uid, product_ids, data, 
-                                    context=context)
-                                # XXX UOM not updated:
-                            except:
-                                logger.append(
-                                    _('Error updating: %s' % default_code))
-                                continue
-                            if verbose:
-                                upd += 1
-                                _logger.info('%s. Update %s' % (
-                                    i, default_code))
-                        else:        
-                            data['uom_id'] = uom_id
-                            try:
-                                product_pool.create(
-                                    cr, uid, data, context=context)
-                            except:
-                                logger.append(
-                                    _('Error updating: %s' % default_code))
-                                continue
-                            if verbose:
-                                new += 1
-                                _logger.info('%s. Create %s' % (
-                                    i, default_code))
-
-                    # ---------------------------------------------------------
-                    #                    MODE: FST (Statistic family)
-                    # ---------------------------------------------------------
-                    elif file_mode_code in ('FST', 'FSC'):
-                        if file_mode_code == 'FST':
-                            field = 'metel_statistic'
-                            field_id = 'metel_statistic_id'
-                            metel_mode = 'statistic'
-                        else:
-                            field = 'metel_discount'
-                            field_id = 'metel_discount_id'
-                            metel_mode = 'discount'
-                                
-                        # Data row:
-                        producer_code = self.parse_text(
-                            line[0:3], logger=logger)
-                        brand_code = self.parse_text(
-                            line[3:6], logger=logger)
-                        metel_code = self.parse_text(
-                            line[6:24], logger=logger)
-                        name = self.parse_text(
-                            line[24:], logger=logger)
-                        
-                        # -----------------------------------------------------
-                        # Create producer > brand groups:
-                        # -----------------------------------------------------
-                        if (file_producer_code, brand_code) in created_group: 
-                            metel_brand_id = created_group[
-                                (file_producer_code, brand_code)]
-                        else:
-                            metel_brand_id = \
-                                category_pool.get_create_brand_group(
-                                    cr, uid, file_producer_code, brand_code, 
-                                    brand_code, context=context)
-                        
-                        # -----------------------------------------------------
-                        # Crete or get statistic/discount category:            
-                        # -----------------------------------------------------
-                        category_ids = category_pool.search(cr, uid, [
-                            ('parent_id', '=', metel_brand_id),
-                            (field, '=', metel_code),
-                            ], context=context)
-                        data = {
-                            'parent_id': metel_brand_id,
-                            field: metel_code,
-                            'name': name,
-                            'metel_mode': metel_mode,
-                            }    
-                        if category_ids:
-                            metel_code_id = category_ids[0]    
-                            category_pool.write(
-                                cr, uid, category_ids, data, context=context)
-                        else:
-                            metel_code_id = category_pool.create(
-                                cr, uid, data, context=context)
-                                
-                        # -----------------------------------------------------
-                        # Update product of this category with serie:
-                        # -----------------------------------------------------
-                        product_ids = product_pool.search(cr, uid, [
-                            ('metel_producer_code', '=', producer_code),
-                            ('metel_brand_code', '=', brand_code),                            
-                            (field, '=', metel_code),
-                            (field_id, '!=', metel_code_id),
-                            ], context=context)
-                            
-                        data = {field_id: metel_code_id, }
-                        
-                        # Update series fron statistic (if FST)
-                        if file_mode_code == 'FST':
-                            metel_statistic_proxy = category_pool.browse(
-                                cr, uid, metel_code_id, context=context)
-                            if metel_statistic_proxy.metel_serie_id:
-                                data['metel_serie_id'] = \
-                                    metel_statistic_proxy.metel_serie_id.id
-    
-                        product_pool.write(cr, uid, product_ids, data, 
-                            context=context)    
-
-                        if verbose:
-                            _logger.info('%s. Update # %s with %s' % (
-                                i, len(product_ids), metel_code))
-
-                    # ---------------------------------------------------------
-                    #                    MODE: UNMANAGED!
-                    # ---------------------------------------------------------
-                    else:
-                        if verbose:
-                            _logger.info(
-                                'Unmanaged file code: %s' % file_mode_code)
-                                                
-                # -------------------------------------------------------------
-                #                      COMMON PART:
-                # -------------------------------------------------------------
-                f_metel.close()
                 
-                # -------------------------------------------------------------
-                # History log file
-                # -------------------------------------------------------------
-                if history_folder:
-                    history_fullname = os.path.join(
-                        history_folder, 
-                        '%s.%s' % (now, filename)
-                        )
-                    shutil.move(fullname, history_fullname) 
+                # Check len line:    
+                if not line_len:
+                    line_len = len(line)
+                if line_len != len(line):
+                    if verbose:
+                        _logger.error(
+                            '%s. Different lenght: %s' % (i, line_len))
+                    continue
+                
+                # ---------------------------------------------------------
+                #                    MODE: LSP (Pricelist full)
+                # ---------------------------------------------------------
+                if file_mode_code == 'LSP':                    
+                    # Data row:
+                    brand_code = self.parse_text(
+                        line[0:3], logger=logger) # TODO create also category
+                    default_code = self.parse_text(
+                        line[3:19], logger=logger)
+                    ean13 = self.parse_text(
+                        line[19:32], logger=logger)
+                    name = self.parse_text(
+                        line[32:75], logger=logger)
+                    metel_q_x_pack = self.parse_text(
+                        line[75:80], logger=logger)
+                    metel_order_lot = self.parse_text_number(
+                        line[80:85], logger=logger)
+                    metel_order_min = self.parse_text_number(
+                        line[85:90], logger=logger)
+                    metel_order_max = self.parse_text_number(
+                        line[90:96], logger=logger)
+                    metel_leadtime = self.parse_text_number(
+                        line[96:97], logger=logger)
+                    # reseller price:    
+                    lst_price = self.parse_text_number(
+                        line[97:108], 2, logger=logger) 
+                    # public price:    
+                    metel_list_price = self.parse_text_number(
+                        line[108:119], 2, logger=logger) 
+                    metel_multi_price = self.parse_text_number(
+                        line[119:125], logger=logger)
+                    currency = self.parse_text(
+                        line[125:128], logger=logger)
+                    uom = self.parse_text(
+                        line[128:131], logger=logger)
+                    metel_kit = self.parse_text_boolean(
+                        line[131:132], logger=logger)     
+                    metel_state = self.parse_text(
+                        line[132:133], logger=logger)
+                    metel_last_variation = self.parse_text_date(
+                        line[133:141], logger=logger)
+                    metel_discount = self.parse_text(
+                        line[141:159], logger=logger)
+                    metel_statistic = self.parse_text(
+                        line[159:177], logger=logger)
+                    metel_electrocod = self.parse_text(
+                        line[177:197], logger=logger)
+                    
+                    # Alternate value for EAN code:
+                    metel_alternate_barcode = self.parse_text(
+                        line[197:232], logger=logger)
+                    metel_alternate_barcode_type = self.parse_text(
+                        line[232:233], logger=logger)
+                    
+                    # Code = PRODUCER || CODE
+                    default_code = '%s%s' % (brand_code, default_code)
+                    
+                    # Manage multi price value:
+                    if metel_multi_price > 1:
+                        metel_list_price /= metel_multi_price
+                        lst_price /= metel_multi_price
+
+                    # TODO use currency    
+                    # Category with Electrocod:
+                    if metel_electrocod:
+                        categ_id = electrocod_db.get(
+                            metel_electrocod, missed_id)                    
+                    else:    
+                        categ_id = missed_id 
+                        
+                    # Create brand group:
+                    if (file_producer_code, brand_code) in created_group: 
+                        metel_brand_id = created_group[
+                            (file_producer_code, brand_code)]
+                    else:
+                        metel_brand_id = \
+                            category_pool.get_create_brand_group(
+                                cr, uid, file_producer_code, brand_code, 
+                                brand_code, 
+                                # name = code (modify in anagraphic)
+                                context=context)
+
+                    # UOM manage:
+                    uom_id = uom_db.get(uom, False)
+                    if not uom_id and uom not in uom_missed: # Log missed
+                        uom_missed.append(uom)
+
+                    # -----------------------------------------------------
+                    # Create record data:
+                    # -----------------------------------------------------
+                    # Master data:                        
+                    data = {
+                        'is_metel': True,
+                        'metel_auto': True,
+                        'default_code': default_code,
+                        
+                        'metel_producer_id': metel_producer_id,
+                        'metel_brand_id': metel_brand_id,                                                
+                        'metel_producer_code': file_producer_code,
+                        'metel_brand_code': brand_code,
+                        'metel_uom': uom,
+
+                        'ean13': ean13,
+                        'name': name,
+                        'categ_id': categ_id,
+                        'lst_price': lst_price,
+                        'type': 'product', 
+                        'metel_q_x_pack': metel_q_x_pack,
+                        'metel_order_lot': metel_order_lot,
+                        'metel_order_min': metel_order_min,
+                        'metel_order_max': metel_order_max,
+                        'metel_leadtime': metel_leadtime,
+                        'metel_multi_price': metel_multi_price,    
+                        'metel_list_price': metel_list_price,
+                        'metel_kit': metel_kit,
+                        'metel_state': metel_state,
+                        'metel_last_variation': metel_last_variation,
+                        'metel_discount': metel_discount,
+                        'metel_statistic': metel_statistic,                        
+                        'metel_electrocod': metel_electrocod,
+                        'metel_alternate_barcode': 
+                            metel_alternate_barcode,
+                        'metel_alternate_barcode_type': 
+                            metel_alternate_barcode_type,
+                        }
+                        
+                    # TODO Extra data: discount management for price?    
+                    # -----------------------------------------------------
+                    # Update database:
+                    # -----------------------------------------------------
+                    product_ids = product_pool.search(cr, uid, [
+                         ('default_code','=', default_code),
+                         # Not necessary, code has brand code in it
+                         #('metel_brand_code', '=', brand_code),
+                         ], context=context)
+
+                    if product_ids: 
+                        #`TODO update forced UM:
+                        #update_force_uom_id(
+                        #    cr, uid, ids, uom_id, context=context)
+                        try:
+                            product_pool.write(
+                                cr, uid, product_ids, data, 
+                                context=context)
+                            # XXX UOM not updated:
+                        except:
+                            logger.append(
+                                _('Error updating: %s' % default_code))
+                            continue
+                        if verbose:
+                            upd += 1
+                            _logger.info('%s. Update %s' % (
+                                i, default_code))
+                    else:        
+                        data['uom_id'] = uom_id
+                        try:
+                            product_pool.create(
+                                cr, uid, data, context=context)
+                        except:
+                            logger.append(
+                                _('Error updating: %s' % default_code))
+                            continue
+                        if verbose:
+                            new += 1
+                            _logger.info('%s. Create %s' % (
+                                i, default_code))
+
+                # ---------------------------------------------------------
+                #                    MODE: FST (Statistic family)
+                # ---------------------------------------------------------
+                elif file_mode_code in ('FST', 'FSC'):
+                    if file_mode_code == 'FST':
+                        field = 'metel_statistic'
+                        field_id = 'metel_statistic_id'
+                        metel_mode = 'statistic'
+                    else:
+                        field = 'metel_discount'
+                        field_id = 'metel_discount_id'
+                        metel_mode = 'discount'
+                            
+                    # Data row:
+                    producer_code = self.parse_text(
+                        line[0:3], logger=logger)
+                    brand_code = self.parse_text(
+                        line[3:6], logger=logger)
+                    metel_code = self.parse_text(
+                        line[6:24], logger=logger)
+                    name = self.parse_text(
+                        line[24:], logger=logger)
+                    
+                    # -----------------------------------------------------
+                    # Create producer > brand groups:
+                    # -----------------------------------------------------
+                    if (file_producer_code, brand_code) in created_group: 
+                        metel_brand_id = created_group[
+                            (file_producer_code, brand_code)]
+                    else:
+                        metel_brand_id = \
+                            category_pool.get_create_brand_group(
+                                cr, uid, file_producer_code, brand_code, 
+                                brand_code, context=context)
+                    
+                    # -----------------------------------------------------
+                    # Crete or get statistic/discount category:            
+                    # -----------------------------------------------------
+                    category_ids = category_pool.search(cr, uid, [
+                        ('parent_id', '=', metel_brand_id),
+                        (field, '=', metel_code),
+                        ], context=context)
+                    data = {
+                        'parent_id': metel_brand_id,
+                        field: metel_code,
+                        'name': name,
+                        'metel_mode': metel_mode,
+                        }    
+                    if category_ids:
+                        metel_code_id = category_ids[0]    
+                        category_pool.write(
+                            cr, uid, category_ids, data, context=context)
+                    else:
+                        metel_code_id = category_pool.create(
+                            cr, uid, data, context=context)
+
+                    # -----------------------------------------------------
+                    # Update product of this category with serie:
+                    # -----------------------------------------------------
+                    product_ids = product_pool.search(cr, uid, [
+                        ('metel_producer_code', '=', producer_code),
+                        ('metel_brand_code', '=', brand_code),                            
+                        (field, '=', metel_code),
+                        (field_id, '!=', metel_code_id),
+                        ], context=context)
+                        
+                    data = {field_id: metel_code_id, }
+                    
+                    # Update series fron statistic (if FST)
+                    if file_mode_code == 'FST':
+                        metel_statistic_proxy = category_pool.browse(
+                            cr, uid, metel_code_id, context=context)
+                        if metel_statistic_proxy.metel_serie_id:
+                            data['metel_serie_id'] = \
+                                metel_statistic_proxy.metel_serie_id.id
+
+                    product_pool.write(cr, uid, product_ids, data, 
+                        context=context)    
+
+                    if verbose:
+                        _logger.info('%s. Update # %s with %s' % (
+                            i, len(product_ids), metel_code))
+
+                # ---------------------------------------------------------
+                #                    MODE: UNMANAGED!
+                # ---------------------------------------------------------
+                else:
                     if verbose:
                         _logger.info(
-                            _('History imported file: %s >> %s') % (
-                                fullname, history_fullname))
-                else:
-                    logger.append(
-                        _('No history folder setup for move imported'))
+                            'Unmanaged file code: %s' % file_mode_code)
+                                            
+            # -------------------------------------------------------------
+            #                      COMMON PART:
+            # -------------------------------------------------------------
+            f_metel.close()
+            
+            # -------------------------------------------------------------
+            # Log operation
+            # -------------------------------------------------------------
+            # Add extra log for UOM:
+            if uom_missed:
+                logger.append(_('Missed UOM code: %s') % uom_missed)
+            
+            # Write log status if present:
+            if logger:
+                file_pool.write(cr, uid, [record.id], {
+                    'log': '\n'.join(tuple(logger))
+                    }, context=context)
+            
+            # Mark as updated:
+            file_pool.wf_mark_updated(cr, uid, [record.id], context=context)
+            
+            # -------------------------------------------------------------
+            # System log operation:
+            # -------------------------------------------------------------
+            if verbose:
+                _logger.info(
+                    'File: %s record: %s [UPD %s NEW %s]' % (
+                        filename, i, upd, new,
+                        ))
+                _logger.info('UOM missed [%s]' % (uom_missed, ))                    
 
-                # -------------------------------------------------------------
-                # Log operation
-                # -------------------------------------------------------------
-                # Add extra log for UOM:
-                if uom_missed:
-                    logger.append(_('Missed UOM code: %s') % uom_missed)
-                
-                # Write operation:    
-                if logger:
-                    if log_folder:
-                        log_file = os.path.join(
-                            log_folder, 
-                            '%s.%s' % (now, filename)
-                            )
-                        f_log = open(log_file, 'w')
-                        for line in logger:
-                            f_log.write(u'%s\n' % line)
-                        f_log.close()    
-                    else:    
-                        if verbose:
-                            _logger.info(
-                                _('Log folder not present!\nError: %s') % (
-                                    logger))
-                                    
-                # -------------------------------------------------------------
-                # System log operation:
-                # -------------------------------------------------------------
-                if verbose:
-                    _logger.info(
-                        'File: %s record: %s [UPD %s NEW %s]' % (
-                            filename, i, upd, new,
-                            ))
-                    _logger.info('UOM missed [%s]' % (uom_missed, ))                    
-            break # only files in first root folder            
         return True
         
     _columns = {
         'root_data_folder': fields.char('Root folder', size=120, 
             help='~/.filestore/metel'),
-        'root_history_folder': fields.char('History folder', size=120,
-            help='~/.filestore/metel/history'),
-        'root_log_folder': fields.char('Log folder', size=120,
-            help='~/.filestore/metel/log (every import create log)'),
 
         'electrocod_code': fields.char('Code', size=20,
             help='Name and code for first root group'),

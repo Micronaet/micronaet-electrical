@@ -8,14 +8,35 @@
             <field name="arch" type="xml">
                 <tree string="Metel files" colors="grey:state=='obsolete';green:state=='updated';red:state=='wrong';blue:state=='forced';orange:state=='draft'">
                     <field name="name" />
-                    <field name="init" readonly="1" />
+                    <field name="init"  />
                     <field name="datetime" />
                     <field name="timestamp" />
+                    <field name="log" invisible="1" />
+                    <field name="force_update_mode" />
                     <field name="state" />
                     
+                    <button name="dummy" string="Log message present" type="object" icon="gtk-dialog-warning" attrs="{'invisible': [('log','=',False)]}" />
                     <button name="wf_force_reload" string="Force reload" type="object" attrs="{'invisible': [('state','in',('draft',))]}" icon="gtk-refresh" />
                     <button name="wf_mark_updated" string="Mark updated" type="object" attrs="{'invisible': [('state','not in',('draft',))]}" icon="gtk-ok" />
                     <button name="wf_set_obsolete" string="Obsolete" type="object" attrs="{'invisible': [('state','in',('obsolete','wrong',))]}" icon="gtk-no"/>
+                </tree>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="view_metel_producer_file_update_mode_tree">
+            <field name="name">metel.producer.file.tree</field>
+            <field name="model">metel.producer.file</field>
+            <field name="priority" eval="40" />
+            <field name="arch" type="xml">
+                <tree string="Metel files" colors="grey:state=='obsolete';green:state=='updated';red:state=='wrong';blue:state=='forced';orange:state=='draft'" editable="bottom">
+                    <field name="name" readonly="1" />
+                    <field name="init" readonly="1" />
+                    <field name="datetime" readonly="1"/>
+                    <field name="timestamp" readonly="1"/>
+                    <field name="log" invisible="1" />
+                    <field name="force_update_mode" />
+                    <field name="state" readonly="1"/>
+                    <button name="update_mode_this" string="Force update mode this" type="object" icon="gtk-ok" />
+                    <button name="update_mode_all" string="Force update mode all" type="object" icon="gtk-refresh" />
                 </tree>
             </field>
         </record>
@@ -38,6 +59,7 @@
                             <field name="datetime" readonly="1" />
                             <field name="timestamp" readonly="1" />
                             <field name="fullname" colspan="4" readonly="1" />
+                            <field name="force_update_mode" />
                             <separator string="Log" colspan="4" />
                             <field name="log" nolabel="1" colspan="4" readonly="1" />
                         </group>
@@ -54,6 +76,15 @@
             <field name="context">{}</field>
             <field name="domain">[]</field>
         </record>
+        <record model="ir.actions.act_window" id="action_metel_producer_file_update_form">
+            <field name="name">METEL files update mode</field>
+            <field name="res_model">metel.producer.file</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_metel_producer_file_update_mode_tree"/>
+            <field name="context">{}</field>
+            <field name="domain">[('state', '=', 'updated')]</field>
+        </record>
         
         <!--metel.parameter-->
         <record model="ir.ui.view" id="view_metel_parameter_path_tree">
@@ -63,8 +94,6 @@
             <field name="arch" type="xml">
                 <field name="company_id" position="after">
                     <field name="root_data_folder" />
-                    <field name="root_history_folder" />
-                    <field name="root_log_folder" />
                     
                     <field name="electrocod_code" />
                     <field name="electrocod_start_char" />
@@ -95,12 +124,19 @@
             </field>
         </record>    
 
-            <menuitem 
-                parent="metel_base.menu_action_metel_root_config" 
-                id="menu_metel_producer_file" 
-                action="action_metel_producer_file_form"
-                sequence="10"
-                />
+        <menuitem 
+            parent="metel_base.menu_action_metel_root_config" 
+            id="menu_metel_producer_file" 
+            action="action_metel_producer_file_form"
+            sequence="10"
+            />
+
+        <menuitem 
+            parent="metel_base.menu_action_metel_root_config" 
+            id="menu_metel_producer_file_update_mode" 
+            action="action_metel_producer_file_update_form"
+            sequence="20"
+            />
         
     </data>
 </openerp>
