@@ -116,11 +116,8 @@ class MetelProducerFile(orm.Model):
     def wf_force_reload(self, cr, uid, ids, context=None):
         ''' WF: Force button 
         '''
-        #param_pool = self.pool.get('metel.parameter')
-        #timestamp = param_pool.get_modify_date(current.fullname)                
         return self.write(cr, uid, ids, {
             'state': 'draft',
-            #'datetime': timestamp,
             'timestamp': False, # Reset timestamp
             }, context=context)
             
