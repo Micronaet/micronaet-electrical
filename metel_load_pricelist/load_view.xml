@@ -31,6 +31,8 @@
             <field name="model">metel.producer.file</field>
             <field name="arch" type="xml">
                 <tree string="Metel files" colors="grey:state=='obsolete';green:state=='updated';red:state=='wrong';blue:state=='forced';orange:state=='draft'">
+                    <button name="standard_mode_this" string="Load this file only" type="object" attrs="{'invisible': [('state','not in',('draft',))]}" icon="gtk-refresh" comfirm="The produce load this document from file in ODOO, take some time, confirm?"/>
+                    <button name="standard_mode_all" string="Load all file only" type="object" attrs="{'invisible': [('state','not in',('draft',))]}" icon="gtk-refresh" comfirm="The produce load all draft document from file in ODOO, take much time, confirm?"/>
                     <field name="name" />
                     <field name="metel_type" />
                     <field name="init"  />
@@ -45,6 +47,7 @@
                     <button name="wf_force_reload" string="Force reload" type="object" attrs="{'invisible': [('state','in',('draft',))]}" icon="gtk-refresh" />
                     <button name="wf_mark_updated" string="Mark updated" type="object" attrs="{'invisible': [('state','not in',('draft',))]}" icon="gtk-ok" />
                     <button name="wf_set_obsolete" string="Obsolete" type="object" attrs="{'invisible': [('state','in',('obsolete','wrong',))]}" icon="gtk-no"/>
+                    
                 </tree>
             </field>
         </record>

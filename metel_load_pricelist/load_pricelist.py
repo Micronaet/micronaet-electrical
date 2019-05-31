@@ -57,6 +57,23 @@ class MetelProducerFile(orm.Model):
         """       
         return True    
 
+    def standard_mode_this(self, cr, uid, ids, context=None):
+        ''' Launch standard mode:
+        '''
+        param_pool = self.pool.get('metel.parameter')
+        if context is None:
+            context = {}
+        context['standard_mode'] = ids # only this
+        return param_pool.schedule_import_pricelist_action(
+            cr, uid, verbose=True, context=context)
+
+    def standard_mode_all(self, cr, uid, ids, context=None):
+        ''' Launch standard mode:
+        '''
+        param_pool = self.pool.get('metel.parameter')
+        return param_pool.schedule_import_pricelist_action(
+            cr, uid, verbose=True, context=context)
+        
     def update_mode_this(self, cr, uid, ids, context=None):
         ''' Launch update mode 
         '''
@@ -286,6 +303,7 @@ class MetelBase(orm.Model):
         # Read parameter
         # --------------------------------------------------------------------- 
         update_mode = context.get('update_mode', False) # list of record
+        standard_mode = context.get('standard_mode', False) # force list this
 
         # Database parameters:
         param_ids = self.search(cr, uid, [], context=context)
@@ -296,8 +314,7 @@ class MetelBase(orm.Model):
         # ---------------------------------------------------------------------
         electrocod_code = param_proxy.electrocod_code
         electrocod_start_char = param_proxy.electrocod_start_char
-        electrocod_file = param_proxy.electrocod_file
-        
+        electrocod_file = param_proxy.electrocod_file        
         
         if not update_mode and electrocod_code and electrocod_start_char and \
                 electrocod_file:
@@ -330,6 +347,7 @@ class MetelBase(orm.Model):
         if update_mode: # Selected for update request:
             _logger.warning('Update mode: %s' % (update_mode, ))
             file_ids = update_mode
+            _logger.warning('Update update files: %s' % (file_ids, ))
         else: # Selected record from file:
             # If not fount Code category (new code) use a missed one!        
             missed_id = category_pool.get_electrocod_category(
@@ -338,11 +356,17 @@ class MetelBase(orm.Model):
             # Update record from folder:
             self.update_file_record_from_folder(
                 cr, uid, False, context=context)
-            
-            file_ids = file_pool.search(cr, uid, [
-                ('state', '=', 'draft'),
-                ('timestamp', '=', False),
-                ], context=context)
+
+            if standard_mode:
+                _logger.warning(
+                    'Standard update forced one: %s' % (standard_mode, ))
+                file_ids = standard_mode # only this:
+            else:            
+                file_ids = file_pool.search(cr, uid, [
+                    ('state', '=', 'draft'),
+                    ('timestamp', '=', False),
+                    ], context=context)
+                _logger.warning('Standard update: %s' % (file_ids, ))
 
         for record in file_pool.browse(cr, uid, file_ids, context=context):
             logger = [] # List of error (reset every file)

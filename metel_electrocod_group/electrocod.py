@@ -114,7 +114,8 @@ class ProductCategory(orm.Model):
                 if line[0:1] not in no_name_start: # Part of name in new line                
                     part = ' ' + ' '.join(filter(
                         lambda x:x and x[:1] not in no_name_start, 
-                        line.split(' ')))
+                        '{}'.format(line.split(' '))))
+                        # line.split(' ')))
                     levels[level][code] += part
                     
                 continue # no data line
@@ -127,7 +128,8 @@ class ProductCategory(orm.Model):
             # Manage level:    
             # -----------------------------------------------------------------
             code = data[0].strip()
-            name = data[1].strip()
+            name = u'{}'.format(data[1].strip())
+            #name = data[1].strip()
 
             code_level = code.split('.')
             level = len(code_level)
@@ -139,7 +141,7 @@ class ProductCategory(orm.Model):
                 levels[level] = {}                
             levels[level][code] = name         
         f_code.close()
-
+        
         nodes = {
             # Master node has no code for search
             root_name: root_id, # Not used only for collect correct key
