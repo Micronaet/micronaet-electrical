@@ -1817,7 +1817,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             excel_pool.row_height(ws_name, (row, ), height=65)
             excel_pool.write_image(ws_name, row, 0, 
                 x_offset=0, y_offset=0, 
-                x_scale=0.3, y_scale=0.3, 
+                x_scale=0.25, y_scale=0.25, 
                 positioning=2,
                 filename=False, 
                 data=data_image, 
