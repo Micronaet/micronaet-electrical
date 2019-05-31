@@ -61,7 +61,7 @@ class MetelProducerFile(orm.Model):
     def total_record(self, fullname):
         ''' Total lines (-1 for header)
         '''        
-        total = sum(1 for line in open(fullname))
+        total = sum([1 for line in open(fullname)])
         if total: 
             return total - 1 # header
         else: 
