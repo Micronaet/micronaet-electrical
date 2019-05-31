@@ -59,7 +59,7 @@ class MetelProducerFile(orm.Model):
         return True    
 
     def total_record(self, fullname):
-        ''' Total lines
+        ''' Total lines (-1 for header)
         '''
         return 0
         #wc_data = subprocess.call(
