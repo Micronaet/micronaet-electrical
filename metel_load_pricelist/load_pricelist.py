@@ -254,7 +254,7 @@ class MetelBase(orm.Model):
 
                 timestamp = self.get_modify_date(fullname)                
                 dimension = os.path.getsize(fullname)
-                record = file_pool.total_record(fullname)
+                total_record = file_pool.total_record(fullname)
                 
                 if fullname in odoo_files:
                     # Update and check
@@ -270,7 +270,7 @@ class MetelBase(orm.Model):
                     file_pool.write(cr, uid, [record.id], {
                         'dimension': dimension,
                         'metel_type': metel_type, 
-                        'record': record,
+                        'record': total_record,
                         }, context=context)
                 else:
                     if metel_type in file_mode: # Will be used
@@ -285,7 +285,7 @@ class MetelBase(orm.Model):
                         'init': timestamp,
                         'datetime': timestamp,
                         'dimension': dimension,
-                        'record': record,
+                        'record': total_record,
                         'metel_type': metel_type, 
                         #'timestamp': timestamp_value, # will be reloaded!
                         #'log': fields.text('Log', help='Log last import event'),
