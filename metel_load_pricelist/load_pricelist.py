@@ -60,15 +60,12 @@ class MetelProducerFile(orm.Model):
 
     def total_record(self, fullname):
         ''' Total lines (-1 for header)
-        '''
-        return 0
-        #wc_data = subprocess.call(
-        #    'cat %s | wc' % fullname, stdout=subprocess.PIPE, shell=True)
-        #wc_text = ''    
-        #for line in wc_data.stdout:
-        #    wc_text += line
-        #wc_list = [item for item in wc_data.split() if item]
-        #return wc_list[0]
+        '''        
+        total = sum(1 for line in open(fullname))
+        if total: 
+            return total - 1 # header
+        else: 
+            return 0
 
     def standard_mode_this(self, cr, uid, ids, context=None):
         ''' Launch standard mode:
