@@ -109,11 +109,13 @@ class MetelProducerFile(orm.Model):
         '''
         current = self.browse(cr, uid, ids, context=context)
         param_pool = self.pool.get('metel.parameter')
-        timestamp = param_pool.get_modify_date(current.fullname)                
+        timestamp = param_pool.get_modify_date(current.fullname)        
+        dimension = os.path.getsize(current.fullname)        
         return self.write(cr, uid, ids, {
             'state': 'updated',
             'timestamp': timestamp,
             'datetime': timestamp,
+            'dimension': dimension,
             }, context=context)
             
     def wf_set_obsolete(self, cr, uid, ids, context=None):
@@ -132,6 +134,7 @@ class MetelProducerFile(orm.Model):
         'timestamp': fields.datetime('Updated confirm'),
         'init': fields.datetime('Init timestamp'),
         'datetime': fields.datetime('Current timestamp'),
+        'dimension': fields.integer('Dimension'),
         'log': fields.text('Log', help='Log last import event'),
         'force_update_mode': fields.selection([
             ('uom', 'UOM'), # New files was found
@@ -209,6 +212,7 @@ class MetelBase(orm.Model):
                     continue    
 
                 timestamp = self.get_modify_date(fullname)                
+                dimension = os.path.getsize(fullname)
                 if fullname in odoo_files:
                     # Update and check
                     record = odoo_files[fullname]
@@ -224,6 +228,7 @@ class MetelBase(orm.Model):
                         'fullname': fullname,
                         'init': timestamp,
                         'datetime': timestamp,
+                        'dimension': dimension,
                         #'timestamp': timestamp_value, # will be reloaded!
                         #'log': fields.text('Log', help='Log last import event'),
                         #'state'

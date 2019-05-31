@@ -233,7 +233,7 @@
         
         
         
-        <!--TODO RAISE ERROR!!!-->
+        <!--TODO RAISE ERROR!!!
         <record model="ir.ui.view" id="view_product_product_metel_page_tree">
             <field name="name">product.product.metel.tree</field>
             <field name="model">product.product</field>
@@ -250,7 +250,7 @@
                     <field name="metel_statistic_id" invisible="1"/>                       
                 </field>
             </field>
-        </record>
+        </record>-->
         
         
         

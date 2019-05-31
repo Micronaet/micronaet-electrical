@@ -9,6 +9,7 @@
                 <tree string="Metel files" colors="grey:state=='obsolete';green:state=='updated';red:state=='wrong';blue:state=='forced';orange:state=='draft'">
                     <field name="name" />
                     <field name="init"  />
+                    <field name="dimension" />
                     <field name="datetime" />
                     <field name="timestamp" />
                     <field name="log" invisible="1" />
@@ -30,6 +31,7 @@
                 <tree string="Metel files" colors="grey:state=='obsolete';green:state=='updated';red:state=='wrong';blue:state=='forced';orange:state=='draft'" editable="bottom">
                     <field name="name" readonly="1" />
                     <field name="init" readonly="1" />
+                    <field name="dimension" />
                     <field name="datetime" readonly="1"/>
                     <field name="timestamp" readonly="1"/>
                     <field name="log" invisible="1" />
