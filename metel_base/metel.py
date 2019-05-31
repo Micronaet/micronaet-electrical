@@ -490,7 +490,7 @@ class ProductProduct(orm.Model):
         'metel_order_lot': fields.integer('Order lot'),
         'metel_order_min': fields.integer('Order min'),
         'metel_order_max': fields.integer('Order max'),
-        'metel_leadtime': fields.integer('Order leadtime'),
+        'metel_leadtime': fields.char('Order leadtime', size=1),
         
         # Code:
         'metel_electrocod': fields.char('Electrocod', size=24),    

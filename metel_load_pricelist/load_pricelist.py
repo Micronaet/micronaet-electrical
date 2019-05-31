@@ -449,7 +449,7 @@ class MetelBase(orm.Model):
                             line[85:90], logger=logger)
                         metel_order_max = self.parse_text_number(
                             line[90:96], logger=logger)
-                        metel_leadtime = self.parse_text_number(
+                        metel_leadtime = self.parse_text(
                             line[96:97], logger=logger)
 
                         metel_kit = self.parse_text_boolean(
