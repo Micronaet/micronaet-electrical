@@ -128,10 +128,11 @@ class MetelProducerFile(orm.Model):
         ''' WF: Force updated 
         '''
         current = self.browse(cr, uid, ids, context=context)
+        fullname = current.fullname
         param_pool = self.pool.get('metel.parameter')
-        timestamp = param_pool.get_modify_date(current.fullname)        
-        dimension = os.path.getsize(current.fullname)        
-        record = self.total_record(current.fullname)
+        timestamp = param_pool.get_modify_date(fullname)        
+        dimension = os.path.getsize(fullname)        
+        record = self.total_record(fullname)
         return self.write(cr, uid, ids, {
             'state': 'updated',
             'timestamp': timestamp,
