@@ -40,16 +40,6 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 _logger = logging.getLogger(__name__)
 
 
-# Module parameters: Mode list for file
-file_mode = [
-    'LSP', # 1. Public pricelist
-    'FST', # 2. Statistic family
-    'FSC', # 3. Discount family
-    #'LSG', #Reseller pricelist
-    #'RIC', #Recode
-    #'BAR', #Barcode
-    ]
-
 class MetelProducerFile(orm.Model):
     """ Model name: MetelProducerFile
     """
@@ -140,13 +130,22 @@ class MetelProducerFile(orm.Model):
             ('uom', 'UOM'), # New files was found
             ('price', 'Price'), # Update after import
             ], 'Fast update'),
+        'metel_type': fields.selection([
+            ('LSP', 'Pricelist'),# listino pubblico
+            ('LSG', 'Reseller pricelist'), # listino rivenditore
+            ('FST', 'Statistic familty'), # famiglia statistica
+            ('FSC', 'Discount family'), # famiglia di sconti
+            ('RIC', 'Recoded'), # ricodifica
+            ('BAR', 'Barcode'),
+            ('   ', 'Unknown'),
+            ], 'Metel type'),
         'state': fields.selection([
             ('draft', 'New'), # New files was found
             ('updated', 'Updated'), # Update after import
 
             ('forced', 'Force reload'), # Force reload when scheduled
             ('wrong', 'Wrong format'), # Not correct format or name
-            ('obsolete', 'Obsolete or deleted'), # No more used
+            ('obsolete', 'Not used or marked obsolete'), # No more used
             ], 'State'),
         }
 
@@ -178,10 +177,24 @@ class MetelBase(orm.Model):
         '''
         file_pool = self.pool.get('metel.producer.file')
 
+        # Fixed parameters: Mode list for file used!
+        file_mode = [
+            'LSP', # 1. Public pricelist
+            'FST', # 2. Statistic family
+            'FSC', # 3. Discount family
+            #'LSG', #Reseller pricelist
+            #'RIC', #Recode
+            #'BAR', #Barcode
+            ]
+
         # Read parameter
         param_ids = self.search(cr, uid, [], context=context)
         param_proxy = self.browse(cr, uid, param_ids, context=context)[0]
         data_folder = os.path.expanduser(param_proxy.root_data_folder)
+        
+        metel_type_list = file_pool._columns['metel_type'].selection
+        if metel_type_list:
+            metel_type_list = [item[0] for item in metel_type_list]
         
         # ---------------------------------------------------------------------
         # Load current ODOO:
@@ -199,13 +212,13 @@ class MetelBase(orm.Model):
         for root, dirs, files in os.walk(data_folder):
             for filename in files:
                 fullname = os.path.join(root, filename)          
-                file_mode_code = filename[3:6]
+                metel_type = filename[3:6]
 
                 if filename.endswith('~') or filename.startswith('.'):
                     _logger.warning('Jump TEMP/HIDDEN file: %s' % fullname)
                     continue
                     
-                if file_mode_code not in file_mode: # Not imported
+                if metel_type not in metel_type_list: # Not imported
                     _logger.warning('Jump METEL file: %s (not in %s)' % (
                         fullname, file_mode,
                         ))
@@ -220,8 +233,20 @@ class MetelBase(orm.Model):
                         # reload delete record timestamp!
                         file_pool.wf_force_reload(
                             cr, uid, [record.id], context=context)
-                    del(odoo_files[fullname]) # remove for check 
+                    if metel_type in file_mode: # Will be used
+                        del(odoo_files[fullname]) # remove for check 
+                        
+                    # Update minimal information:                         
+                    file_pool.write(cr, uid, [record.id], {
+                        'dimension': dimension,
+                        'metel_type': metel_type, 
+                        }, context=context)
                 else:
+                    if metel_type in file_mode: # Will be used
+                        state = 'draft'
+                    else:
+                        state = 'obsolete'
+
                     file_pool.create(cr, uid, {
                         'name': filename.upper(),
                         'filename': filename,
@@ -229,9 +254,10 @@ class MetelBase(orm.Model):
                         'init': timestamp,
                         'datetime': timestamp,
                         'dimension': dimension,
+                        'metel_type': metel_type, 
                         #'timestamp': timestamp_value, # will be reloaded!
                         #'log': fields.text('Log', help='Log last import event'),
-                        #'state'
+                        'state': state,
                         }, context=context)
 
             break # only master folder

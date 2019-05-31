@@ -2,12 +2,37 @@
 <openerp>
     <data>
         <!--metel.producer.file-->
+        <record model="ir.ui.view" id="view_metel_producer_file_search">
+            <field name="name">metel.producer.file.search</field>
+            <field name="model">metel.producer.file</field>
+            <field name="arch" type="xml">
+                <search string="Metel files" version="7.0">        
+                    <field name="name" />
+                    <field name="metel_type" />
+                    
+                    <filter name="log_error" string="Log error" domain="[('log','!=',False)]"/>
+
+                    <filter name="state_draft" string="Not imported" domain="[('state','=','draft')]"/>
+                    <filter name="state_updated" string="Updated" domain="[('state','=','updated')]"/>
+                    <filter name="state_obsolete" string="Obsolete" domain="[('state','=','obsolete')]"/>
+
+                    <group expand="0" string="Group By...">
+                        <filter name="group_metel_type" string="Metel type" context="{'group_by': 'metel_type'}"/>
+                        <filter name="group_update" string="Create date" context="{'group_by': 'init'}"/>
+                        <filter name="group_update" string="Modify date" context="{'group_by': 'datetime'}"/>
+                        <filter name="group_update_mode" string="Update forced" context="{'group_by': 'force_update_mode'}"/>
+                        <filter string="Status" context="{'group_by': 'state'}" />
+                    </group>                
+                </search>
+            </field>
+        </record>
         <record model="ir.ui.view" id="view_metel_producer_file_tree">
             <field name="name">metel.producer.file.tree</field>
             <field name="model">metel.producer.file</field>
             <field name="arch" type="xml">
                 <tree string="Metel files" colors="grey:state=='obsolete';green:state=='updated';red:state=='wrong';blue:state=='forced';orange:state=='draft'">
                     <field name="name" />
+                    <field name="metel_type" />
                     <field name="init"  />
                     <field name="dimension" />
                     <field name="datetime" />
@@ -30,8 +55,9 @@
             <field name="arch" type="xml">
                 <tree string="Metel files" colors="grey:state=='obsolete';green:state=='updated';red:state=='wrong';blue:state=='forced';orange:state=='draft'" editable="bottom">
                     <field name="name" readonly="1" />
+                    <field name="metel_type" readonly="1"/>
                     <field name="init" readonly="1" />
-                    <field name="dimension" />
+                    <field name="dimension" readonly="1"/>
                     <field name="datetime" readonly="1"/>
                     <field name="timestamp" readonly="1"/>
                     <field name="log" invisible="1" />
