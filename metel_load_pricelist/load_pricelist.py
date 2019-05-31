@@ -531,9 +531,9 @@ class MetelBase(orm.Model):
                          ], context=context)
 
                     if product_ids: 
-                        # Update forced UM:
-                        if update_mode and force_update_mode == 'uom':
-                            # Force UM change: (XXX not in standard mode!):
+                        # Update forced UM: XXX Always or only in update mode?
+                        #if update_mode and force_update_mode == 'uom':
+                        if not update_mode or force_update_mode != 'price':
                             product_pool.update_force_uom_id(
                                 cr, uid, product_ids, uom_id, context=context)
                         
@@ -550,7 +550,13 @@ class MetelBase(orm.Model):
                             upd += 1
                             _logger.info('%s. Update %s' % (i, default_code))
                     else:        
-                        data['uom_id'] = uom_id # only in create mode:
+                        # only in create mode:
+                        data.update({ # All uom:
+                            'uom_id': uom_id, 
+                            'uos_id': uom_id, 
+                            'uom_po_id': uom_id, 
+                            })
+
                         try:
                             product_pool.create(
                                 cr, uid, data, context=context)
@@ -565,7 +571,7 @@ class MetelBase(orm.Model):
                 # ---------------------------------------------------------
                 #                    MODE: FST (Statistic family)
                 # ---------------------------------------------------------
-                elif not update mode and file_mode_code in ('FST', 'FSC'):
+                elif not update_mode and file_mode_code in ('FST', 'FSC'):
                     if file_mode_code == 'FST':
                         field = 'metel_statistic'
                         field_id = 'metel_statistic_id'
@@ -695,7 +701,8 @@ class MetelBase(orm.Model):
                     'File: %s record: %s [UPD %s NEW %s]' % (
                         filename, i, upd, new,
                         ))
-                _logger.info('UOM missed [%s]' % (uom_missed, ))                    
+                if uom_missed:        
+                    _logger.info('UOM missed %s' % (uom_missed, ))                    
 
         return True
         
