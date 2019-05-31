@@ -22,6 +22,7 @@ import sys
 import logging
 import openerp
 import shutil
+import subprocess
 import openerp.netsvc as netsvc
 import openerp.addons.decimal_precision as dp
 from openerp.osv import fields, osv, expression, orm
@@ -53,9 +54,21 @@ class MetelProducerFile(orm.Model):
     # Button event:
     # -------------------------------------------------------------------------    
     def dummy(self, cr, uid, ids, context=None):
-        """ dummy event
-        """       
+        ''' dummy event
+        '''       
         return True    
+
+    def total_record(self, fullname):
+        ''' Total lines
+        '''
+        return 0
+        #wc_data = subprocess.call(
+        #    'cat %s | wc' % fullname, stdout=subprocess.PIPE, shell=True)
+        #wc_text = ''    
+        #for line in wc_data.stdout:
+        #    wc_text += line
+        #wc_list = [item for item in wc_data.split() if item]
+        #return wc_list[0]
 
     def standard_mode_this(self, cr, uid, ids, context=None):
         ''' Launch standard mode:
@@ -118,11 +131,13 @@ class MetelProducerFile(orm.Model):
         param_pool = self.pool.get('metel.parameter')
         timestamp = param_pool.get_modify_date(current.fullname)        
         dimension = os.path.getsize(current.fullname)        
+        record = self.total_record(fullname)
         return self.write(cr, uid, ids, {
             'state': 'updated',
             'timestamp': timestamp,
             'datetime': timestamp,
             'dimension': dimension,
+            'record': record,
             }, context=context)
             
     def wf_set_obsolete(self, cr, uid, ids, context=None):
@@ -142,6 +157,7 @@ class MetelProducerFile(orm.Model):
         'init': fields.datetime('Init timestamp'),
         'datetime': fields.datetime('Current timestamp'),
         'dimension': fields.integer('Dimension'),
+        'record': fields.integer('# Record'),
         'log': fields.text('Log', help='Log last import event'),
         'force_update_mode': fields.selection([
             ('uom', 'UOM'), # New files was found
@@ -243,6 +259,8 @@ class MetelBase(orm.Model):
 
                 timestamp = self.get_modify_date(fullname)                
                 dimension = os.path.getsize(fullname)
+                record = file_pool.total_record(fullname)
+                
                 if fullname in odoo_files:
                     # Update and check
                     record = odoo_files[fullname]
@@ -257,6 +275,7 @@ class MetelBase(orm.Model):
                     file_pool.write(cr, uid, [record.id], {
                         'dimension': dimension,
                         'metel_type': metel_type, 
+                        'record': record,
                         }, context=context)
                 else:
                     if metel_type in file_mode: # Will be used
@@ -271,6 +290,7 @@ class MetelBase(orm.Model):
                         'init': timestamp,
                         'datetime': timestamp,
                         'dimension': dimension,
+                        'record': record,
                         'metel_type': metel_type, 
                         #'timestamp': timestamp_value, # will be reloaded!
                         #'log': fields.text('Log', help='Log last import event'),
@@ -331,7 +351,6 @@ class MetelBase(orm.Model):
                 Setup Electrocod parameter for get correct management!
                 (no group Electrocod structure created, no association with 
                 product created), or update mode''')
-                
 
         # --------------------------------------------------------------------- 
         # Linked object DB:
