@@ -216,10 +216,17 @@ class NewReceiptLineWizard(orm.TransientModel):
         product_pool = self.pool.get('product.product')    
         product_proxy = product_pool.browse(
             cr, uid, product_id, context=context)
+        
+        if not product_id:
+            return res     
         # TODO change price?
+        field_data = product_pool._get_metel_price_data(
+            cr, uid, [product_id], context=context)
         #res['value']['price'] = product_proxy.standard_price
         #res['value']['price'] = product_proxy.lst_price
-        res['value']['price'] = product_proxy.metel_sale # discounted!
+        import pdb; pdb.set_trace()
+        res['value']['price'] = field_data[product_id].get(
+            'metel_sale', 0.0) # discounted!
         return res
 
     def _get_subtotal_value(self, cr, uid, ids, fields, args, context=None):
