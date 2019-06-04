@@ -224,7 +224,6 @@ class NewReceiptLineWizard(orm.TransientModel):
             cr, uid, [product_id], context=context)
         #res['value']['price'] = product_proxy.standard_price
         #res['value']['price'] = product_proxy.lst_price
-        import pdb; pdb.set_trace()
         res['value']['price'] = field_data[product_id].get(
             'metel_sale', 0.0) # discounted!
         return res
