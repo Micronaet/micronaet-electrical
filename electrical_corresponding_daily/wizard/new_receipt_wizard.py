@@ -218,7 +218,8 @@ class NewReceiptLineWizard(orm.TransientModel):
             cr, uid, product_id, context=context)
         # TODO change price?
         #res['value']['price'] = product_proxy.standard_price
-        res['value']['price'] = product_proxy.lst_price
+        #res['value']['price'] = product_proxy.lst_price
+        res['value']['price'] = product_proxy.metel_sale # discounted!
         return res
 
     def _get_subtotal_value(self, cr, uid, ids, fields, args, context=None):

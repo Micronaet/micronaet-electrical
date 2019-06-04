@@ -248,7 +248,7 @@ class MetelBase(orm.Model):
                     
                 if metel_type not in metel_type_list: # Not imported
                     _logger.warning('Jump METEL file: %s (not in %s)' % (
-                        fullname, file_mode,
+                        fullname, metel_type_list,
                         ))
                     continue    
 
