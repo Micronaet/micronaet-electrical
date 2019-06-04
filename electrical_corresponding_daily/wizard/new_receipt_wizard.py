@@ -209,6 +209,7 @@ class NewReceiptLineWizard(orm.TransientModel):
     def onchange_product_id(self, cr, uid, ids, product_id, context=None):
         ''' Change default price from product form
         '''
+        decimal = 2
         res = {'value': {'price': 0.0}}
         if not product_id:
             return res
@@ -224,8 +225,12 @@ class NewReceiptLineWizard(orm.TransientModel):
             cr, uid, [product_id], context=context)
         #res['value']['price'] = product_proxy.standard_price
         #res['value']['price'] = product_proxy.lst_price
-        res['value']['price'] = field_data[product_id].get(
-            'metel_sale', 0.0) # discounted!
+        try:
+            res['value']['price'] = round(
+                field_data[product_id].get(
+                    'metel_sale', 0.0), decimal) # discounted!
+        except:
+            pass        
         return res
 
     def _get_subtotal_value(self, cr, uid, ids, fields, args, context=None):
