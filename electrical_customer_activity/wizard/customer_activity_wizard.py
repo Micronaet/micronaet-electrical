@@ -435,7 +435,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'DDT': [
                 True, '', 
                 '', 11,
-                '', '001', 2, # Summary hide col., Summary total
+                '', '111', 2, # Summary hide col., Summary total
                 ],
 
             'Spese': [
