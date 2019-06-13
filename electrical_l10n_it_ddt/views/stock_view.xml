@@ -121,6 +121,7 @@
                                 <field name="account_id"/>
                                 <field name="is_invoiced" />
                                 <field name="invoice_number" attrs="{'invisible': [('is_invoiced','=',False)]}"/>
+                                <field name="invoice_amount" attrs="{'invisible': [('is_invoiced','=',False)]}" help="Write only on the first DDT!"/>
                             </group>
                         </group>
                         <notebook>
@@ -188,6 +189,7 @@
                     <field name="invoice_id"/>
                     <field name="not_invoiced" invisible="1"/>
                     <field name="invoice_number" />
+                    <field name="invoice_amount" />
                     <field name="state"/>
                     <button name="set_not_invoiced_true" string="Not invoiced" type="object" icon="star-off" attrs="{'invisible': [('not_invoiced','=',True)]}"/>
                     <button name="set_not_invoiced_false" string="To be invoiced" type="object" icon="star-on" attrs="{'invisible': [('not_invoiced','=',False)]}"/>

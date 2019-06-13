@@ -164,6 +164,8 @@ class StockDdT(models.Model):
         'account.analytic.account', string='Account', required=False)
     not_invoiced = fields.Boolean('Not invoiced')    
     invoice_number = fields.Char('Invoice number', size=30)
+    invoice_amount = fields.Float('Invoice amount', digits=(16, 2))
+    
     contact_id = fields.Many2one(
         'res.partner', string='Contact')
     partner_id = fields.Many2one(
