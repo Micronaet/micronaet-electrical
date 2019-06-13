@@ -67,11 +67,11 @@ class StockPicking(orm.Model):
                 subtotal = move.price_unit * move.product_uom_qty
                 if not subtotal:
                     res[picking.id]['corresponding_error'] = True
-                res[picking.id]['corresponding_total'] = subtotal    
+                res[picking.id]['corresponding_total'] += subtotal    
             res[picking.id]['corresponding_total_vat'] = \
                 res[picking.id]['corresponding_total'] * vat
         return res
-        
+
     _columns = {
         'corresponding_total': fields.function(
             _get_corresponding_total, method=True, 
