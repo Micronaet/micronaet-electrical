@@ -100,9 +100,14 @@ class StockPickingFile(orm.Model):
     def generate_pick_out_draft(self, cr, uid, ids, context=None):
         ''' Create pick out document depend on account analytic
         '''
-        #`Pool used:
+        import pdb; pdb.set_trace()
+        if context is None:
+            context = {}
+        
+        # Pool used:
         picking_pool = self.pool.get('stock.picking')
         file_proxy = self.browse(cr, uid, ids, context=context)[0]
+        context['default_account_id'] = file_proxy.account_id.id
         
         picking_id = file_proxy.picking_id.id
         if not picking_id:
