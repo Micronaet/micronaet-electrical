@@ -106,7 +106,7 @@ class StockPickingFile(orm.Model):
         # Pool used:
         picking_pool = self.pool.get('stock.picking')
         file_proxy = self.browse(cr, uid, ids, context=context)[0]
-        context['default_account'] = file_proxy.account_id
+        context['default_account_id'] = file_proxy.account_id.id
         
         picking_id = file_proxy.picking_id.id
         if not picking_id:
