@@ -65,6 +65,7 @@ class NewReceiptWizard(orm.TransientModel):
             'name': name,
             }, context=context)
         wiz_proxy = self.browse(cr, uid, ids, context=context)[0]
+        force_date = wiz_proxy.force_date
 
         # ---------------------------------------------------------------------
         # Create new corresponding:
@@ -76,7 +77,7 @@ class NewReceiptWizard(orm.TransientModel):
         quant_pool = self.pool.get('stock.quant')                
         type_pool = self.pool.get('stock.picking.type')
 
-        now = ('%s' % datetime.now())[:19]
+        now = force_date or ('%s' % datetime.now())[:19]
         origin = 'CORRISPETTIVO %s' % now[:10]
 
         # ---------------------------------------------------------------------
@@ -186,6 +187,8 @@ class NewReceiptWizard(orm.TransientModel):
         
     _columns = {
         'name': fields.char('# Receipt', size=25),
+        'force_date': fields.date('Force date', 
+            help='Force date instead take today!'),
         'total': fields.function(_get_total, method=True, 
             type='float', string='Total', multi=True),      
         'total_vat': fields.function(_get_total, method=True, 

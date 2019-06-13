@@ -80,6 +80,28 @@ class StockMove(models.Model):
 
     ddt_id = fields.Many2one('stock.ddt', ondelete="set null")
 
+class AccountAnalyticAccount(models.Model):
+    _inherit = "account.analytic.account"
+
+    @api.multi
+    def _get_invoiced_status(self, ):
+        ''' Get invoice status on account
+        '''
+        ddt_pool = self.env['stock.ddt']
+        for account in self:
+            ddts = ddt_pool.search([
+                ('account_id', '=', account.id),
+                ])
+            if not account.total_amount:    
+                account.invoices_status = 0.0
+            else:    
+                account.invoices_status = sum(
+                    [ddt.total_amount for ddt in ddts]) / account.total_amount
+    
+    ddt_id = fields.Many2one('stock.ddt', ondelete="set null")
+    invoiced_status = fields.Float('Invoiced status', digits=(16, 3), 
+        compute=_get_invoiced_status)
+
 class StockDdT(models.Model):
 
     _name = 'stock.ddt'

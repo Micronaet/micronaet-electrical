@@ -14,6 +14,7 @@
                    </header>
                    <group colspan="4" col="4">
                         <field name="name" readonly="1" attrs="{'invisible': [('state','=','draft')]}"/>
+                        <field name="force_date" groups="electrical_corresponding_daily.group_corresponding_manager"/>
                         <newline/>
 
                         <separator string="Details:" colspan="4"/>

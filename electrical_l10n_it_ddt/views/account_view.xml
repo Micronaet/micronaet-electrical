@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
     <data>
+        
+        <!--XXX RAISE ERROR!!-->
+        <!--<record id="invoice_form_view_ddt_invoiced" model="ir.ui.view">
+            <field name="name">account.invoice.invoiced.tree</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.view_account_analytic_account_tree"/>
+            <field name="arch" type="xml">
+                <field name="date" position="after">
+                    <field name="invoiced_status" widget="statusbar" />
+                </field>
+            </field>
+        </record>-->
 
         <record id="invoice_form_view_ddt" model="ir.ui.view">
             <field name="name">account.invoice.form.ddt</field>
