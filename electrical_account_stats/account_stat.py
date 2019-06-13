@@ -124,6 +124,7 @@ class AccountAnalyticAccount(orm.Model):
         # Pool used:
         picking_pool = self.pool.get('stock.picking')
         timesheet_pool = self.pool.get('hr.analytic.timesheet')
+        expence_pool = self.pool.get('account.analytic.expence')
         
         total = { 
             # [Cost, Revenue, Gain, Error]
@@ -134,28 +135,13 @@ class AccountAnalyticAccount(orm.Model):
             # [Cost, Revenue, Gain, Hour]
             'intervent': [0.0, 0.0, 0.0, 0.0],
             'intervent_invoiced': [0.0, 0.0, 0.0, 0.0],
+            
+            'expence': [0.0, 0.0, 0.0], # NOTE only cost!
             }
 
         # ---------------------------------------------------------------------
         # Common Header:
         # ---------------------------------------------------------------------
-        data_mask = '''
-            <tr class='table_bf'>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-            </tr>'''
-
-        summary_mask = '''
-            <tr class='table_bf'>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-            </tr>'''
-
         res[account_id] += '''
             <style>
                 .table_bf {
@@ -230,16 +216,22 @@ class AccountAnalyticAccount(orm.Model):
                     ('invoice', 'Fatture')):
                     
                 total[mode][2] = total[mode][1] - total[mode][0]
-                res[account_id] += data_mask % (
-                    name,
-                    total[mode][3], # error
-                    total[mode][0], # cost
-                    total[mode][1], # revenue
-                    total[mode][2], # gain
-                    )
+                res[account_id] += '''
+                    <tr class='table_bf'>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                    </tr>''' % (
+                        name,
+                        total[mode][3], # error
+                        total[mode][0], # cost
+                        total[mode][1], # revenue
+                        total[mode][2], # gain
+                        )
             res[account_id] += '''</table><br/>'''
         else:
-            material_amount = 0.0
             res[account_id] += '''
                 <p><b>Consegne materiale</b>:<br/> Non presenti!</p>'''
 
@@ -279,19 +271,67 @@ class AccountAnalyticAccount(orm.Model):
                     ('intervent_invoiced', 'Interventi fatturati')):
                 total[mode][2] = total[mode][1] - total[mode][0]
                 
-                res[account_id] += data_mask % (
-                    name,
-                    total[mode][3], # hour
-                    total[mode][0], # cost
-                    total[mode][1], # revenut
-                    total[mode][2], # gain
-                    )
+                res[account_id] += '''
+                    <tr class='table_bf'>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                    </tr>''' % (
+                            name,
+                            total[mode][3], # hour
+                            total[mode][0], # cost
+                            total[mode][1], # revenut
+                            total[mode][2], # gain
+                            )
             res[account_id] += '''</table><br/>'''
         else:
-            ts_amount = 0.0
             res[account_id] += '''
                 <p><b>Interventi</b>:<br/>Non presenti!</p>'''
 
+        # ---------------------------------------------------------------------
+        # Expences:
+        # ---------------------------------------------------------------------
+        expence_ids = expence_pool.search(cr, uid, [
+            ('printable', '!=', 'none'),
+            ], context=context)
+        mode = 'expence'
+        if expence_ids:
+            # Header:
+            res[account_id] += '''
+                <p><b>Spese totali</b>: [Tot.: %s]</p>
+                <table class='table_bf'>
+                <tr class='table_bf'>
+                    <th>Descrizione</th>
+                    <th>Ricavo</th>
+                    <th>Costo</th>
+                    <th>Utile</th>
+                </tr>''' % len(expence_ids)
+                
+            for expence in expence_pool.browse(
+                    cr, uid, expence_ids, context=context):
+                total[mode][0] = expence.total
+                total[mode][1] = expence.total_forced or expence.total
+            total[mode][2] = total[mode][1] - total[mode][0] 
+            
+            res[account_id] += '''
+                <tr class='table_bf'>
+                    <td>Spese</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                </tr>''' % (
+                    total[mode][0], # cost
+                    total[mode][1], # revenue
+                    total[mode][2], # gain
+                    )
+            res[account_id] += '''</table><br/>'''
+            
+        else:
+            res[account_id] += '''
+                <p><b>Spese</b>:<br/>Non presenti!</p>'''
+        
         # ---------------------------------------------------------------------
         # Summary block:
         # ---------------------------------------------------------------------
@@ -307,6 +347,13 @@ class AccountAnalyticAccount(orm.Model):
 
         # TODO add correct value:
         
+        summary_mask = '''
+            <tr class='table_bf'>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%s</td>
+            </tr>'''
         # Not Invoiced:
         res[account_id] += summary_mask % (
             'Not fatturato',
@@ -323,17 +370,28 @@ class AccountAnalyticAccount(orm.Model):
             total['invoice'][2] + total['intervent_invoiced'][2],
             )
 
+        # Spese:
+        res[account_id] += summary_mask % (
+            'Spese',
+            total['expence'][1],
+            total['expence'][0],
+            total['expence'][2],
+            )
+
         # Totale:
         res[account_id] += summary_mask % (
             '<b>Totale</b>',
-            total['picking'][1] + total['ddt'][1] + total['intervent'][1] +\
-            total['invoice'][1] + total['intervent_invoiced'][1],
+            total['picking'][1] + total['ddt'][1] + total['intervent'][1] + \
+            total['invoice'][1] + total['intervent_invoiced'][1] + \
+            total['expence'][1],
             
-            total['picking'][0] + total['ddt'][0] + total['intervent'][0] +\
-            total['invoice'][0] + total['intervent_invoiced'][0],
+            total['picking'][0] + total['ddt'][0] + total['intervent'][0] + \
+            total['invoice'][0] + total['intervent_invoiced'][0] + \
+            total['expence'][0],
             
-            total['picking'][2] + total['ddt'][2] + total['intervent'][2] +\
-            total['invoice'][2] + total['intervent_invoiced'][2],
+            total['picking'][2] + total['ddt'][2] + total['intervent'][2] + \
+            total['invoice'][2] + total['intervent_invoiced'][2] + \
+            total['expence'][2],
             )
             
         res[account_id] += '</table>'
