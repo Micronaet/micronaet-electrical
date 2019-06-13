@@ -119,6 +119,7 @@ class StockPickingFile(orm.Model):
             'state': 'close',
             }, context=context)
 
+        import pdb; pdb.set_trace()
         return picking_pool.generate_pick_out_draft(
             cr, uid, [picking_id], context=context)
         
