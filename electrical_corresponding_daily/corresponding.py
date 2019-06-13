@@ -48,7 +48,8 @@ class StockPicking(orm.Model):
     
     _inherit = 'stock.picking'
     
-    def _get_corresponding_total(self, cr, uid, ids, fields, args, context=None):
+    def _get_corresponding_total(self, cr, uid, ids, fields, args, 
+            context=None):
         ''' Fields function for calculate 
         '''
         res = {}
@@ -75,14 +76,14 @@ class StockPicking(orm.Model):
         'corresponding_total': fields.function(
             _get_corresponding_total, method=True, 
             type='float', string='Corresponding', 
-            multi=True),
+            multi=True, store=False),
         'corresponding_total_vat': fields.function(
             _get_corresponding_total, method=True, 
             type='float', string='Corresponding VAT', 
-            multi=True),
+            multi=True, store=False),
         'corresponding_error': fields.function(
             _get_corresponding_total, method=True, 
             type='boolean', string='Corresponding', 
-            multi=True),                        
+            multi=True, store=False),
         }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
