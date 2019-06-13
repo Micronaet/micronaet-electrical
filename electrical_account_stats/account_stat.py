@@ -229,7 +229,7 @@ class AccountAnalyticAccount(orm.Model):
             for mode, name in (('picking', 'Consegne'), ('ddt', 'DDT'), 
                     ('invoice', 'Fatture')):
                     
-                total[mode][3] = total[mode][1] - total[mode][0]
+                total[mode][2] = total[mode][1] - total[mode][0]
                 res[account_id] += data_mask % (
                     name,
                     total[mode][3], # error
@@ -271,7 +271,7 @@ class AccountAnalyticAccount(orm.Model):
                 else:
                     mode = 'intervent'
                     
-                total[mode][3] += ts.unit_amount
+                total[mode][3] += ts.unit_amount # H.
                 total[mode][0] += 0.0 # TODO cost
                 total[mode][1] += 0.0 # TODO revenue
 
