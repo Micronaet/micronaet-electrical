@@ -957,7 +957,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             excel_pool.set_margins(ws_name)
             excel_pool.set_paper(ws_name) # Set A4
             #excel_pool.set_print_scale(ws_name, 90)
-            excel_pool.fit_to_pages(ws_name)
+            excel_pool.fit_to_pages(ws_name, 1, 0)
 
             # Load formats:
             if load_format:
