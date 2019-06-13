@@ -2068,15 +2068,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         partner = intervent.intervent_partner_id
                         user_mode_id = intervent.user_mode_id.id
                         
-                        # ---------------------------------------------------------
+                        # -----------------------------------------------------
                         # Initial setup of mapping and forced price database:
-                        # ---------------------------------------------------------
+                        # -----------------------------------------------------
                         if partner_forced == False:
                             partner_forced = {}
                             for forced in partner.mode_revenue_ids:        
                                 partner_forced[forced.mode_id.id] = \
                                     forced.list_price
-                        # ---------------------------------------------------------
+                        # -----------------------------------------------------
                         # Read revenue:        
                         if user_mode_id in partner_forced: # partner forced
                             unit_revenue = partner_forced[user_mode_id]
@@ -2100,7 +2100,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             intervent.name,
                             intervent.intervent_total,
                             user.name,
-                            #intervent.intervent_duration intervent.unit_amount,
+                            #intervent.intervent_duration intervent.unit_amount
                             (this_revenue, f_number_color), # total revenue
                             ]
 

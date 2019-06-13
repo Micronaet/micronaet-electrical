@@ -125,15 +125,22 @@ class AccountAnalyticAccount(orm.Model):
         picking_pool = self.pool.get('stock.picking')
         timesheet_pool = self.pool.get('hr.analytic.timesheet')
         
+        total = { 
+            # [Cost, Revenue, Gain, Error]
+            'picking': : [0.0, 0.0, 0.0, 0.0, 0],
+            'ddt': [0.0, 0.0, 0.0, 0],
+            'invoice': [0.0, 0.0, 0.0, 0],
+
+            # [Cost, Revenue, Gain, Hour]
+            'intervent': [0.0, 0.0, 0.0, 0.0],
+            'intervent_invoiced': [0.0, 0.0, 0.0, 0.0],
+            }
+
         # ---------------------------------------------------------------------
-        # Picking analysis:
+        # Common Header:
         # ---------------------------------------------------------------------
-        picking_ids = picking_pool.search(cr, uid, [
-            ('account_id', '=', account_id),
-            ], context=context)
-        
         data_mask = '''
-            <tr>
+            <tr class='table_bf'>
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
@@ -141,52 +148,100 @@ class AccountAnalyticAccount(orm.Model):
                 <td>%s</td>
             </tr>'''
 
-        # Table startup:
-        res[account_id] += '<table>'
+        summary_mask = '''
+            <tr class='table_bf'>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%s</td>
+            </tr>'''
 
-        # Header:
         res[account_id] += '''
-            <tr>
-                <th colspan="5">Consegne materiale: %s</th>
-            </tr>            
-            <tr>
-                <th>Descrizione</th>
-                <th>Errori</th>
-                <th>Ricavo</th>
-                <th>Costo</th>
-                <th>Utile</th>
-            </tr>''' % len(picking_ids)
-        
-        total = {
-            'cost': 0.0,
-            'revenue': 0.0,
-            'error': 0,
-            }
+            <style>
+                .table_bf {
+                     border:1px 
+                     padding: 3px;
+                     solid black;
+                 }
+                .table_bf td {
+                     border:1px 
+                     solid black;
+                     padding: 3px;
+                     text-align: center;
+                 }
+                .table_bf th {
+                     border:1px 
+                     solid black;
+                     padding: 3px;
+                     text-align: center;
+                     background-color: grey;
+                     color: white;
+                 }
+            </style>
+            '''
+            
+        # ---------------------------------------------------------------------
+        # Picking analysis:
+        # ---------------------------------------------------------------------
+        picking_ids = picking_pool.search(cr, uid, [
+            ('account_id', '=', account_id),
+            ('pick_move', '=', 'out'), # Only out movement
+            ], context=context)
+        picking    
+        if picking_ids:    
+            # Header:
+            res[account_id] += '''
+                <p>Consegne materiali: [Tot.: %s]</p>
+                <table class='table_bf'>
+                <tr class='table_bf'>
+                    <th>Descrizione</th>
+                    <th>Errori</th>
+                    <th>Ricavo</th>
+                    <th>Costo</th>
+                    <th>Utile</th>
+                </tr>''' % len(picking_ids)
+            
+            # TODO manage also state of picking:    
+            for picking in picking_pool.browse(
+                    cr, uid, picking_ids, context=context):                 
+                if picking.ddt_id:
+                    if picking.ddt_id.is_invoiced:
+                        mode = 'invoice'
+                    else:
+                        mode = 'ddt'
+                else:        
+                    mode = 'picking'
 
-        # TODO manage also state of picking:    
-        for picking in picking_pool.browse(
-                cr, uid, picking_ids, context=context):                 
-            for move in picking.move_lines:
-                if not move.product_id:
-                    continue
-                qty = move.product_uom_qty
-                cost = qty * move.product_id.standard_price
-                revenue = qty * move.price_unit
-                if not cost or not revenue:
-                    total['error'] += 1
+                for move in picking.move_lines:
+                    if not move.product_id:
+                        continue
+                    qty = move.product_uom_qty
                     
-                total['cost'] += cost
-                total['revenue'] += revenue
+                    # TODO Get correct price:
+                    cost = qty * move.product_id.standard_price
+                    revenue = qty * move.price_unit
 
-        material_amount = total['revenue'] - total['cost']
-        res[account_id] += data_mask % (
-            'Materiale:',
-            total['error'],
-            total['cost'],
-            total['revenue'],
-            material_amount,
-            )
+                    if not cost or not revenue:
+                        total[mode][3] += 1 # error
+                        
+                    total[mode][0] += cost
+                    total[mode][1] += revenue
+
+            for mode, name in (('picking', 'Consegne'), ('ddt', 'DDT'), 
+                    ('invoice', 'Fatture')):
                     
+                total[mode][3] = total[mode][1] - total[mode][0]
+                res[account_id] += data_mask % (
+                    name,
+                    total[mode][3], # error
+                    total[mode][0], # cost
+                    total[mode][1], # revenue
+                    total[mode][2], # gain
+                    )
+            res[account_id] += '''</table><br/>'''
+        else:
+            material_amount = 0.0
+            res[account_id] += '''<p>Consegne materiale: Non presenti!</p>'''
+
         # ---------------------------------------------------------------------
         # Intervent:
         # ---------------------------------------------------------------------
@@ -194,50 +249,68 @@ class AccountAnalyticAccount(orm.Model):
             ('account_id', '=', account_id),
             ], context=context)
         
-        # Header:
+        if timesheet_ids:
+            # Header:
+            res[account_id] += '''
+                <p>Interventi totali: [Tot.: %s]</p>
+                <table class='table_bf'>
+                <tr class='table_bf'>
+                    <th>Descrizione</th>
+                    <th>H.</th>
+                    <th>Ricavo</th>
+                    <th>Costo</th>
+                    <th>Utile</th>
+                </tr>''' % len(timesheet_ids)
+                
+            # TODO manage also state of picking:    
+            for ts in timesheet_pool.browse(
+                    cr, uid, timesheet_ids, context=context):
+                if ts.is_invoiced:
+                    mode = 'intervent_invoiced':
+                else:
+                    mode = 'intervent'
+                    
+                total[mode][3] += ts.unit_amount
+                total[mode][0] += 0.0 # TODO cost
+                total[mode][1] += 0.0 # TODO revenue
+
+            for mode, name in (('intervent', 'Interventi da fatturare'), 
+                    ('intervent_invoiced', 'Interventi fatturati')):
+                total[mode][2] = total[mode][1] - total[mode][0]
+                
+                res[account_id] += data_mask % (
+                    name,
+                    total[mode][3], # hour
+                    total[mode][0], # cost
+                    total[mode][1], # revenut
+                    total[mode][2], # gain
+                    )
+            res[account_id] += '''</table><br/>'''
+        else:
+            ts_amount = 0.0
+            res[account_id] += '''<p>Interventi: Non presenti!</p>'''
+
+        # ---------------------------------------------------------------------
+        # Summary block:
+        # ---------------------------------------------------------------------
         res[account_id] += '''
-            <tr>
-                <th colspan="5">Interventi totali: %s</th>
+            <table class='table_bf'>
+            <tr class='table_bf'>
+                <th colspan="3">Riepilogo:</th>
             </tr>            
-            <tr>
-                <th>Descrizione</th>
-                <th>H.</th>
+            <tr class='table_bf'>
                 <th>Ricavo</th>
                 <th>Costo</th>
                 <th>Utile</th>
-            </tr>''' % len(timesheet_ids)
-            
-        total = {
-            'hour': 0.0,
-            'cost': 0.0,
-            'revenue': 0.0,
-            #'error': 0,
-            }
+            </tr>'''
 
-        # TODO manage also state of picking:    
-        for ts in timesheet_pool.browse(
-                cr, uid, timesheet_ids, context=context):
-            total['hour'] += ts.unit_amount
-            total['cost'] += 0.0 # TODO
-            total['revenue'] += 0.0 # TODO 
-
-        ts_amount = total['revenue'] - total['cost']
-        res[account_id] += data_mask % (
-            'Interventi:',
-            total['hour'],
-            total['cost'],
-            total['revenue'],
-            ts_amount,
-            )
-
-        res[account_id] += data_mask % (
-            'Riepilogo:',
-            '',
+        # TODO add correct value:
+        res[account_id] += summary_mask % (
             '',
             material_amount,
             ts_amount,
             )
-        res[account_id] += '<table>'
+        res[account_id] += '</table>'
 
         return res
         
