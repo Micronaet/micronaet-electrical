@@ -106,7 +106,7 @@ class StockPickingFile(orm.Model):
         # Pool used:
         picking_pool = self.pool.get('stock.picking')
         file_proxy = self.browse(cr, uid, ids, context=context)[0]
-        context['default_account_id'] = file_proxy.account_id
+        context['default_account'] = file_proxy.account_id
         
         picking_id = file_proxy.picking_id.id
         if not picking_id:
@@ -119,7 +119,6 @@ class StockPickingFile(orm.Model):
             'state': 'close',
             }, context=context)
 
-        import pdb; pdb.set_trace()
         return picking_pool.generate_pick_out_draft(
             cr, uid, [picking_id], context=context)
         
