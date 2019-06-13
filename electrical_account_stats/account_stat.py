@@ -127,7 +127,7 @@ class AccountAnalyticAccount(orm.Model):
         
         total = { 
             # [Cost, Revenue, Gain, Error]
-            'picking': : [0.0, 0.0, 0.0, 0.0, 0],
+            'picking': [0.0, 0.0, 0.0, 0.0, 0],
             'ddt': [0.0, 0.0, 0.0, 0],
             'invoice': [0.0, 0.0, 0.0, 0],
 
@@ -187,11 +187,10 @@ class AccountAnalyticAccount(orm.Model):
             ('account_id', '=', account_id),
             ('pick_move', '=', 'out'), # Only out movement
             ], context=context)
-        picking    
         if picking_ids:    
             # Header:
             res[account_id] += '''
-                <p>Consegne materiali: [Tot.: %s]</p>
+                <p><b>Consegne materiali</b>: [Tot.: %s]</p>
                 <table class='table_bf'>
                 <tr class='table_bf'>
                     <th>Descrizione</th>
@@ -241,7 +240,8 @@ class AccountAnalyticAccount(orm.Model):
             res[account_id] += '''</table><br/>'''
         else:
             material_amount = 0.0
-            res[account_id] += '''<p>Consegne materiale: Non presenti!</p>'''
+            res[account_id] += '''
+                <p><b>Consegne materiale</b>:<br/> Non presenti!</p>'''
 
         # ---------------------------------------------------------------------
         # Intervent:
@@ -253,7 +253,7 @@ class AccountAnalyticAccount(orm.Model):
         if timesheet_ids:
             # Header:
             res[account_id] += '''
-                <p>Interventi totali: [Tot.: %s]</p>
+                <p><b>Interventi totali</b>: [Tot.: %s]</p>
                 <table class='table_bf'>
                 <tr class='table_bf'>
                     <th>Descrizione</th>
@@ -267,7 +267,7 @@ class AccountAnalyticAccount(orm.Model):
             for ts in timesheet_pool.browse(
                     cr, uid, timesheet_ids, context=context):
                 if ts.is_invoiced:
-                    mode = 'intervent_invoiced':
+                    mode = 'intervent_invoiced'
                 else:
                     mode = 'intervent'
                     
@@ -289,13 +289,14 @@ class AccountAnalyticAccount(orm.Model):
             res[account_id] += '''</table><br/>'''
         else:
             ts_amount = 0.0
-            res[account_id] += '''<p>Interventi: Non presenti!</p>'''
+            res[account_id] += '''
+                <p><b>Interventi</b>:<br/>Non presenti!</p>'''
 
         # ---------------------------------------------------------------------
         # Summary block:
         # ---------------------------------------------------------------------
         res[account_id] += '''
-            <p>Riepilogo:</p>
+            <p><b>Riepilogo:</b></p>
             <table class='table_bf'>
                 <tr class='table_bf'>
                     <th>Descrizione</th>                    
@@ -324,7 +325,7 @@ class AccountAnalyticAccount(orm.Model):
 
         # Totale:
         res[account_id] += summary_mask % (
-            'Totale',
+            '<b>Totale</b>',
             total['picking'][1] + total['ddt'][1] + total['intervent'][1] +\
             total['invoice'][1] + total['intervent_invoiced'][1],
             
