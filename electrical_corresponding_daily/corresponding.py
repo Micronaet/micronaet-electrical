@@ -75,15 +75,12 @@ class StockPicking(orm.Model):
     _columns = {
         'corresponding_total': fields.function(
             _get_corresponding_total, method=True, 
-            type='float', string='Corresponding', 
-            multi=True, store=False),
+            type='float', string='Corresponding', multi=True),
         'corresponding_total_vat': fields.function(
             _get_corresponding_total, method=True, 
-            type='float', string='Corresponding VAT', 
-            multi=True, store=False),
+            type='float', string='Corresponding VAT', multi=True),
         'corresponding_error': fields.function(
             _get_corresponding_total, method=True, 
-            type='boolean', string='Corresponding', 
-            multi=True, store=False),
+            type='boolean', string='Corresponding', multi=True),
         }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
