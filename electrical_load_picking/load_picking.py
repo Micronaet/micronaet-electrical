@@ -118,7 +118,6 @@ class StockPickingFile(orm.Model):
         self.write(cr, uid, ids, {
             'state': 'close',
             }, context=context)
-
         return picking_pool.generate_pick_out_draft(
             cr, uid, [picking_id], context=context)
         
