@@ -153,6 +153,7 @@ class AccountAnalyticAccount(orm.Model):
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
+                <td>%s</td>
             </tr>'''
 
         res[account_id] += '''
@@ -294,22 +295,46 @@ class AccountAnalyticAccount(orm.Model):
         # Summary block:
         # ---------------------------------------------------------------------
         res[account_id] += '''
+            <p>Riepilogo:</p>
             <table class='table_bf'>
-            <tr class='table_bf'>
-                <th colspan="3">Riepilogo:</th>
-            </tr>            
-            <tr class='table_bf'>
-                <th>Ricavo</th>
-                <th>Costo</th>
-                <th>Utile</th>
-            </tr>'''
+                <tr class='table_bf'>
+                    <th>Descrizione</th>                    
+                    <th>Ricavo</th>
+                    <th>Costo</th>
+                    <th>Utile</th>
+                </tr>'''
 
         # TODO add correct value:
+        
+        # Not Invoiced:
         res[account_id] += summary_mask % (
-            '',
-            material_amount,
-            ts_amount,
+            'Not fatturato',
+            total['picking'][1] + total['ddt'][1] + total['intervent'][1],
+            total['picking'][0] + total['ddt'][0] + total['intervent'][0],
+            total['picking'][2] + total['ddt'][2] + total['intervent'][2],
             )
+
+        # Invoiced:
+        res[account_id] += summary_mask % (
+            'Fatturato',
+            total['invoice'][1] + total['intervent_invoiced'][1],
+            total['invoice'][0] + total['intervent_invoiced'][0],
+            total['invoice'][2] + total['intervent_invoiced'][2],
+            )
+
+        # Totale:
+        res[account_id] += summary_mask % (
+            'Totale',
+            total['picking'][1] + total['ddt'][1] + total['intervent'][1] +\
+            total['invoice'][1] + total['intervent_invoiced'][1],
+            
+            total['picking'][0] + total['ddt'][0] + total['intervent'][0] +\
+            total['invoice'][0] + total['intervent_invoiced'][0],
+            
+            total['picking'][2] + total['ddt'][2] + total['intervent'][2] +\
+            total['invoice'][2] + total['intervent_invoiced'][2],
+            )
+            
         res[account_id] += '</table>'
 
         return res
