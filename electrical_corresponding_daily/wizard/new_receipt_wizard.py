@@ -41,7 +41,7 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
-class NewReceiptWizard(orm.TransientModel):
+class NewReceiptWizard(orm.Model):
     ''' Wizard for New Receipt Wizard
     '''
     _name = 'new.receipt.wizard'
@@ -204,7 +204,7 @@ class NewReceiptWizard(orm.TransientModel):
         'state': lambda *x: 'draft',
         }
 
-class NewReceiptLineWizard(orm.TransientModel):
+class NewReceiptLineWizard(orm.Model):
     ''' Wizard for New Receipt Wizard
     '''
     _name = 'new.receipt.line.wizard'
@@ -267,7 +267,7 @@ class NewReceiptLineWizard(orm.TransientModel):
             readonly=True, multi=True),
         }
 
-class NewReceiptWizard(orm.TransientModel):
+class NewReceiptWizard(orm.Model):
     ''' Wizard for New Receipt Wizard
     '''
     _inherit = 'new.receipt.wizard'
