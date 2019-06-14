@@ -54,18 +54,26 @@
             groups="electrical_corresponding_daily.group_corresponding_manager,electrical_corresponding_daily.group_corresponding_user"
             sequence="1"
             />
-        <menuitem 
-            parent="menu_corresponding_root" 
-            id="menu_new_receipt" 
-            action="action_new_receipt_wizard_view"
-            sequence="10"
-            />
-        <menuitem 
-            parent="menu_corresponding_root" 
-            id="menu_corresponding_picking" 
-            action="action_stock_picking_form"
-            sequence="20"
-            groups="electrical_corresponding_daily.group_corresponding_manager"
-            />      
+            <menuitem 
+                parent="menu_corresponding_root" 
+                id="menu_new_receipt" 
+                action="action_new_receipt_wizard_view"
+                sequence="10"
+                />
+            <menuitem 
+                parent="menu_corresponding_root" 
+                id="menu_new_receipt_wizard_tree" 
+                action="action_new_receipt_wizard_tree_view"
+                sequence="20"
+                groups="electrical_corresponding_daily.group_corresponding_manager"
+                />
+            <menuitem 
+                parent="menu_corresponding_root" 
+                id="menu_corresponding_picking" 
+                action="action_stock_picking_form"
+                sequence="30"
+                groups="electrical_corresponding_daily.group_corresponding_manager"
+                />
+        
     </data>
 </openerp>

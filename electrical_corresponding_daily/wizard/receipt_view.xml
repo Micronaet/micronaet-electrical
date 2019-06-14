@@ -35,6 +35,18 @@
                 </form>
             </field>
       </record>
+      <record model="ir.ui.view" id="view_new_receipt_wizard_tree">
+          <field name="name">new.receipt.wizard.tree</field>
+          <field name="model">new.receipt.wizard</field>
+          <field name="arch" type="xml">
+              <tree string="Receipt">
+                  <field name="name" />
+                  <field name="force_date" />
+                  <field name="total" />
+                  <field name="total_vat" />
+              </tree>
+          </field>
+      </record>
 
       <record model="ir.actions.act_window" id="action_new_receipt_wizard_view">
           <field name="name">New receipt</field>
@@ -42,6 +54,14 @@
           <field name="view_type">form</field>
           <field name="view_mode">form</field>
           <field name="view_id" ref="new_receipt_wizard_view"/>
+      </record>  
+
+      <record model="ir.actions.act_window" id="action_new_receipt_wizard_tree_view">
+          <field name="name">Receipt pending</field>
+          <field name="res_model">new.receipt.wizard</field>
+          <field name="view_type">form</field>
+          <field name="view_mode">tree,form</field>
+          <field name="view_id" ref="view_new_receipt_wizard_tree" />
       </record>  
           
     </data>
