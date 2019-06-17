@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <record id="stock_ddt_invoice_ref_form" model="ir.ui.view">
+            <field name="name">stock.ddt.invoice.ref.form</field>
+            <field name="model">stock.ddt</field>
+            <field name="inherit_id" ref="electrical_l10n_it_ddt.stock_ddt_form"/>
+            <field name="arch" type="xml">
+                <field name="is_invoiced" position="before">
+                    <field name="manual_invoice_id" domain="[('partner_id', '=', partner_id), ('account_id', '=', account_id), ('contact_id', '=', contact_id)]" context="{'default_partner_id': partner_id, 'default_address_id': delivery_address_id, 'default_contact_id': contact_id, 'default_account_id': account_id}"/>
+                </field>
+                <!-- TODO -->
+                <!--<field name="is_invoiced" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>-->
+            </field>
+        </record>    
+
+        <!--manual.account.invoice-->
+        <record model="ir.ui.view" id="view_manual_account_invoice_search">
+            <field name="name">manual.account.invoice.search</field>
+            <field name="model">manual.account.invoice</field>
+            <field name="arch" type="xml">
+                <search string="Manual invoice" version="7.0">        
+                    <field name="name" />
+                    <field name="partner_id" filter_domain="[('partner_id','=',self)]"/>
+                    <field name="address_id" filter_domain="[('address_id','=',self)]"/>
+                    <field name="contact_id" filter_domain="[('contact_id','=',self)]"/>
+                    <field name="account_id" filter_domain="[('account_id','=',self)]"/>
+                    
+                    <filter name="no_total" string="No total" domain="[('total','=',0)]"/>                    
+                    
+                    <group expand="0" string="Group By...">
+                        <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
+                        <filter name="group_address" string="Address" context="{'group_by': 'address_id'}"/>
+                        <filter name="group_contact" string="Contact" context="{'group_by': 'contact_id'}"/>
+                        <filter name="group_account" string="Account" context="{'group_by': 'account_id'}"/>
+                    </group>                
+                </search>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="view_manual_account_invoice_tree">
+            <field name="name">manual.account.invoice.tree</field>
+            <field name="model">manual.account.invoice</field>
+            <field name="arch" type="xml">
+                <tree string="Manual invoice" colors="grey:total==0">        
+                    <field name="name" />
+                    <field name="date" />
+                    <field name="partner_id" />
+                    <field name="address_id" />
+                    <field name="contact_id" />
+                    <field name="account_id" />
+                    <field name="total" />
+                </tree>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="view_manual_account_invoice_form">
+            <field name="name">manual.account.invoice.form</field>
+            <field name="model">manual.account.invoice</field>
+            <field name="arch" type="xml">
+                <form string="Manual invoice" version="7.0">
+                    <sheet> 
+                        <group colspan="4" col="4">
+                            <field name="name" />
+                            <field name="date" />
+                            <field name="partner_id" />
+                            <field name="address_id" />
+                            <field name="contact_id" />
+                            <field name="account_id" />
+                            <field name="total" />
+                            <separator string="DDT" colspan="4"/>
+                            <field name="ddt_ids" colspan="4" nolabel="1">
+                                <tree string="DDT">
+                                    <field name="name" />
+                                    <field name="date" />
+                                    <field name="partner_id" />
+                                    <field name="delivery_address_id" />
+                                    <field name="account_id" />
+                                </tree>
+                            </field>
+                        </group>    
+                    </sheet> 
+                </form>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_manual_account_invoice">
+            <field name="name">Manual invoice</field>
+            <field name="res_model">manual.account.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_manual_account_invoice_tree"/>
+            <field name="context">{}</field>
+            <field name="domain">[]</field>
+        </record>
+        <menuitem 
+            parent="account.menu_finance_receivables" 
+            id="menu_manual_account_invoice" 
+            action="action_manual_account_invoice"
+            sequence="0"
+            />
+        
+        
+    </data>
+</openerp>
+

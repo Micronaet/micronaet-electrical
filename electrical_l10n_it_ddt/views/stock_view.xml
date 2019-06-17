@@ -47,7 +47,7 @@
                     <field name="partner_id" filter_domain="[('partner_id.name','ilike',self)]"/>
                     <field name="contact_id" filter_domain="[('contact_id.name','ilike',self)]"/>
                     <!--<field name="invoice_id" filter_domain="[('invoice_id','=',self)]"/>-->
-                    <field name="invoice_number" />
+                    <!--<field name="invoice_number" />-->
 
                     <!--<filter name="to_invoice" string="To invoice" domain="[('not_invoiced', '=', False),('invoice_id','=',False)]"/>-->
                     <filter name="invoiced" string="Invoiced" domain="['|',('is_invoiced'),('invoice_id','!=',False)]"/>
@@ -56,7 +56,8 @@
                     <group expand="0" string="Group By">
                         <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
                         <filter name="group_contact" string="Contact" context="{'group_by': 'contact_id'}"/>
-                        <filter name="group_invoice" string="Invoice" context="{'group_by': 'invoice_number'}"/>
+                        <!--<filter name="group_invoice" string="Invoice" context="{'group_by': 'invoice_number'}"/>-->
+                        
                         <!--<filter name="group_invoice" string="Invoice" context="{'group_by': 'invoice_id'}"/>-->
                         <filter name="group_account" string="Account" context="{'group_by': 'account_id'}"/>
                         <filter name="group_date" string="Date" context="{'group_by': 'date'}"/>
@@ -120,8 +121,8 @@
                                 <field name="account_no_parent" on_change="onchange_ddt_partner_filter(partner_id, account_no_parent)" />
                                 <field name="account_id"/>
                                 <field name="is_invoiced" />
-                                <field name="invoice_number" attrs="{'invisible': [('is_invoiced','=',False)]}"/>
-                                <field name="invoice_amount" attrs="{'invisible': [('is_invoiced','=',False)]}" help="Write only on the first DDT!"/>
+                                <!--<field name="invoice_number" attrs="{'invisible': [('is_invoiced','=',False)]}"/>
+                                <field name="invoice_amount" attrs="{'invisible': [('is_invoiced','=',False)]}" help="Write only on the first DDT!"/>-->
                             </group>
                         </group>
                         <notebook>
@@ -186,10 +187,10 @@
                     <field name="partner_id"/>
                     <field name="contact_id"/>
                     <field name="account_id"/>
-                    <field name="invoice_id"/>
+                    <field name="invoice_id" invisible="1"/>
                     <field name="not_invoiced" invisible="1"/>
-                    <field name="invoice_number" />
-                    <field name="invoice_amount" />
+                    <!--<field name="invoice_number" />
+                    <field name="invoice_amount" />-->
                     <field name="state"/>
                     <button name="set_not_invoiced_true" string="Not invoiced" type="object" icon="star-off" attrs="{'invisible': [('not_invoiced','=',True)]}"/>
                     <button name="set_not_invoiced_false" string="To be invoiced" type="object" icon="star-on" attrs="{'invisible': [('not_invoiced','=',False)]}"/>
