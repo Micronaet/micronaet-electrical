@@ -43,6 +43,7 @@
     'init_xml': [],
     'demo': [],
     'data': [
+        'security/ir.model.access.csv',
         'security/corresponding_group.xml',
         'data/receipt_sequence.xml',
 
