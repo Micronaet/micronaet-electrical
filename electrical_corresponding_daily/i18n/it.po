@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-13 08:32+0000\n"
-"PO-Revision-Date: 2019-03-13 09:35+0100\n"
+"POT-Creation-Date: 2019-06-17 07:32+0000\n"
+"PO-Revision-Date: 2019-06-17 09:34+0100\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -24,12 +24,14 @@ msgstr "# Scontrino"
 
 #. module: electrical_corresponding_daily
 #: view:new.receipt.wizard:electrical_corresponding_daily.new_receipt_wizard_view
+#: view:new.receipt.wizard:electrical_corresponding_daily.view_new_receipt_wizard_tree
 msgid "Confirm"
 msgstr "Conferma"
 
 #. module: electrical_corresponding_daily
 #: model:ir.ui.menu,name:electrical_corresponding_daily.menu_corresponding_root
-#: field:stock.picking,corresponding:0
+#: field:stock.picking,corresponding_error:0
+#: field:stock.picking,corresponding_total:0
 msgid "Corresponding"
 msgstr "Corrispettivo"
 
@@ -44,10 +46,20 @@ msgid "Corresponding User"
 msgstr "Utente Corrispettivo"
 
 #. module: electrical_corresponding_daily
+#: field:stock.picking,corresponding_total_vat:0
+msgid "Corresponding VAT"
+msgstr "Corresponding VAT"
+
+#. module: electrical_corresponding_daily
 #: model:ir.actions.act_window,name:electrical_corresponding_daily.action_stock_picking_form
 #: model:ir.ui.menu,name:electrical_corresponding_daily.menu_corresponding_picking
 msgid "Corresponding picking"
 msgstr "Picking corrispettivo"
+
+#. module: electrical_corresponding_daily
+#: view:stock.picking:electrical_corresponding_daily.view_stock_picking_corresponding_tree
+msgid "Corrresponding"
+msgstr "Corrispettivi"
 
 #. module: electrical_corresponding_daily
 #: field:new.receipt.line.wizard,create_uid:0
@@ -87,6 +99,22 @@ msgid "Draft"
 msgstr "Bozza"
 
 #. module: electrical_corresponding_daily
+#: code:addons/electrical_corresponding_daily/wizard/new_receipt_wizard.py:109
+#, python-format
+msgid "Error"
+msgstr "Errore"
+
+#. module: electrical_corresponding_daily
+#: field:new.receipt.wizard,force_date:0
+msgid "Force date"
+msgstr "Forza data"
+
+#. module: electrical_corresponding_daily
+#: help:new.receipt.wizard,force_date:0
+msgid "Force date instead take today!"
+msgstr "Forza data in caso contrario prende l'attuale giorno!"
+
+#. module: electrical_corresponding_daily
 #: field:new.receipt.line.wizard,id:0 field:new.receipt.wizard,id:0
 msgid "ID"
 msgstr "ID"
@@ -104,6 +132,12 @@ msgid "Last Updated on"
 msgstr "Ultimo aggiornamento il"
 
 #. module: electrical_corresponding_daily
+#: code:addons/electrical_corresponding_daily/wizard/new_receipt_wizard.py:110
+#, python-format
+msgid "Need setup of outgoing stock.picking.type!"
+msgstr "Necessaria configurazione del tipo di picking"
+
+#. module: electrical_corresponding_daily
 #: model:ir.actions.act_window,name:electrical_corresponding_daily.action_new_receipt_wizard_view
 #: model:ir.ui.menu,name:electrical_corresponding_daily.menu_new_receipt
 msgid "New receipt"
@@ -112,7 +146,7 @@ msgstr "Nuovo scontrino"
 #. module: electrical_corresponding_daily
 #: model:ir.model,name:electrical_corresponding_daily.model_stock_picking
 msgid "Picking List"
-msgstr "Lista prelievo"
+msgstr "Lista Picking"
 
 #. module: electrical_corresponding_daily
 #: field:new.receipt.line.wizard,price:0
@@ -135,14 +169,20 @@ msgid "Q."
 msgstr "Q."
 
 #. module: electrical_corresponding_daily
+#: view:new.receipt.wizard:electrical_corresponding_daily.view_new_receipt_wizard_tree
+msgid "Receipt"
+msgstr "Scontrino"
+
+#. module: electrical_corresponding_daily
+#: model:ir.actions.act_window,name:electrical_corresponding_daily.action_new_receipt_wizard_tree_view
+#: model:ir.ui.menu,name:electrical_corresponding_daily.menu_new_receipt_wizard_tree
+msgid "Receipt pending"
+msgstr "Scontrini pendenti"
+
+#. module: electrical_corresponding_daily
 #: field:new.receipt.wizard,state:0
 msgid "State"
 msgstr "Stato"
-
-#. module: electrical_corresponding_daily
-#: model:ir.model,name:electrical_corresponding_daily.model_stock_move
-msgid "Stock Move"
-msgstr "Movimento di magazzino"
 
 #. module: electrical_corresponding_daily
 #: field:new.receipt.line.wizard,subtotal:0
@@ -170,3 +210,13 @@ msgstr "UM"
 #: view:new.receipt.wizard:electrical_corresponding_daily.new_receipt_wizard_view
 msgid "Wizard"
 msgstr "Wizard"
+
+#. module: electrical_corresponding_daily
+#: view:stock.picking:electrical_corresponding_daily.view_stock_picking_corresponding_tree
+msgid "total"
+msgstr "total"
+
+#. module: electrical_corresponding_daily
+#: view:stock.picking:electrical_corresponding_daily.view_stock_picking_corresponding_tree
+msgid "total_vat"
+msgstr "total_vat"
