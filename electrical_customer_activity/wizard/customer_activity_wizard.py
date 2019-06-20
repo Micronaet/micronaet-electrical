@@ -1427,8 +1427,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                         context=context)
 
             # -----------------------------------------------------------------
-            # Excel page:
+            # Excel page Materiali: 1. Material
             # -----------------------------------------------------------------
+            sub1 = sub2 = sub3 = 0.0
             for key in sorted(
                     material_rows, key=lambda x: x[0].default_code):
                 record = material_rows[key]
@@ -1453,11 +1454,75 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     (record[6], f_number),
                     ], mask['Materiali'][1])
 
+                # Update total:
+                sub1 += record[4]
+                sub2 += record[5]
+                sub3 += record[6]
+                
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], data,
                     default_format=f_text,
                     )
                 sheet['row'] += 1
+
+            # Total for block:
+            data = self.data_mask_filter([  
+                ('Totale', f_title), '', '', '', '', '', '',
+                sub1, sub2, sub3,
+                ], mask['Materiali'][1])
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], data,
+                default_format=f_number,
+                )
+            excel_pool.merge_cell(ws_name, [
+                sheet['row'], 0, sheet['row'], 6,
+                ])
+                
+
+            # -----------------------------------------------------------------
+            # Excel page Materiali: 2. Expences
+            # -----------------------------------------------------------------
+            if expence_db:
+                # Print header
+                sheet['row'] += 2
+                excel_pool.write_xls_line(
+                    ws_name, sheet['row'], [
+                        'SPESE EXTRA', '', '', '',
+                        ], default_format=f_header)
+                excel_pool.merge_cell(ws_name, [
+                    sheet['row'], 0, sheet['row'], 3,
+                    ])
+                sheet['row'] += 1
+                excel_pool.write_xls_line(
+                    ws_name, sheet['row'], [
+                        'Categoria', 'Descrizione', 'Costo', 
+                        'Costo esposto',
+                        ], default_format=f_header)
+
+                sheet['row'] += 1
+                subtotal1 = subtotal2 = 0.0
+                for key in expence_db:
+                    for expence in expence_db[key]:
+                        subtotal1 += expence.total
+                        subtotal2 += expence.total_forced or expence.total
+
+                        excel_pool.write_xls_line(
+                            ws_name, sheet['row'], [  
+                                expence.category_id.name or '',
+                                expence.name or '',
+                                (subtotal1, f_number),
+                                (subtotal2, f_number),
+                                ], default_format=f_text)
+                        sheet['row'] += 1
+
+                # Total:        
+                excel_pool.write_xls_line(
+                    ws_name, sheet['row'], [  
+                        ('Totale', f_title),
+                        (subtotal1, f_number),
+                        (subtotal2, f_number),
+                        ], col=1, default_format=f_number,
+                    )
 
         # ---------------------------------------------------------------------
         # E. INTERVENT:
@@ -1790,7 +1855,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ], mask['Total']), default_format=f_text)            
 
         # ---------------------------------------------------------------------
-        # PRIVATE MODE:
+        #                            PRIVATE MODE:
         # ---------------------------------------------------------------------
         if report_mode == 'private':            
             ws_name = 'Ridotta'
