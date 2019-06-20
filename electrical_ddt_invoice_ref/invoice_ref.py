@@ -61,6 +61,7 @@ class ManualAccountInvoice(orm.Model):
         'contact_id': fields.many2one('res.partner', 'Contact'),
         'address_id': fields.many2one('res.partner', 'Address'),
         'total': fields.float('Total', digits=(16, 2)),
+        'note': fields.text('Note'),
         }
     
     _defaults = {
@@ -90,6 +91,17 @@ class ManualAccountInvoice(orm.Model):
 
     _columns = {
         'ddt_ids': fields.one2many('stock.ddt', 'manual_invoice_id', 'DDT'),
+        }
+
+class AccountAnaliticAccount(orm.Model):
+    """ Model name: AccountAnalitic Account
+    """
+    
+    _inherit = 'account.analytic.account'
+    
+    _columns = {
+        'manual_invoice_ids': fields.one2many(
+            'manual.account.invoice', 'account_id', 'Invoice'),
         }
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

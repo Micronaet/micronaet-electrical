@@ -382,6 +382,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         to_date = wiz_browse.to_date
         no_account = wiz_browse.no_account
         report_mode = wiz_browse.mode
+        manual_invoice_ids = account_id.manual_invoice_ids
 
         _logger.warning('Report mode: %s' % report_mode)
 

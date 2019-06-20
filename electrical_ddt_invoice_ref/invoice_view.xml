@@ -78,6 +78,9 @@
                                     <field name="account_id" />
                                 </tree>
                             </field>
+
+                            <separator string="Note" colspan="4"/>
+                            <field name="note" colspan="4" nolabel="1"/>
                         </group>    
                     </sheet> 
                 </form>
