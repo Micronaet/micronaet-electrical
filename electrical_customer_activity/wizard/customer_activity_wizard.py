@@ -382,7 +382,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         to_date = wiz_browse.to_date
         no_account = wiz_browse.no_account
         report_mode = wiz_browse.mode
-        manual_invoice_ids = account_id.manual_invoice_ids
+        manual_invoice_ids = wiz_browse.account_id.manual_invoice_ids
 
         _logger.warning('Report mode: %s' % report_mode)
 
@@ -439,6 +439,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 '', '111', 2, # Summary hide col., Summary total
                 ],
 
+            'Fatture': [
+                False, '', 
+                '001', 6,
+                '', '001', 2, # Summary hide col., Summary total
+                ],
+
             'Spese': [
                 True, '', 
                 '', 4, # Total line hide, Total position
@@ -450,8 +456,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 #'', 11,
                 #'', '', 2, # Summary hide col., Summary total
                 ],
-            
-            #'Fatture': [True, '', '', 12],
             
             'Commesse': [
                 True, '', 
@@ -525,6 +529,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             mask['Total'] = '1001'
         elif report_mode == 'report':
             mask['Materiali'][0] = True
+            mask['Fatture'][0] = True
         elif report_mode == 'private':
             # Hide extra pages:
             mask['Riepilogo'][0] = False
@@ -664,6 +669,18 @@ class ResPartnerActivityWizard(orm.TransientModel):
             if key not in ddt_db:
                 ddt_db[key] = []
             ddt_db[key].append(ddt)
+
+        # ---------------------------------------------------------------------
+        # C. COLLECT INVOCE:
+        # ---------------------------------------------------------------------
+        invoice_db = {}
+        for invoice in manual_invoice_ids:
+            key = (
+                invoice.name,
+                )
+            if key not in invoice_db:
+                invoice_db[key] = []
+            invoice_db[key].append(invoice)
 
         # ---------------------------------------------------------------------
         # D. COLLECT INTERVENT:
@@ -841,6 +858,19 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'data': ddt_db, 
                 },
 
+            'Fatture': { # DDT not invoiced
+                'row': 0,
+                'header': [
+                    'Data', 'Commessa', 'Destinazione', 'Contatto', 'Rif.',
+                    'Note', 'Totale',
+                    ],
+                'width': [
+                    15, 20, 25, 25, 10, 40, 15, 
+                    ],
+                'total': {},
+                'data': invoice_db, 
+                },
+
             'Spese': { 
                 'row': 0,
                 'header': [
@@ -908,6 +938,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'total_revenue': 0.0, 
                 },
                 
+            'Fatture': {
+                'header': ['Data', 'Riferimento', 'Totale'],
+                'data': {},
+                'total_cost': 0.0, 
+                'total_discount': 0.0, 
+                'total_revenue': 0.0, 
+                },
+                
             # TODO Spese!!!
             'Spese': {
                 'header': ['Commessa', 'Categoria', 'Costo', 'Scontato', 
@@ -933,8 +971,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Interventi', 
             'Consegne', 
             'DDT', 
+            'Fatture',
             'Spese',
-            #'Fatture',
             'Commesse',
             'Materiali',
             ]
@@ -1326,6 +1364,90 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     ], mask['DDT'][2]), 
                 default_format=f_text, col=mask['DDT'][3])
 
+
+
+
+        # ---------------------------------------------------------------------
+        # C. INVOICE:
+        # ---------------------------------------------------------------------
+        if mask['Fatture'][0]:
+            ws_name = 'Fatture'
+            sheet = sheets[ws_name]
+            summary_data = summary[ws_name]['data']
+
+            total = sheet['total']
+            for key in invoice_db:        
+                for invoice in invoice_db[key]:
+                    invoice_total1 = 0.0
+                    invoice_total2 = 0.0
+                    invoice_total3 = 0.0
+                    invoice_error = False
+
+                    account = invoice.account_id
+                    account_id = account.id
+                    if account not in account_used:
+                        account_used.append(account)
+                    if account_id not in total:
+                        total[account_id] = 0.0
+                    
+                    subtotal3 = invoice.total                    
+                    #ddt_total1 += subtotal1 ddt_total2 += subtotal2
+                    invoice_total3 += subtotal3
+                    
+                    data = self.data_mask_filter([  
+                        # Header
+                        invoice.date,
+                        invoice.account_id.name,
+                        invoice.address_id.name or '/',
+                        invoice.contact_id.name or '/',
+                        invoice.name,
+                        invoice.note,
+                        (subtotal3, f_number),
+                        ], mask['Fatture'][1])
+
+                    excel_pool.write_xls_line(
+                        ws_name, sheet['row'], data,
+                        default_format=f_text,
+                        )
+                    sheet['row'] += 1
+
+                    # -----------------------------------------
+                    #                    TOTALS:
+                    # -----------------------------------------
+                    # A. Total per account:    
+                    total[account_id] += subtotal3 # XXX
+                    
+                    # B. Line total in same sheet:
+                    #summary[ws_name][
+                    #    'total_cost'] += subtotal1
+                    #summary[ws_name][
+                    #    'total_discount'] += subtotal2
+                    summary[ws_name][
+                        'total_revenue'] += subtotal3
+
+                    # Summary data (picking):         
+                    block_key = (invoice.name)
+                    if block_key not in summary_data:
+                        summary_data[block_key] = []
+                        
+                    summary_data[block_key].append((
+                        invoice.date,
+                        (invoice.name, f_text),                        
+                        (invoice_total3, f_number),
+                        )) 
+
+            # -----------------------------------------------------------------
+            # Total line at the end of the block:
+            # -----------------------------------------------------------------
+            excel_pool.write_xls_line(
+                ws_name, 
+                sheet['row'], 
+                self.data_mask_filter([
+                    (summary[ws_name]['total_cost'], f_number),
+                    (summary[ws_name]['total_discount'], f_number),
+                    (summary[ws_name]['total_revenue'], f_number),
+                    ], mask['Fatture'][2]), 
+                default_format=f_text, col=mask['Fatture'][3])
 
         # ---------------------------------------------------------------------
         # C. EXPENCE GROUPED BY:
