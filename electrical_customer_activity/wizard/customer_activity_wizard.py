@@ -861,7 +861,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'Sub. ultimo', 'Sub. scontato', 'Sub. METEL',
                     ],
                 'width': [
-                    15, 35, 5, 10, 
+                    15, 35, 7, 10, 
                     15, 15, 15,
                     15, 15, 15,
                     ],
