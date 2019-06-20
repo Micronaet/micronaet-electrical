@@ -452,7 +452,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ],
 
             'Materiali': [
-                False, '', 
+                False, '1111100100', 
                 #'', 11,
                 #'', '', 2, # Summary hide col., Summary total
                 ],
@@ -888,8 +888,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'row': 0,
                 'header': [
                     'Codice', 'Descrizione', 'UM', 'Q.', 
-                    'Costo ultimo', 'Scontato', 'METEL', 
-                    'Sub. ultimo', 'Sub. scontato', 'Sub. METEL',
+                    'Costo ultimo', 
+                    #'Scontato', 'METEL', 
+                    'Sub. ultimo', 
+                    #'Sub. scontato', 'Sub. METEL',
                     ],
                 'width': [
                     15, 35, 7, 10, 
@@ -1607,7 +1609,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 default_format=f_number,
                 )
             excel_pool.merge_cell(ws_name, [
-                sheet['row'], 0, sheet['row'], 6,
+                sheet['row'], 0, sheet['row'], 4, # TODO parametrize on header
                 ])
                 
 
