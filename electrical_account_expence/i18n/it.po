@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-29 12:45+0000\n"
-"PO-Revision-Date: 2019-05-29 14:47+0100\n"
+"POT-Creation-Date: 2019-06-20 08:06+0000\n"
+"PO-Revision-Date: 2019-06-20 10:08+0100\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -36,12 +36,12 @@ msgstr "Conto Analitico"
 #. module: electrical_account_expence
 #: model:ir.model,name:electrical_account_expence.model_account_analytic_expence
 msgid "Analytic expence"
-msgstr "Spese commesse"
+msgstr "Spese extra"
 
 #. module: electrical_account_expence
 #: model:ir.model,name:electrical_account_expence.model_account_analytic_expence_category
 msgid "Analytic expence category"
-msgstr "Categoria di spesa"
+msgstr "Categoria spese"
 
 #. module: electrical_account_expence
 #: view:account.analytic.expence:electrical_account_expence.view_account_analytic_expence_search
@@ -52,7 +52,7 @@ msgstr "Categoria"
 #. module: electrical_account_expence
 #: selection:account.analytic.expence,printable:0
 msgid "Conditional (wizard selection)"
-msgstr "Condizionale (impostato da wizard)"
+msgstr "Condizionale (selezionato dal wizard)"
 
 #. module: electrical_account_expence
 #: field:account.analytic.expence,create_uid:0
@@ -93,7 +93,7 @@ msgstr "Spese"
 #: model:ir.actions.act_window,name:electrical_account_expence.action_analytic_expence_category
 #: model:ir.ui.menu,name:electrical_account_expence.menu_action_account_expence_category_tree
 msgid "Expence category"
-msgstr "Categoria di spesa"
+msgstr "Categoria spese"
 
 #. module: electrical_account_expence
 #: view:account.analytic.account:electrical_account_expence.view_account_analytic_expence_form
@@ -119,9 +119,7 @@ msgstr "ID"
 #. module: electrical_account_expence
 #: help:account.analytic.expence,total_forced:0
 msgid "If present is used instead of total value (as a revenue)"
-msgstr ""
-"Se presente è utilizzato questo prezzo per esporlo al cliente (come totale "
-"fatturato)"
+msgstr "Se presente è usato al posto del totale (come fosse un ricavo)"
 
 #. module: electrical_account_expence
 #: field:account.analytic.expence,write_uid:0

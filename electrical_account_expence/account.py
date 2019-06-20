@@ -108,6 +108,7 @@ class AccountAnaliticAccount(orm.Model):
             'target': 'current', 
             'nodestroy': False,
             }
+
     _columns = {
         'expence_ids': fields.one2many(
             'account.analytic.expence', 'account_id', 'Expence'),
