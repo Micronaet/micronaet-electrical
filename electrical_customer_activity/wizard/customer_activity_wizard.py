@@ -773,7 +773,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Summary sheet:
             # -----------------------------------------------------------------
             'Riepilogo': { # Summary
-                'row': 1,
+                'row': -1,
                 'header': [],
                 'width': [40, 25, 15, 15, 15],
                 'data': True, # Create sheet
@@ -976,6 +976,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             # Setup columns
             excel_pool.column_width(ws_name, sheet['width'])
+            
+            # Add title:
+            if ws_name in ('Materiali', 'Riepilogo'):
+                # Filter text:
+                excel_pool.write_xls_line(ws_name, 0, [
+                    filter_text,
+                    ],default_format=f_title)
+                sheet['row'] += 2    
+                
             
             # Print header
             excel_pool.write_xls_line(
@@ -1735,11 +1744,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ws_name = 'Riepilogo'
             sheet = sheets[ws_name]
 
-            # Filter text:
-            excel_pool.write_xls_line(ws_name, 0, [
-                filter_text,
-                ],default_format=f_title)
-            
             for block in sheet_order[1:-2]: # Jump TODO commesse?!?
                 
                 # Check if sheet must be created:
