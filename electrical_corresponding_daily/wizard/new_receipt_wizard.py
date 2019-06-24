@@ -208,11 +208,14 @@ class NewReceiptLineWizard(orm.Model):
     ''' Wizard for New Receipt Wizard
     '''
     _name = 'new.receipt.line.wizard'
+    _vat_rate = 1.22 # TODO keep in parameter field!
+    _decimal = 2
 
-    def onchange_product_id(self, cr, uid, ids, product_id, context=None):
+    def onchange_product_id(self, cr, uid, ids, product_id, qty, context=None):
         ''' Change default price from product form
         '''
-        decimal = 2
+        decimal = self._decimal
+        
         res = {'value': {'price': 0.0}}
         if not product_id:
             return res
@@ -223,15 +226,21 @@ class NewReceiptLineWizard(orm.Model):
         
         if not product_id:
             return res     
+        
         # TODO change price?
         field_data = product_pool._get_metel_price_data(
             cr, uid, [product_id], context=context)
         #res['value']['price'] = product_proxy.standard_price
         #res['value']['price'] = product_proxy.lst_price
+        price = round(field_data[product_id].get(
+            'metel_sale', 0.0), decimal)
+        cost = round(product_proxy.standard_price, decimal)
+        price_vat = price * self._vat_rate
         try:
-            res['value']['price'] = round(
-                field_data[product_id].get(
-                    'metel_sale', 0.0), decimal) # discounted!
+            res['value']['price'] = price # discounted!
+            res['value']['cost'] = cost
+            res['value']['price_vat'] = price_vat
+            res['value']['subtotal'] = price * qty
         except:
             pass        
         return res
@@ -239,12 +248,13 @@ class NewReceiptLineWizard(orm.Model):
     def _get_subtotal_value(self, cr, uid, ids, fields, args, context=None):
         ''' Fields function for calculate 
         '''
-        vat_rate = 1.22 # TODO keep in parameter field!
+        vat_rate = self._vat_rate
         res = {}
         for line in self.browse(cr, uid, ids, context=context):
             price_vat = line.price * vat_rate
             res[line.id] = {
                 'price_vat': price_vat,
+                'cost': line.product_id.standard_price,
                 'subtotal': price_vat * line.qty,
                 }
         return res
@@ -259,6 +269,9 @@ class NewReceiptLineWizard(orm.Model):
         'qty': fields.float('Q.', digits=(16, 2), required=True),
         #'standard_price': fields.float('Price', digits=(16, 4), required=True),
         'price': fields.float('Price', digits=(16, 4), required=True),
+        'cost': fields.function(
+            _get_subtotal_value, method=True, type='float', string='Cost',
+            readonly=True, multi=True),                         
         'price_vat': fields.function(
             _get_subtotal_value, method=True, type='float', string='Price VAT',
             readonly=True, multi=True),                         

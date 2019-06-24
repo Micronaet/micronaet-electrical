@@ -674,9 +674,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # C. COLLECT INVOCE:
         # ---------------------------------------------------------------------
         invoice_db = {}
-        for invoice in manual_invoice_ids:
+        for invoice in manual_invoice_ids:        
             key = (
-                invoice.name,
+                invoice.date,
                 )
             if key not in invoice_db:
                 invoice_db[key] = []
