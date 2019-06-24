@@ -1612,9 +1612,100 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 sheet['row'], 0, sheet['row'], 4, # TODO parametrize on header
                 ])
                 
+            # -----------------------------------------------------------------
+            # Excel page Materiali: 2. Intervent
+            # -----------------------------------------------------------------
+            if intervent_db:
+                # Print header
+                sheet['row'] += 2
+                excel_pool.write_xls_line(
+                    ws_name, sheet['row'], [
+                        'INTERVENTI', '', '', '',
+                        ], default_format=f_header)
+                excel_pool.merge_cell(ws_name, [
+                    sheet['row'], 0, sheet['row'], 3,
+                    ])
+
+                sheet['row'] += 1
+                excel_pool.write_xls_line(
+                    ws_name, sheet['row'], [
+                        'Data', 'Utente', 'H.', 'Costo', 
+                        ], default_format=f_header)
+
+                sheet['row'] += 1
+                subtotal1 = 0.0
+                for key in intervent_db:
+                    for intervent in sorted(
+                            intervent_db[key], 
+                            key=lambda x: x.date_start,
+                            ):
+                            
+                        # Remove not in report:    
+                        if intervent.not_in_report:
+                            continue 
+                        
+                        # TODO Jump invoiced?
+                        if intervent.is_invoiced:
+                            continue
+       
+                        # Readability:
+                        user = intervent.user_id
+                        partner = intervent.intervent_partner_id
+                        account = intervent.account_id
+                        account_id = account.id
+                        user_id = user.id
+                        user_mode_id = intervent.user_mode_id.id
+                        
+                        this_cost = -intervent.amount
+
+                        if not this_cost:
+                            f_number_color = f_number_red
+                            f_text_color = f_text_red
+                        else:    
+                            f_number_color = f_number
+                            f_text_color = f_text
+
+                        data = [
+                            intervent.date_start[:10],
+                            intervent.user_id.name,
+                            
+                            # Intervent:
+                            #intervent.intervent_duration,
+                            #intervent.intervent_total,
+                            intervent.unit_amount,
+
+                            (this_cost, f_number_color), # total cost
+                            #intervent.to_invoice.name or '/',
+                            ]
+
+                        excel_pool.write_xls_line(
+                            ws_name, sheet['row'], data,
+                            default_format=f_text_color
+                            )
+                        sheet['row'] += 1
+
+                        # ---------------------------------------------------------
+                        # Totals:
+                        # ---------------------------------------------------------
+                        # A. Total per account:                            
+                        subtotal1 += this_cost
+                        
+
+                    # -------------------------------------------------------------
+                    # Total line at the end of the block:
+                    # -------------------------------------------------------------
+                    excel_pool.write_xls_line(
+                        ws_name, 
+                        sheet['row'], 
+                        self.data_mask_filter([
+                            (subtotal1, f_number),
+                            ], mask['Interventi'][2]), 
+                        default_format=f_text, 
+                        col=mask['Interventi'][3])
+                    
 
             # -----------------------------------------------------------------
-            # Excel page Materiali: 2. Expences
+            # Excel page Materiali: 3. Expences
             # -----------------------------------------------------------------
             if expence_db:
                 # Print header
