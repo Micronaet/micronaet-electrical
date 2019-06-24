@@ -201,6 +201,7 @@ class NewReceiptWizard(orm.Model):
 
     _defaults = {
         # Default value for state:
+        'name': lambda *x: 'Non confermato...',
         'state': lambda *x: 'draft',
         }
 
