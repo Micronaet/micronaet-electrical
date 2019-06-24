@@ -1615,25 +1615,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             # Excel page Materiali: 2. Intervent
             # -----------------------------------------------------------------
+            sub_amount = sub_h = 0.0
             if intervent_db:
                 # Print header
                 sheet['row'] += 2
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], [
-                        'INTERVENTI', '', '', '',
-                        ], default_format=f_header)
-                excel_pool.merge_cell(ws_name, [
-                    sheet['row'], 0, sheet['row'], 3,
-                    ])
-
-                sheet['row'] += 1
-                excel_pool.write_xls_line(
-                    ws_name, sheet['row'], [
-                        'Descrizione', 'H.', 'Costo', 
+                        'Descrizione', 'Costo', 'H.', 
                         ], default_format=f_header)
 
                 sheet['row'] += 1
-                sub_amount = sub_h = 0.0
                 
                 for key in intervent_db:
                     for intervent in sorted(
@@ -1661,56 +1652,46 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     excel_pool.write_xls_line(
                         ws_name, sheet['row'], [
                             'Interventi del periodo',
-                            (sub_h, f_number),
                             (sub_amount, f_number),
-                            ]), default_format=f_text)
+                            (sub_h, f_number),
+                            ], default_format=f_text)
                     
 
             # -----------------------------------------------------------------
             # Excel page Materiali: 3. Expences
             # -----------------------------------------------------------------
+            subtotal1 = 0.0
             if expence_db:
                 # Print header
                 sheet['row'] += 2
+
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], [
-                        'SPESE EXTRA', '', '', '',
-                        ], default_format=f_header)
-                excel_pool.merge_cell(ws_name, [
-                    sheet['row'], 0, sheet['row'], 3,
-                    ])
-                sheet['row'] += 1
-                excel_pool.write_xls_line(
-                    ws_name, sheet['row'], [
-                        'Categoria', 'Descrizione', 'Costo', 
-                        'Costo esposto',
+                        'Descrizione', 'Costo', 
+                        #'Costo esposto',
                         ], default_format=f_header)
 
                 sheet['row'] += 1
-                subtotal1 = subtotal2 = 0.0
                 for key in expence_db:
                     for expence in expence_db[key]:
                         subtotal1 += expence.total
-                        subtotal2 += expence.total_forced or expence.total
-
-                        excel_pool.write_xls_line(
-                            ws_name, sheet['row'], [  
-                                expence.category_id.name or '',
-                                expence.name or '',
-                                (subtotal1, f_number),
-                                (subtotal2, f_number),
-                                ], default_format=f_text)
-                        sheet['row'] += 1
 
                 # Total:        
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], [  
-                        ('Totale', f_title),
+                        'Spese extra',
                         (subtotal1, f_number),
-                        (subtotal2, f_number),
-                        ], col=1, default_format=f_number,
+                        ], default_format=f_text,
                     )
 
+        # Total cost:        
+        sheet['row'] += 2
+        excel_pool.write_xls_line(
+            ws_name, sheet['row'], [  
+                ('Tot. costi materiali, interventi e spese extra: € %s' % sum(
+                    (sub1, subtotal1, sub_amount)), f_number),
+                ], default_format=f_title,
+            )
         # ---------------------------------------------------------------------
         # E. INTERVENT:
         # ---------------------------------------------------------------------
