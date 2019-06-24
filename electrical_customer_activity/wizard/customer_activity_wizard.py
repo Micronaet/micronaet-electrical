@@ -1629,11 +1629,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 sheet['row'] += 1
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], [
-                        'Data', 'Utente', 'H.', 'Costo', 
+                        'Descrizione', 'H.', 'Costo', 
                         ], default_format=f_header)
 
                 sheet['row'] += 1
-                subtotal1 = 0.0
+                sub_amount = sub_h = 0.0
+                
                 for key in intervent_db:
                     for intervent in sorted(
                             intervent_db[key], 
@@ -1648,60 +1649,21 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         if intervent.is_invoiced:
                             continue
        
-                        # Readability:
-                        user = intervent.user_id
-                        partner = intervent.intervent_partner_id
-                        account = intervent.account_id
-                        account_id = account.id
-                        user_id = user.id
-                        user_mode_id = intervent.user_mode_id.id
-                        
-                        this_cost = -intervent.amount
-
-                        if not this_cost:
-                            f_number_color = f_number_red
-                            f_text_color = f_text_red
-                        else:    
-                            f_number_color = f_number
-                            f_text_color = f_text
-
-                        data = [
-                            intervent.date_start[:10],
-                            intervent.user_id.name,
-                            
-                            # Intervent:
-                            #intervent.intervent_duration,
-                            #intervent.intervent_total,
-                            intervent.unit_amount,
-
-                            (this_cost, f_number_color), # total cost
-                            #intervent.to_invoice.name or '/',
-                            ]
-
-                        excel_pool.write_xls_line(
-                            ws_name, sheet['row'], data,
-                            default_format=f_text_color
-                            )
-                        sheet['row'] += 1
-
-                        # ---------------------------------------------------------
+                        # -----------------------------------------------------
                         # Totals:
-                        # ---------------------------------------------------------
-                        # A. Total per account:                            
-                        subtotal1 += this_cost
-                        
+                        # -----------------------------------------------------
+                        sub_amount += -intervent.amount
+                        sub_h += intervent.unit_amount
 
-                    # -------------------------------------------------------------
+                    # ---------------------------------------------------------
                     # Total line at the end of the block:
-                    # -------------------------------------------------------------
+                    # ---------------------------------------------------------
                     excel_pool.write_xls_line(
-                        ws_name, 
-                        sheet['row'], 
-                        self.data_mask_filter([
-                            (subtotal1, f_number),
-                            ], mask['Interventi'][2]), 
-                        default_format=f_text, 
-                        col=mask['Interventi'][3])
+                        ws_name, sheet['row'], [
+                            'Interventi del periodo',
+                            (sub_h, f_number),
+                            (sub_amount, f_number),
+                            ]), default_format=f_text)
                     
 
             # -----------------------------------------------------------------
