@@ -1688,8 +1688,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         sheet['row'] += 2
         excel_pool.write_xls_line(
             ws_name, sheet['row'], [  
-                ('Tot. costi materiali, interventi e spese extra: EUR %s' % sum(
-                    (sub1, subtotal1, sub_amount)), f_number),
+                'Tot. costi materiali, interventi e spese extra: EUR %s' % sum(
+                    (sub1, subtotal1, sub_amount)),
                 ], default_format=f_title,
             )
         # ---------------------------------------------------------------------
