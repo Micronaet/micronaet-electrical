@@ -312,7 +312,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             partner_id = partner.id
             data = [
-                partner.name,
+                u'%s' % partner.name,
                 partner_id in picking_partner_ids,
                 partner_id in ddt_partner_ids,
                 #partner_id in invoice_partner_ids,
@@ -1684,14 +1684,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         ], default_format=f_text,
                     )
 
-        # Total cost:        
-        sheet['row'] += 2
-        excel_pool.write_xls_line(
-            ws_name, sheet['row'], [  
-                'Tot. costi materiali, interventi e spese extra: EUR %s' % sum(
-                    (sub1, subtotal1, sub_amount)),
-                ], default_format=f_title,
-            )
+            # Total cost:        
+            sheet['row'] += 2
+            excel_pool.write_xls_line(
+                ws_name, sheet['row'], [  
+                    'Tot. costi materiali, interventi e spese extra: EUR %s' % sum(
+                        (sub1, subtotal1, sub_amount)),
+                    ], default_format=f_title,
+                )
         # ---------------------------------------------------------------------
         # E. INTERVENT:
         # ---------------------------------------------------------------------
@@ -2068,7 +2068,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Partner information:
             excel_pool.write_xls_line(ws_name, row, [
                 ('Cliente', f_title),
-                partner.name,
+                u'%s' % partner.name,
                 ], default_format=f_title)
             row += 1             
             excel_pool.write_xls_line(ws_name, row, [
