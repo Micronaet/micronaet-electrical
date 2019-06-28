@@ -21,6 +21,8 @@
                     <field name="corresponding_total" sum="total" />
                     <field name="corresponding_total_vat" sum="total_vat" />
                     <field name="pick_state" />
+                    <field name="correspond_checked" invisible="1"/>
+                    <button name="dummy_button" string="Documento controllato!" type="object" icon="gtk-apply" attrs="{'invisible': [('correspond_checked','=',False)]}"/>
                 </tree>
            </field>
         </record>
