@@ -102,6 +102,6 @@ class StockPicking(orm.Model):
         'corresponding_error': fields.function(
             _get_corresponding_total, method=True, 
             type='boolean', string='Corresponding', multi=True),
-        'correspond_checked': fields.boolean('Correspond checked'),        
+        'correspond_checked': fields.boolean('Corrispettivo terminato'),        
         }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

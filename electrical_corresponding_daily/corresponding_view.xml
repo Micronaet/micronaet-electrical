@@ -55,8 +55,8 @@
             <field name="inherit_id" ref="stock.view_picking_form"/>
             <field name="arch" type="xml">
 	                <field name="state" position="after">
-                        <button name="correspond_checked_yes" string="Checked" type="object" attrs="{'invisible': [('correspond_checked','=',True)]}" class="oe_highlight" />
-                        <button name="correspond_checked_no" string="Not checked" type="object" attrs="{'invisible': [('correspond_checked','=',False)]}" class="oe_highlight" />
+                        <button name="correspond_checked_yes" string="Terminato" type="object" attrs="{'invisible': [('correspond_checked','=',True)]}" class="oe_highlight" />
+                        <button name="correspond_checked_no" string="Ripristina a non terminato" type="object" attrs="{'invisible': [('correspond_checked','=',False)]}" class="oe_highlight" />
                         <field name="correspond_checked" invisible="1" />
                     </field>
             </field>
