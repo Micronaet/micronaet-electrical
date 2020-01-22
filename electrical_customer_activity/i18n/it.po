@@ -1,21 +1,19 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# 	* electrical_customer_activity
+#	* electrical_customer_activity
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-23 12:48+0000\n"
-"PO-Revision-Date: 2019-04-23 14:50+0100\n"
+"POT-Creation-Date: 2020-01-22 13:19+0000\n"
+"PO-Revision-Date: 2020-01-22 13:19+0000\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
-"Language: it\n"
-"X-Generator: Poedit 1.6.10\n"
 
 #. module: electrical_customer_activity
 #: field:res.partner.activity.wizard,account_id:0
@@ -36,6 +34,16 @@ msgstr "Tutti gli interventi selezionati vengono marcati come fatturati"
 #: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
 msgid "Cancel"
 msgstr "Annulla"
+
+#. module: electrical_customer_activity
+#: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
+msgid "Cliente"
+msgstr "Cliente"
+
+#. module: electrical_customer_activity
+#: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
+msgid "Contabilità"
+msgstr "Contabilità"
 
 #. module: electrical_customer_activity
 #: field:res.partner.activity.wizard,contact_id:0
@@ -59,14 +67,19 @@ msgid "Customer activity"
 msgstr "Attività clienti"
 
 #. module: electrical_customer_activity
-#: selection:res.partner.activity.wizard,mode:0
-msgid "Customer detail"
-msgstr "Dettaglio (per cliente)"
+#: selection:res.partner.activity.wizard,ddt_mode:0
+msgid "DDT non fatturati"
+msgstr "DDT non fatturati"
+
+#. module: electrical_customer_activity
+#: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
+msgid "DDT:"
+msgstr "DDT:"
 
 #. module: electrical_customer_activity
 #: selection:res.partner.activity.wizard,mode:0
-msgid "Customer summary"
-msgstr "Riepilogativo (per cliente)"
+msgid "Dettagliata cliente"
+msgstr "Dettagliata cliente"
 
 #. module: electrical_customer_activity
 #: selection:res.partner,activity_price:0
@@ -78,6 +91,11 @@ msgstr "Prezzo scontato"
 #: selection:res.partner.activity.wizard,activity_price:0
 msgid "Discount price VAT"
 msgstr "Prezzo scontato Ivato"
+
+#. module: electrical_customer_activity
+#: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
+msgid "Excel"
+msgstr "Excel"
 
 #. module: electrical_customer_activity
 #: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
@@ -93,6 +111,11 @@ msgstr "Ora formattata"
 #: field:res.partner.activity.wizard,from_date:0
 msgid "From date >= "
 msgstr "Dalla data >= "
+
+#. module: electrical_customer_activity
+#: field:product.product,is_generic:0
+msgid "Generico"
+msgstr "Generico"
 
 #. module: electrical_customer_activity
 #: field:res.partner.activity.wizard,id:0
@@ -136,6 +159,11 @@ msgid "List price"
 msgstr "Prezzo Metel (listino)"
 
 #. module: electrical_customer_activity
+#: selection:res.partner.activity.wizard,mode:0
+msgid "Lista clienti"
+msgstr "Lista clienti"
+
+#. module: electrical_customer_activity
 #: field:res.partner.activity.wizard,mark_invoiced:0
 msgid "Mark intervent as invoiced"
 msgstr "Segna tutti gli interventi selezionati come fatturati"
@@ -157,6 +185,11 @@ msgid "Mode:"
 msgstr "Modalità:"
 
 #. module: electrical_customer_activity
+#: field:res.partner.activity.wizard,ddt_mode:0
+msgid "Modo DDT"
+msgstr "Modo DDT"
+
+#. module: electrical_customer_activity
 #: field:res.partner.activity.wizard,no_account:0
 msgid "No account"
 msgstr "Nessun conto analitico"
@@ -166,16 +199,6 @@ msgstr "Nessun conto analitico"
 #: field:res.partner.activity.wizard,partner_id:0
 msgid "Partner"
 msgstr "Cliente"
-
-#. module: electrical_customer_activity
-#: selection:res.partner.activity.wizard,mode:0
-msgid "Partner report"
-msgstr "Stampa clienti"
-
-#. module: electrical_customer_activity
-#: selection:res.partner.activity.wizard,mode:0
-msgid "Partners list"
-msgstr "Lista clienti"
 
 #. module: electrical_customer_activity
 #: selection:res.partner.activity.wizard,intervent_mode:0
@@ -204,14 +227,14 @@ msgid "Print partner touched"
 msgstr "Stampa clienti movimentati"
 
 #. module: electrical_customer_activity
-#: selection:res.partner.activity.wizard,mode:0
-msgid "Private (minimal)"
-msgstr "Interna (minimale)"
-
-#. module: electrical_customer_activity
 #: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
 msgid "Private parameters:"
 msgstr "Parametri interna:"
+
+#. module: electrical_customer_activity
+#: model:ir.model,name:electrical_customer_activity.model_product_product
+msgid "Product"
+msgstr "Prodotto"
 
 #. module: electrical_customer_activity
 #: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
@@ -219,9 +242,29 @@ msgid "Relation:"
 msgstr "Relazioni:"
 
 #. module: electrical_customer_activity
+#: selection:res.partner.activity.wizard,mode:0
+msgid "Riepilogativa cliente"
+msgstr "Riepilogativa cliente"
+
+#. module: electrical_customer_activity
 #: help:res.partner.activity.wizard,intervent_mode:0
 msgid "Select intervent depend on invoice mode"
 msgstr "Seleziona interventi dipendenti dalla modalità di fatturazione"
+
+#. module: electrical_customer_activity
+#: help:res.partner.activity.wizard,ddt_mode:0
+msgid "Stampa anche i DDT non fatturati o fatturati"
+msgstr "Stampa anche i DDT non fatturati o fatturati"
+
+#. module: electrical_customer_activity
+#: selection:res.partner.activity.wizard,mode:0
+msgid "Stampa cliente"
+msgstr "Stampa cliente"
+
+#. module: electrical_customer_activity
+#: selection:res.partner.activity.wizard,mode:0
+msgid "Stampa interna"
+msgstr "Stampa interna"
 
 #. module: electrical_customer_activity
 #: view:res.partner.activity.wizard:electrical_customer_activity.res_partner_activity_wizard_view
@@ -232,3 +275,9 @@ msgstr "Report statistico"
 #: field:res.partner.activity.wizard,to_date:0
 msgid "To date <="
 msgstr "Alla data <="
+
+#. module: electrical_customer_activity
+#: selection:res.partner.activity.wizard,ddt_mode:0
+msgid "Tutto"
+msgstr "Tutto"
+
