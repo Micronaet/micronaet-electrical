@@ -212,6 +212,20 @@ class NewReceiptLineWizard(orm.Model):
     _vat_rate = 1.22 # TODO keep in parameter field!
     _decimal = 2
 
+    def onchange_move_prefilter_id(self, cr, uid, ids, pre_filter, context=None):
+        ''' Force domain of product   
+        '''
+        res = {
+            'domain': {'product_id': []},
+            'value': {},
+            }
+
+        if pre_filter:
+            res['domain']['product_id'].append(
+                ('default_code', 'ilike', pre_filter))
+            res['value']['pre_filter'] = False
+        return res
+
     def onchange_product_id(self, cr, uid, ids, product_id, qty, context=None):
         ''' Change default price from product form
         '''
@@ -261,6 +275,7 @@ class NewReceiptLineWizard(orm.Model):
     
     _columns = {
         'wizard_id': fields.many2one('new.receipt.wizard', 'Wizard'),
+        'pre_filter': fields.char('Pre filtro', size=50),        
         'product_id': fields.many2one('product.product', 'Product'),
         'uom_id': fields.related(
             'product_id', 'uom_id', 
