@@ -2401,7 +2401,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         'no_account': fields.boolean('No account'),
 
         'from_date': fields.date('From date >= ', required=True),
-        'to_date': fields.date('To date <', required=True),
+        'to_date': fields.date('To date <=', required=True),
         'float_time': fields.boolean('Formatted hour', 
             help='If checked print hour in HH:MM format'),
 

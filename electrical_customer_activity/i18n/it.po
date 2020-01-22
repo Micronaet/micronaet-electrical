@@ -230,5 +230,5 @@ msgstr "Report statistico"
 
 #. module: electrical_customer_activity
 #: field:res.partner.activity.wizard,to_date:0
-msgid "To date <"
-msgstr "Alla data <"
+msgid "To date <="
+msgstr "Alla data <="
