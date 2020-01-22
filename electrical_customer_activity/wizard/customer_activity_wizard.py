@@ -40,6 +40,20 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
+# Utility:
+def formatLang(date):
+    ''' format date
+    '''
+    date = (date or '').strip()
+    if not date:
+        return ''
+
+    date_part = (date or '')[:10]
+    hour_part = (date or '')[10:]
+    
+    italian_date = '%s-%s-%s%s' % (date[:4], date[5:7], date[8:10], hour_part)
+    return italian_date
+    
 class ResPartnerActivityWizard(orm.TransientModel):
     ''' Wizard for partner activity
     '''
@@ -1087,7 +1101,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     picking.account_id.name or 'NON ASSEGNATA',
                                     picking.contact_id.name or '/',
                                     picking.name,
-                                    picking.min_date[:10],
+                                    formatLang(picking.min_date[:10]),
                                     picking.pick_state,
                                     
                                     # Move:
@@ -1132,7 +1146,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 picking.account_id.name or 'NON ASSEGNATA',
                                 picking.contact_id.name or '/',
                                 picking.name,
-                                picking.min_date[:10],
+                                formatLang(picking.min_date[:10]),
                                 picking.pick_state,
                                 
                                 # Move:
@@ -1248,7 +1262,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                         ddt.account_id.name,
                                         ddt.contact_id.name or '/',
                                         ddt.name,
-                                        (ddt.delivery_date or ddt.date)[:10],
+                                        (formatLang(
+                                            ddt.delivery_date or ddt.date))[:10],
                                         
                                         # Move:
                                         product.default_code,
@@ -1294,7 +1309,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     ddt.account_id.name or 'NON ASSEGNATA',
                                     ddt.contact_id.name or '/',
                                     ddt.name,
-                                    (ddt.delivery_date or ddt.date)[:10],
+                                    (formatLang(
+                                        ddt.delivery_date or ddt.date))[:10],
                                     
                                     # Move:
                                     'NESSUN MOVIMENTO',
@@ -1315,7 +1331,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             ddt.account_id.name or 'NON ASSEGNATA',
                             ddt.contact_id.name or '/',
                             ddt.name,
-                            (ddt.delivery_date, ddt.date)[:10],
+                            (formatLang(
+                                ddt.delivery_date, ddt.date))[:10],
                             
                             # Move:
                             'NESSUN PICKING',
@@ -1398,7 +1415,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     
                     data = self.data_mask_filter([  
                         # Header
-                        invoice.date,
+                        formatLang(invoice.date),
                         invoice.account_id.name,
                         invoice.address_id.name or '/',
                         invoice.contact_id.name or '/',
@@ -1433,7 +1450,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         summary_data[block_key] = []
                         
                     summary_data[block_key].append((
-                        invoice.date,
+                        formatLang(invoice.date),
                         (invoice.name, f_text),                        
                         (invoice_total3, f_number),
                         )) 
@@ -1472,7 +1489,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     
                     data = self.data_mask_filter([  
                         account.name or '',
-                        expence.date,
+                        formatLang(expence.date),
                         category.name or '',
                         expence.name or '',
                         (subtotal1, f_number),
@@ -1756,7 +1773,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     data = self.data_mask_filter([
                         account.name or 'NON ASSEGNATA',
                         intervent.intervent_contact_id.name or '/',
-                        intervent.date_start[:10],
+                        formatLang(intervent.date_start[:10]),
                         intervent.ref or 'BOZZA',
                         intervent.name,
                         intervent.mode,
@@ -1849,7 +1866,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         account.code,
                         account.name,
                         account.parent_id.name or '/',
-                        account.from_date[:10],
+                        formatLang(account.from_date[:10]),
                         '/', #account.fiscal_position.name,
                         account.total_hours,
                         account.state,
@@ -1884,7 +1901,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     account.code,
                     account.name,
                     account.parent_id.name or '/',
-                    account.from_date[:10],
+                    formatLang(account.from_date[:10]),
                     '/', #account.fiscal_position.name,
                     account.total_hours,
                     account.state,
@@ -2324,7 +2341,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             ddt_error = True
 
                         data = [
-                            intervent.date_start[:10],
+                            formatLang(intervent.date_start[:10]),
                             intervent.name,
                             intervent.intervent_total,
                             user.name,
