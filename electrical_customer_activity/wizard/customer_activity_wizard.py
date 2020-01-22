@@ -51,7 +51,12 @@ def formatLang(date):
     date_part = (date or '')[:10]
     hour_part = (date or '')[10:]
     
-    italian_date = '%s-%s-%s%s' % (date[:4], date[5:7], date[8:10], hour_part)
+    italian_date = '%s/%s/%s%s' % (
+        date[8:10], 
+        date[5:7], 
+        date[:4], 
+        hour_part,
+        )
     return italian_date
     
 class ResPartnerActivityWizard(orm.TransientModel):
@@ -413,8 +418,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # TODO intervent_mode, ddt_mode
         filter_text = \
             'Interventi del periodo: [%s - %s], %sContatto: %s, Commessa: %s%s' % (
-                from_date or '...',
-                to_date or '...',
+                formatLang(from_date) or '...',
+                formatLang(to_date) or '...',
                 
                 '' if report_mode == 'private' else partner_text,
                 wiz_browse.contact_id.name if wiz_browse.contact_id else '/',
