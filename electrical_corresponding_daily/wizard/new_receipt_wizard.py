@@ -223,7 +223,7 @@ class NewReceiptLineWizard(orm.Model):
         if pre_filter:
             res['domain']['product_id'].append(
                 ('default_code', 'ilike', pre_filter))
-            res['value']['pre_filter'] = False
+            #res['value']['pre_filter'] = False
         return res
 
     def onchange_product_id(self, cr, uid, ids, product_id, qty, context=None):
