@@ -49,7 +49,7 @@ class SaleOrder(orm.Model):
     _inherit = 'sale.order'
     
     _columns = {
-        'short_description': fields.char('In breve', size=180),
+        'short_description': fields.char('Descrizione', size=180),
         }
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
