@@ -318,7 +318,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             #'Fatture', 
             'Interventi',
             ]
-        width = [35, 10, 10, 10]
+        width = [45, 10, 10, 10]
 
         excel_pool.create_worksheet(ws_name)
 
@@ -414,7 +414,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             #'Fatture', 
             'Interventi',
             ]
-        width = [35, 10, 10, 10]
+        width = [45, 10, 10, 10]
 
         excel_pool.create_worksheet(ws_name)
 
