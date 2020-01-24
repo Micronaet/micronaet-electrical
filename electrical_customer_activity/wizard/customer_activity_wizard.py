@@ -364,7 +364,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Partner', 'Commessa', 'Consegne', 'DDT', 'Interventi',
             #'Fatture',             
             ]
-        width = [35, 35, 10, 10, 10]
+        width = [45, 40, 10, 10, 10]
         excel_pool.create_worksheet(ws_name)
 
         # Load formats:
@@ -384,7 +384,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         account_ids = tuple(account_set)
         for account in sorted(account_pool.browse(
                 cr, uid, account_ids, context=context),
-                key = lambda p: p.name,
+                key = lambda p: (
+                    p.partner_id.name if p.partner_id else '', p.name),
                 ):
             if not account.name:
                 continue
@@ -392,8 +393,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             partner = account.partner_id
             account_id = account.id
             data = [
-                u'%s' % (account.name or ''),
                 u'%s' % (partner.name or ''),
+                u'%s' % (account.name or ''),
                 account_id in picking_account_ids,
                 account_id in ddt_account_ids,
                 #account_id in invoice_account_ids,
