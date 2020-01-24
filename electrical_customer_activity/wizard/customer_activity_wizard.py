@@ -190,6 +190,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         partner_set = set()
         contact_set = set()
+        account_set = set()
 
         # ---------------------------------------------------------------------
         # A. Picking partner:
@@ -211,6 +212,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # Contact:
         picking_contact_ids = [item.contact_id.id for item in picking_proxy]
         contact_set.update(set(tuple(picking_contact_ids)))
+
+        # Account:
+        picking_account_ids = [item.account_id.id for item in picking_proxy]
+        account_set.update(set(tuple(picking_account_ids)))
     
         # ---------------------------------------------------------------------
         # B. DDT:
@@ -247,6 +252,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # Contact:
         ddt_contact_ids = [item.contact_id.id for item in ddt_proxy]
         contact_set.update(set(tuple(ddt_contact_ids)))
+
+        # Account:
+        ddt_account_ids = [item.account_id.id for item in ddt_proxy]
+        account_set.update(set(tuple(ddt_account_ids)))
 
         # ---------------------------------------------------------------------
         # C. Invoice:
@@ -293,6 +302,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
             intervent_proxy]
         contact_set.update(set(tuple(intervent_contact_ids)))
         
+        # Account:
+        intervent_account_ids = [item.account_id.id for item in \
+            intervent_proxy]
+        account_set.update(set(tuple(intervent_account_ids)))
 
         # ---------------------------------------------------------------------
         #                         Excel report:
@@ -331,11 +344,60 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             partner_id = partner.id
             data = [
-                u'%s' % partner.name,
+                u'%s' % (partner.name or ''),
                 partner_id in picking_partner_ids,
                 partner_id in ddt_partner_ids,
                 #partner_id in invoice_partner_ids,
                 partner_id in intervent_partner_ids,
+                ]
+            
+            excel_pool.write_xls_line(
+                ws_name, row, data,
+                default_format=f_text
+                )
+            row += 1
+
+        # Partner:
+        ws_name = 'Commesse'
+        row = 0
+        header = [
+            'Partner', 'Commessa', 'Consegne', 'DDT', 'Interventi',
+            #'Fatture',             
+            ]
+        width = [35, 35, 10, 10, 10]
+        excel_pool.create_worksheet(ws_name)
+
+        # Load formats:
+        f_title = excel_pool.get_format('title')
+        f_header = excel_pool.get_format('header')
+        f_text = excel_pool.get_format('text')
+        f_number = excel_pool.get_format('number')
+
+        # Setup columns
+        excel_pool.column_width(ws_name, width)
+            
+        # Print header
+        excel_pool.write_xls_line(
+            ws_name, row, header, default_format=f_header)
+        row += 1    
+        
+        account_ids = tuple(account_set)
+        for account in sorted(account_pool.browse(
+                cr, uid, account_ids, context=context),
+                key = lambda p: p.name,
+                ):
+            if not account.name:
+                continue
+    
+            partner = account.partner_id
+            account_id = account.id
+            data = [
+                u'%s' % (account.name or ''),
+                u'%s' % (partner.name or ''),
+                account_id in picking_account_ids,
+                account_id in ddt_account_ids,
+                #account_id in invoice_account_ids,
+                account_id in intervent_account_ids,
                 ]
             
             excel_pool.write_xls_line(
