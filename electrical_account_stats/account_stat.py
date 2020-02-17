@@ -119,7 +119,8 @@ class AccountAnalyticAccount(orm.Model):
         def number_cell(value, round_to=2):
             """ Return cell block for number
             """
-            return '<td class="td_number">%s</td>' % round(value, round_to)
+            return '<td class="td_text td_number">%15.2f</td>' % round(
+                value or 0.0, round_to)
              
             
         if len(ids) > 1:
@@ -149,34 +150,39 @@ class AccountAnalyticAccount(orm.Model):
         # ---------------------------------------------------------------------
         # Common Header:
         # ---------------------------------------------------------------------
+        '''
+                .openerp th, .openerp td {
+                     padding: 3px;
+                     width: 90px;
+                     text-align: right;
+                     }
+        '''
         res[account_id] += '''
             <style>
                 .table_bf {
-                     border:1px 
+                     border: 1px solid black;
                      padding: 3px;
                      solid black;
-                 }
-                .table_bf td {
-                     border:1px 
-                     solid black;
-                     padding: 3px;
-                     text-align: center;
-                 }
-                .td_number {
-                     border:1px 
-                     solid black;
-                     padding: 3px;
+                     }
+                .table_bf .td_number {
                      text-align: right;
-                     width: 70px;
-                 }
-                .table_bf th {
-                     border:1px 
-                     solid black;
+                     border: 1px solid black;
                      padding: 3px;
+                     width: 70px;
+                     }
+                .table_bf .td_text {
+                     text-align: right;
+                     border: 1px solid black;
+                     padding: 3px;
+                     width: 80px;
+                     }
+                .table_bf th {
                      text-align: center;
+                     border: 1px solid black;
+                     padding: 3px;
                      background-color: grey;
                      color: white;
-                 }
+                     }
             </style>
             '''
             
@@ -193,11 +199,11 @@ class AccountAnalyticAccount(orm.Model):
                 <p><b>Consegne materiali</b>: [Tot.: %s]</p>
                 <table class='table_bf'>
                 <tr class='table_bf'>
-                    <th>&nbsp;Descrizione&nbsp;</th>
-                    <th>&nbsp;Errori&nbsp;</th>
-                    <th>&nbsp;Ricavo&nbsp;</th>
-                    <th>&nbsp;Costo&nbsp;</th>
-                    <th>&nbsp;Utile&nbsp;</th>
+                    <th>Descrizione</th>
+                    <th>Ricavo</th>
+                    <th>Costo</th>
+                    <th>Utile</th>
+                    <th>Errori</th>
                 </tr>''' % len(picking_ids)
             
             # TODO manage also state of picking:    
@@ -232,13 +238,13 @@ class AccountAnalyticAccount(orm.Model):
                 total[mode][2] = total[mode][1] - total[mode][0]
                 res[account_id] += '''
                     <tr class='table_bf'>
-                        <td>%s</td>%s%s%s%s
+                        <td class="td_text">%s</td>%s%s%s%s
                     </tr>''' % (
                         name,
-                        number_cell(total[mode][3]), # error
                         number_cell(total[mode][0]), # cost
                         number_cell(total[mode][1]), # revenue
                         number_cell(total[mode][2]), # gain
+                        number_cell(total[mode][3]), # error
                         )
             res[account_id] += '''</table><br/>'''
         else:
@@ -258,11 +264,11 @@ class AccountAnalyticAccount(orm.Model):
                 <p><b>Interventi totali</b>: [Tot.: %s]</p>
                 <table class='table_bf'>
                 <tr class='table_bf'>
-                    <th>&nbsp;Descrizione&nbsp;</th>
-                    <th>&nbsp;H.&nbsp;</th>
-                    <th>&nbsp;Ricavo&nbsp;</th>
-                    <th>&nbsp;Costo&nbsp;</th>
-                    <th>&nbsp;Utile&nbsp;</th>
+                    <th>Descrizione</th>
+                    <th>Ricavo</th>
+                    <th>Costo</th>
+                    <th>Utile</th>
+                    <th>H.</th>
                 </tr>''' % len(timesheet_ids)
                 
             # TODO manage also state of picking:    
@@ -277,19 +283,19 @@ class AccountAnalyticAccount(orm.Model):
                 total[mode][0] += 0.0 # TODO cost
                 total[mode][1] += 0.0 # TODO revenue
 
-            for mode, name in (('intervent', 'Interventi da fatturare'), 
-                    ('intervent_invoiced', 'Interventi fatturati')):
+            for mode, name in (('intervent', 'Da fatturare'), 
+                    ('intervent_invoiced', 'Fatturati')):
                 total[mode][2] = total[mode][1] - total[mode][0]
                 
                 res[account_id] += '''
                     <tr class='table_bf'>
-                        <td>%s</td>%s%s%s%s
+                        <td class="td_text">%s</td>%s%s%s%s
                     </tr>''' % (
                             name,
-                            number_cell(total[mode][3]), # hour
                             number_cell(total[mode][0]), # cost
                             number_cell(total[mode][1]), # revenut
                             number_cell(total[mode][2]), # gain
+                            number_cell(total[mode][3]), # hour
                             )
             res[account_id] += '''</table><br/>'''
         else:
@@ -306,13 +312,13 @@ class AccountAnalyticAccount(orm.Model):
         if expence_ids:
             # Header:
             res[account_id] += '''
-                <p><b>&nbsp;Spese totali&nbsp;</b>: [Tot.: %s]</p>
+                <p><b>Spese totali</b>: [Tot.: %s]</p>
                 <table class='table_bf'>
                 <tr class='table_bf'>
-                    <th>&nbsp;Descrizione&nbsp;</th>
-                    <th>&nbsp;Ricavo&nbsp;</th>
-                    <th>&nbsp;Costo&nbsp;</th>
-                    <th>&nbsp;Utile&nbsp;</th>
+                    <th>Descrizione</th>
+                    <th>Ricavo</th>
+                    <th>Costo</th>
+                    <th>Utile</th>
                 </tr>''' % len(expence_ids)
                 
             for expence in expence_pool.browse(
@@ -323,7 +329,7 @@ class AccountAnalyticAccount(orm.Model):
             
             res[account_id] += '''
                 <tr class='table_bf'>
-                    <td>&nbsp;Spese&nbsp;</td>%s%s%s
+                    <td class="td_text">Spese</td>%s%s%s
                 </tr>''' % (
                     number_cell(total[mode][0]), # cost
                     number_cell(total[mode][1]), # revenue
@@ -342,17 +348,17 @@ class AccountAnalyticAccount(orm.Model):
             <p><b>Riepilogo:</b></p>
             <table class='table_bf'>
                 <tr class='table_bf'>
-                    <th>&nbsp;Descrizione&nbsp;</th>                    
-                    <th>&nbsp;Ricavo&nbsp;</th>
-                    <th>&nbsp;Costo&nbsp;</th>
-                    <th>&nbsp;Utile&nbsp;</th>
+                    <th>Descrizione</th>                    
+                    <th>Ricavo</th>
+                    <th>Costo</th>
+                    <th>Utile</th>
                 </tr>'''
 
         # TODO add correct value:
         
         summary_mask = '''
             <tr class='table_bf'>
-                <td>%s</td>%s%s%s
+                <td class="td_text">%s</td>%s%s%s
             </tr>'''
         # Not Invoiced:
         res[account_id] += summary_mask % (
