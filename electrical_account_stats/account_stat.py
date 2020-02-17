@@ -115,6 +115,13 @@ class AccountAnalyticAccount(orm.Model):
     def _get_statinfo_complete(self, cr, uid, ids, fields, args, context=None):
         ''' Fields function for calculate 
         '''
+        # Utility:
+        def number_cell(value, round_to=2):
+            """ Return cell block for number
+            """
+            return '<td class="td_number">%s</td>' % round(value, round_to)
+             
+            
         if len(ids) > 1:
             return res
 
@@ -155,6 +162,13 @@ class AccountAnalyticAccount(orm.Model):
                      padding: 3px;
                      text-align: center;
                  }
+                .td_number {
+                     border:1px 
+                     solid black;
+                     padding: 3px;
+                     text-align: right;
+                     width: 70px;
+                 }
                 .table_bf th {
                      border:1px 
                      solid black;
@@ -179,11 +193,11 @@ class AccountAnalyticAccount(orm.Model):
                 <p><b>Consegne materiali</b>: [Tot.: %s]</p>
                 <table class='table_bf'>
                 <tr class='table_bf'>
-                    <th>Descrizione</th>
-                    <th>Errori</th>
-                    <th>Ricavo</th>
-                    <th>Costo</th>
-                    <th>Utile</th>
+                    <th>&nbsp;Descrizione&nbsp;</th>
+                    <th>&nbsp;Errori&nbsp;</th>
+                    <th>&nbsp;Ricavo&nbsp;</th>
+                    <th>&nbsp;Costo&nbsp;</th>
+                    <th>&nbsp;Utile&nbsp;</th>
                 </tr>''' % len(picking_ids)
             
             # TODO manage also state of picking:    
@@ -218,17 +232,13 @@ class AccountAnalyticAccount(orm.Model):
                 total[mode][2] = total[mode][1] - total[mode][0]
                 res[account_id] += '''
                     <tr class='table_bf'>
-                        <td>%s</td>
-                        <td>%s</td>
-                        <td>%s</td>
-                        <td>%s</td>
-                        <td>%s</td>
+                        <td>%s</td>%s%s%s%s
                     </tr>''' % (
                         name,
-                        total[mode][3], # error
-                        total[mode][0], # cost
-                        total[mode][1], # revenue
-                        total[mode][2], # gain
+                        number_cell(total[mode][3]), # error
+                        number_cell(total[mode][0]), # cost
+                        number_cell(total[mode][1]), # revenue
+                        number_cell(total[mode][2]), # gain
                         )
             res[account_id] += '''</table><br/>'''
         else:
@@ -248,11 +258,11 @@ class AccountAnalyticAccount(orm.Model):
                 <p><b>Interventi totali</b>: [Tot.: %s]</p>
                 <table class='table_bf'>
                 <tr class='table_bf'>
-                    <th>Descrizione</th>
-                    <th>H.</th>
-                    <th>Ricavo</th>
-                    <th>Costo</th>
-                    <th>Utile</th>
+                    <th>&nbsp;Descrizione&nbsp;</th>
+                    <th>&nbsp;H.&nbsp;</th>
+                    <th>&nbsp;Ricavo&nbsp;</th>
+                    <th>&nbsp;Costo&nbsp;</th>
+                    <th>&nbsp;Utile&nbsp;</th>
                 </tr>''' % len(timesheet_ids)
                 
             # TODO manage also state of picking:    
@@ -273,17 +283,13 @@ class AccountAnalyticAccount(orm.Model):
                 
                 res[account_id] += '''
                     <tr class='table_bf'>
-                        <td>%s</td>
-                        <td>%s</td>
-                        <td>%s</td>
-                        <td>%s</td>
-                        <td>%s</td>
+                        <td>%s</td>%s%s%s%s
                     </tr>''' % (
                             name,
-                            total[mode][3], # hour
-                            total[mode][0], # cost
-                            total[mode][1], # revenut
-                            total[mode][2], # gain
+                            number_cell(total[mode][3]), # hour
+                            number_cell(total[mode][0]), # cost
+                            number_cell(total[mode][1]), # revenut
+                            number_cell(total[mode][2]), # gain
                             )
             res[account_id] += '''</table><br/>'''
         else:
@@ -300,13 +306,13 @@ class AccountAnalyticAccount(orm.Model):
         if expence_ids:
             # Header:
             res[account_id] += '''
-                <p><b>Spese totali</b>: [Tot.: %s]</p>
+                <p><b>&nbsp;Spese totali&nbsp;</b>: [Tot.: %s]</p>
                 <table class='table_bf'>
                 <tr class='table_bf'>
-                    <th>Descrizione</th>
-                    <th>Ricavo</th>
-                    <th>Costo</th>
-                    <th>Utile</th>
+                    <th>&nbsp;Descrizione&nbsp;</th>
+                    <th>&nbsp;Ricavo&nbsp;</th>
+                    <th>&nbsp;Costo&nbsp;</th>
+                    <th>&nbsp;Utile&nbsp;</th>
                 </tr>''' % len(expence_ids)
                 
             for expence in expence_pool.browse(
@@ -317,14 +323,11 @@ class AccountAnalyticAccount(orm.Model):
             
             res[account_id] += '''
                 <tr class='table_bf'>
-                    <td>Spese</td>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td>%s</td>
+                    <td>&nbsp;Spese&nbsp;</td>%s%s%s
                 </tr>''' % (
-                    total[mode][0], # cost
-                    total[mode][1], # revenue
-                    total[mode][2], # gain
+                    number_cell(total[mode][0]), # cost
+                    number_cell(total[mode][1]), # revenue
+                    number_cell(total[mode][2]), # gain
                     )
             res[account_id] += '''</table><br/>'''
             
@@ -339,59 +342,62 @@ class AccountAnalyticAccount(orm.Model):
             <p><b>Riepilogo:</b></p>
             <table class='table_bf'>
                 <tr class='table_bf'>
-                    <th>Descrizione</th>                    
-                    <th>Ricavo</th>
-                    <th>Costo</th>
-                    <th>Utile</th>
+                    <th>&nbsp;Descrizione&nbsp;</th>                    
+                    <th>&nbsp;Ricavo&nbsp;</th>
+                    <th>&nbsp;Costo&nbsp;</th>
+                    <th>&nbsp;Utile&nbsp;</th>
                 </tr>'''
 
         # TODO add correct value:
         
         summary_mask = '''
             <tr class='table_bf'>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
+                <td>%s</td>%s%s%s
             </tr>'''
         # Not Invoiced:
         res[account_id] += summary_mask % (
             'Not fatturato',
-            total['picking'][1] + total['ddt'][1] + total['intervent'][1],
-            total['picking'][0] + total['ddt'][0] + total['intervent'][0],
-            total['picking'][2] + total['ddt'][2] + total['intervent'][2],
+            number_cell(
+                total['picking'][1] + total['ddt'][1] + total['intervent'][1]),
+            number_cell(
+                total['picking'][0] + total['ddt'][0] + total['intervent'][0]),
+            number_cell(
+                total['picking'][2] + total['ddt'][2] + total['intervent'][2]),
             )
 
         # Invoiced:
         res[account_id] += summary_mask % (
             'Fatturato',
-            total['invoice'][1] + total['intervent_invoiced'][1],
-            total['invoice'][0] + total['intervent_invoiced'][0],
-            total['invoice'][2] + total['intervent_invoiced'][2],
+            number_cell(total['invoice'][1] + total['intervent_invoiced'][1]),
+            number_cell(total['invoice'][0] + total['intervent_invoiced'][0]),
+            number_cell(total['invoice'][2] + total['intervent_invoiced'][2]),
             )
 
         # Spese:
         res[account_id] += summary_mask % (
             'Spese',
-            total['expence'][1],
-            total['expence'][0],
-            total['expence'][2],
+            number_cell(total['expence'][1]),
+            number_cell(total['expence'][0]),
+            number_cell(total['expence'][2]),
             )
 
         # Totale:
         res[account_id] += summary_mask % (
             '<b>Totale</b>',
-            total['picking'][1] + total['ddt'][1] + total['intervent'][1] + \
-            total['invoice'][1] + total['intervent_invoiced'][1] + \
-            total['expence'][1],
+            number_cell(
+                total['picking'][1] + total['ddt'][1] + \
+                total['intervent'][1] + total['invoice'][1] + \
+                total['intervent_invoiced'][1] + total['expence'][1]),
             
-            total['picking'][0] + total['ddt'][0] + total['intervent'][0] + \
-            total['invoice'][0] + total['intervent_invoiced'][0] + \
-            total['expence'][0],
+            number_cell(
+                total['picking'][0] + total['ddt'][0] + \
+                total['intervent'][0] + total['invoice'][0] + \
+                total['intervent_invoiced'][0] + total['expence'][0]),
             
-            total['picking'][2] + total['ddt'][2] + total['intervent'][2] + \
-            total['invoice'][2] + total['intervent_invoiced'][2] + \
-            total['expence'][2],
+            number_cell(
+                total['picking'][2] + total['ddt'][2] + \
+                total['intervent'][2] + total['invoice'][2] + \
+                total['intervent_invoiced'][2] + total['expence'][2]),
             )
             
         res[account_id] += '</table>'
