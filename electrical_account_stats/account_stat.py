@@ -232,23 +232,23 @@ class AccountAnalyticAccount(orm.Model):
                     mode = 'picking'
 
                 for move in picking.move_lines:
-                    if not move.product_id:
+                    product = move.product_id
+                    if not product:
                         continue
                     qty = move.product_uom_qty
                     
-                    reply = product_pool.extract_product_data(
-                        cr, uid, move, context=context)
-                    (product_name, list_price, standard_price, 
-                        discount_price, discount_vat) = reply
+                    #reply = product_pool.extract_product_data(
+                    #    cr, uid, move, context=context)
+                    #(product_name, list_price, standard_price, 
+                    #    discount_price, discount_vat) = reply                    
+                    #if activity_price == 'lst_price': 
+                    #    price = list_price
+                    #else: # metel_sale
+                    #    price = discount_price
                     
-                    if activity_price == 'lst_price': 
-                        price = list_price
-                    else: # metel_sale
-                        price = discount_price
-                    
-                    # TODO Get correct price:
-                    cost = qty * move.product_id.standard_price
-                    revenue = qty * price # move.price_unit # TODO change?!?
+                    cost = qty * product.standard_price
+                    revenue = qty * product.lst_price 
+                    # ex.: price # move.price_unit
 
                     if not cost or not revenue:
                         total[mode][3] += 1 # error
