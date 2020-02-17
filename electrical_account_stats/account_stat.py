@@ -217,8 +217,8 @@ class AccountAnalyticAccount(orm.Model):
                 <table class='table_bf'>
                 <tr class='table_bf'>
                     <th>Descrizione</th>
-                    <th>Ricavo</th>
                     <th>Costo</th>
+                    <th>Ricavo</th>
                     <th>Utile</th>
                     <th>Errori</th>
                 </tr>''' % (activity_price, len(picking_ids))
@@ -290,8 +290,8 @@ class AccountAnalyticAccount(orm.Model):
                 <table class='table_bf'>
                 <tr class='table_bf'>
                     <th>Descrizione</th>
-                    <th>Ricavo</th>
                     <th>Costo</th>
+                    <th>Ricavo</th>
                     <th>Utile</th>
                     <th>H.</th>
                 </tr>''' % len(timesheet_ids)
@@ -311,9 +311,9 @@ class AccountAnalyticAccount(orm.Model):
                 else: # read for default list:
                     unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
 
-                total[mode][3] += ts.unit_amount # H.
                 total[mode][0] -= ts.amount # Always negative
                 total[mode][1] += ts.unit_amount * unit_revenue  # revenue
+                total[mode][3] += ts.unit_amount # H.
 
             for mode, name in (('intervent', 'Da fatturare'), 
                     ('intervent_invoiced', 'Fatturati')):
@@ -324,8 +324,8 @@ class AccountAnalyticAccount(orm.Model):
                         <td class="td_text">%s</td>%s%s%s%s
                     </tr>''' % (
                             name,
-                            number_cell(total[mode][1]), # revenue
                             number_cell(total[mode][0]), # cost
+                            number_cell(total[mode][1]), # revenue
                             number_cell(total[mode][2]), # gain
                             number_cell(total[mode][3]), # hour
                             )
@@ -349,8 +349,8 @@ class AccountAnalyticAccount(orm.Model):
                 <table class='table_bf'>
                 <tr class='table_bf'>
                     <th>Descrizione</th>
-                    <th>Ricavo</th>
                     <th>Costo</th>
+                    <th>Ricavo</th>
                     <th>Utile</th>
                 </tr>''' % len(expence_ids)
                 
@@ -383,8 +383,8 @@ class AccountAnalyticAccount(orm.Model):
             <table class='table_bf'>
                 <tr class='table_bf'>
                     <th>Descrizione</th>                    
-                    <th>Ricavo</th>
                     <th>Costo</th>
+                    <th>Ricavo</th>
                     <th>Utile</th>
                 </tr>''' % (
                     account.total_hours,
@@ -397,13 +397,14 @@ class AccountAnalyticAccount(orm.Model):
             <tr class='table_bf'>
                 <td class="td_text">%s</td>%s%s%s
             </tr>'''
+            
         # Not Invoiced:
         res[account_id] += summary_mask % (
-            'Not fatturato',
-            number_cell(
-                total['picking'][1] + total['ddt'][1] + total['intervent'][1]),
+            'Non fatturato',
             number_cell(
                 total['picking'][0] + total['ddt'][0] + total['intervent'][0]),
+            number_cell(
+                total['picking'][1] + total['ddt'][1] + total['intervent'][1]),
             number_cell(
                 total['picking'][2] + total['ddt'][2] + total['intervent'][2]),
             )
@@ -411,16 +412,16 @@ class AccountAnalyticAccount(orm.Model):
         # Invoiced:
         res[account_id] += summary_mask % (
             'Fatturato',
-            number_cell(total['invoice'][1] + total['intervent_invoiced'][1]),
             number_cell(total['invoice'][0] + total['intervent_invoiced'][0]),
+            number_cell(total['invoice'][1] + total['intervent_invoiced'][1]),
             number_cell(total['invoice'][2] + total['intervent_invoiced'][2]),
             )
 
         # Spese:
         res[account_id] += summary_mask % (
             'Spese',
-            number_cell(total['expence'][1]),
             number_cell(total['expence'][0]),
+            number_cell(total['expence'][1]),
             number_cell(total['expence'][2]),
             )
 
@@ -428,23 +429,21 @@ class AccountAnalyticAccount(orm.Model):
         res[account_id] += summary_mask % (
             '<b>Totale</b>',
             number_cell(
+                total['picking'][0] + total['ddt'][0] + \
+                total['intervent'][0] + total['invoice'][0] + \
+                total['intervent_invoiced'][0] + total['expence'][0]),
+
+            number_cell(
                 total['picking'][1] + total['ddt'][1] + \
                 total['intervent'][1] + total['invoice'][1] + \
                 total['intervent_invoiced'][1] + total['expence'][1]),
             
             number_cell(
-                total['picking'][0] + total['ddt'][0] + \
-                total['intervent'][0] + total['invoice'][0] + \
-                total['intervent_invoiced'][0] + total['expence'][0]),
-            
-            number_cell(
                 total['picking'][2] + total['ddt'][2] + \
                 total['intervent'][2] + total['invoice'][2] + \
                 total['intervent_invoiced'][2] + total['expence'][2]),
-            )
-            
+            )            
         res[account_id] += '</table>'
-
         return res
         
     _columns = {
