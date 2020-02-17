@@ -206,8 +206,7 @@ class AccountAnalyticAccount(orm.Model):
                     <th>Utile</th>
                     <th>Errori</th>
                 </tr>''' % (activity_price, len(picking_ids))
-            for picking in pickings:
-                           
+            for picking in pickings:                           
                 if picking.ddt_id:
                     if picking.ddt_id.is_invoiced:
                         mode = 'invoice'
@@ -232,7 +231,7 @@ class AccountAnalyticAccount(orm.Model):
                         price = discount_price
                     
                     # TODO Get correct price:
-                    cost = qty * move.product_id.standard_price #standard_price
+                    cost = qty * move.product_id.standard_price
                     revenue = qty * price # move.price_unit # TODO change?!?
 
                     if not cost or not revenue:
@@ -289,7 +288,7 @@ class AccountAnalyticAccount(orm.Model):
                     mode = 'intervent'
                     
                 total[mode][3] += ts.unit_amount # H.
-                total[mode][0] += 0.0 # TODO cost
+                total[mode][0] += ts.amount
                 total[mode][1] += 0.0 # TODO revenue
 
             for mode, name in (('intervent', 'Da fatturare'), 
