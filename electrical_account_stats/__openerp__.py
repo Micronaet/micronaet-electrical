@@ -37,6 +37,7 @@
         'stock',
         'analytic',
         'intervention_report',
+        'metel_pricelist',
         ],
     'init_xml': [],
     'demo': [],

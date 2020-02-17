@@ -222,9 +222,15 @@ class AccountAnalyticAccount(orm.Model):
                         continue
                     qty = move.product_uom_qty
                     
+                    # TODO
+                    reply = product_pool.extract_product_data(
+                        cr, uid, move, context=context)
+                    (product_name, list_price, standard_price, 
+                        discount_price, discount_vat) = reply
+                    
                     # TODO Get correct price:
-                    cost = qty * move.product_id.standard_price
-                    revenue = qty * move.price_unit
+                    cost = qty * standard_price
+                    revenue = qty * move.price_unit # TODO change?!?
 
                     if not cost or not revenue:
                         total[mode][3] += 1 # error
@@ -293,7 +299,7 @@ class AccountAnalyticAccount(orm.Model):
                     </tr>''' % (
                             name,
                             number_cell(total[mode][0]), # cost
-                            number_cell(total[mode][1]), # revenut
+                            number_cell(total[mode][1]), # revenue
                             number_cell(total[mode][2]), # gain
                             number_cell(total[mode][3]), # hour
                             )

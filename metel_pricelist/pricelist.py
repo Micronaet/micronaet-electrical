@@ -139,6 +139,43 @@ class ProductProduct(orm.Model):
     """
     
     _inherit = 'product.product'
+
+    # -------------------------------------------------------------------------
+    # Utility:
+    # -------------------------------------------------------------------------
+    def extract_product_data(self, cr, uid, move, context=None):
+        ''' Used for extract data from move of from product 
+            depend if generic product
+            (name, sale, last, metel, metel vat
+        '''     
+        product = move.product_id   
+        if product.is_generic: 
+            # -----------------------------------------------------------------
+            # Generic product:
+            # -----------------------------------------------------------------
+            return (
+                move.force_name, 
+                0.0, 
+                move.price_unit,
+                0.0,
+                0.0,
+                )
+        else: 
+            # -----------------------------------------------------------------
+            # Standard product:
+            # -----------------------------------------------------------------
+            extra_data = self.pool.get(
+                'product.product')._get_metel_price_data(
+                    cr, uid, [product.id], 
+                    context=context)[product.id]
+            return (
+                product.name, 
+                product.lst_price, 
+                product.standard_price,
+                extra_data.get('metel_sale', 0.0),
+                extra_data.get('metel_sale_vat', 0.0)
+                )
+        
     
     # -------------------------------------------------------------------------
     # On change function:
