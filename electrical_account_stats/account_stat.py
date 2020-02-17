@@ -222,7 +222,7 @@ class AccountAnalyticAccount(orm.Model):
                     <th>Utile</th>
                     <th>Errori</th>
                 </tr>''' % (activity_price, len(picking_ids))
-            for picking in pickings:                           
+            for picking in pickings:
                 if picking.ddt_id:
                     if picking.ddt_id.is_invoiced:
                         mode = 'invoice'
