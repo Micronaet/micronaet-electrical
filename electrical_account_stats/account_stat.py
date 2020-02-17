@@ -127,6 +127,7 @@ class AccountAnalyticAccount(orm.Model):
             return res
 
         account_id = ids[0]
+        account = self.browse(cr, uid, account_id, context=context)
         res = {account_id: ''}
 
         # Pool used:
@@ -356,13 +357,17 @@ class AccountAnalyticAccount(orm.Model):
         # ---------------------------------------------------------------------
         res[account_id] += '''
             <p><b>Riepilogo:</b></p>
+            <p>Da commessa: Totale ore: <b>%s</b>, Totale: <b>%s</b></p>
             <table class='table_bf'>
                 <tr class='table_bf'>
                     <th>Descrizione</th>                    
                     <th>Ricavo</th>
                     <th>Costo</th>
                     <th>Utile</th>
-                </tr>'''
+                </tr>''' % (
+                    account.total_hours,
+                    account.total_amount,
+                    )
 
         # TODO add correct value:
         
