@@ -315,6 +315,7 @@ class AccountAnalyticAccount(orm.Model):
         # Expences:
         # ---------------------------------------------------------------------
         expence_ids = expence_pool.search(cr, uid, [
+            ('account_id', '=', account_id),
             ('printable', '!=', 'none'),
             ], context=context)
         mode = 'expence'
