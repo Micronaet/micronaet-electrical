@@ -324,8 +324,8 @@ class AccountAnalyticAccount(orm.Model):
                         <td class="td_text">%s</td>%s%s%s%s
                     </tr>''' % (
                             name,
-                            number_cell(total[mode][0]), # cost
                             number_cell(total[mode][1]), # revenue
+                            number_cell(total[mode][0]), # cost
                             number_cell(total[mode][2]), # gain
                             number_cell(total[mode][3]), # hour
                             )
