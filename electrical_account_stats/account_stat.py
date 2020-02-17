@@ -135,7 +135,7 @@ class AccountAnalyticAccount(orm.Model):
         timesheet_pool = self.pool.get('hr.analytic.timesheet')
         expence_pool = self.pool.get('account.analytic.expence')
         product_pool = self.pool.get('product.product')
-
+        mode_pool = self.pool.get('hr.intervent.user.mode')
         
         total = { 
             # [Cost, Revenue, Gain, Error]
@@ -149,6 +149,21 @@ class AccountAnalyticAccount(orm.Model):
             
             'expence': [0.0, 0.0, 0.0], # NOTE only cost!
             }
+
+        # ---------------------------------------------------------------------
+        # Pre load data:
+        # ---------------------------------------------------------------------
+        partner = account.partner_id
+        partner_forced = {}
+        for forced in partner.mode_revenue_ids:        
+            partner_forced[forced.mode_id.id] = forced.list_price
+
+        # Load mode pricelist (to get revenue):
+        mode_pricelist = {}
+        mode_ids = mode_pool.search(cr, uid, [], context=context)
+        for mode in mode_pool.browse(
+                cr, uid, mode_ids, context=context):
+            mode_pricelist[mode.id] = mode.list_price
 
         # ---------------------------------------------------------------------
         # Common Header:
@@ -289,9 +304,16 @@ class AccountAnalyticAccount(orm.Model):
                 else:
                     mode = 'intervent'
                     
+                # Read revenue:        
+                user_mode_id = intervent.user_mode_id.id
+                if user_mode_id in partner_forced: # partner forced
+                    unit_revenue = partner_forced[user_mode_id]
+                else: # read for default list:
+                    unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
+
                 total[mode][3] += ts.unit_amount # H.
                 total[mode][0] += ts.amount
-                total[mode][1] += 0.0 # TODO revenue
+                total[mode][1] += intervent.unit_amount * unit_revenue# revenue
 
             for mode, name in (('intervent', 'Da fatturare'), 
                     ('intervent_invoiced', 'Fatturati')):
