@@ -264,6 +264,7 @@ class AccountAnalyticAccount(orm.Model):
         # ---------------------------------------------------------------------
         timesheet_ids = timesheet_pool.search(cr, uid, [
             ('account_id', '=', account_id),
+            ('not_in_report', '=', False),
             ], context=context)
         
         if timesheet_ids:
