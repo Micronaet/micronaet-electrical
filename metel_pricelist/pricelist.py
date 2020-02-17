@@ -164,10 +164,9 @@ class ProductProduct(orm.Model):
             # -----------------------------------------------------------------
             # Standard product:
             # -----------------------------------------------------------------
-            extra_data = self.pool.get(
-                'product.product')._get_metel_price_data(
-                    cr, uid, [product.id], 
-                    context=context)[product.id]
+            extra_data = self._get_metel_price_data(
+                cr, uid, [product.id], 
+                context=context)[product.id]
             return (
                 product.name, 
                 product.lst_price, 

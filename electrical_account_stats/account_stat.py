@@ -133,6 +133,8 @@ class AccountAnalyticAccount(orm.Model):
         picking_pool = self.pool.get('stock.picking')
         timesheet_pool = self.pool.get('hr.analytic.timesheet')
         expence_pool = self.pool.get('account.analytic.expence')
+        product_pool = self.pool.get('product.product')
+
         
         total = { 
             # [Cost, Revenue, Gain, Error]
