@@ -305,7 +305,7 @@ class AccountAnalyticAccount(orm.Model):
                     mode = 'intervent'
                     
                 # Read revenue:        
-                user_mode_id = intervent.user_mode_id.id
+                user_mode_id = ts.user_mode_id.id
                 if user_mode_id in partner_forced: # partner forced
                     unit_revenue = partner_forced[user_mode_id]
                 else: # read for default list:
@@ -313,7 +313,7 @@ class AccountAnalyticAccount(orm.Model):
 
                 total[mode][3] += ts.unit_amount # H.
                 total[mode][0] += ts.amount
-                total[mode][1] += intervent.unit_amount * unit_revenue# revenue
+                total[mode][1] += ts.unit_amount * unit_revenue# revenue
 
             for mode, name in (('intervent', 'Da fatturare'), 
                     ('intervent_invoiced', 'Fatturati')):
