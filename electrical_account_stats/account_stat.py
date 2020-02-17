@@ -312,8 +312,8 @@ class AccountAnalyticAccount(orm.Model):
                     unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
 
                 total[mode][3] += ts.unit_amount # H.
-                total[mode][0] += ts.amount
-                total[mode][1] += ts.unit_amount * unit_revenue# revenue
+                total[mode][0] -= ts.amount # Always negative
+                total[mode][1] += ts.unit_amount * unit_revenue  # revenue
 
             for mode, name in (('intervent', 'Da fatturare'), 
                     ('intervent_invoiced', 'Fatturati')):
