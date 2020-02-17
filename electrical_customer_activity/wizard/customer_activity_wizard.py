@@ -1695,7 +1695,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         # -----------------------------------------------------
                         # Totals:
                         # -----------------------------------------------------
-                        sub_amount += -intervent.amount
+                        sub_amount -= intervent.amount
                         sub_h += intervent.unit_amount
 
                     # ---------------------------------------------------------
