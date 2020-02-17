@@ -152,13 +152,6 @@ class AccountAnalyticAccount(orm.Model):
         # ---------------------------------------------------------------------
         # Common Header:
         # ---------------------------------------------------------------------
-        '''
-                .openerp th, .openerp td {
-                     padding: 3px;
-                     width: 90px;
-                     text-align: right;
-                     }
-        '''
         res[account_id] += '''
             <style>
                 .table_bf {
@@ -195,10 +188,16 @@ class AccountAnalyticAccount(orm.Model):
             ('account_id', '=', account_id),
             ('pick_move', '=', 'out'), # Only out movement
             ], context=context)
-        if picking_ids:    
+        if picking_ids:
+            # TODO manage also state of picking: 
+            pickings = picking_pool.browse(
+                cr, uid, picking_ids, context=context)
+            partner = pickings[0].partner_id
+            activity_price = partner.activity_price
+
             # Header:
             res[account_id] += '''
-                <p><b>Consegne materiali</b>: [Tot.: %s]</p>
+                <p><b>Consegne materiali (Ricavo usa: %s)</b>: [Tot.: %s]</p>
                 <table class='table_bf'>
                 <tr class='table_bf'>
                     <th>Descrizione</th>
@@ -206,11 +205,9 @@ class AccountAnalyticAccount(orm.Model):
                     <th>Costo</th>
                     <th>Utile</th>
                     <th>Errori</th>
-                </tr>''' % len(picking_ids)
-            
-            # TODO manage also state of picking:    
-            for picking in picking_pool.browse(
-                    cr, uid, picking_ids, context=context):                 
+                </tr>''' % (activity_price, len(picking_ids))
+            for picking in pickings:
+                           
                 if picking.ddt_id:
                     if picking.ddt_id.is_invoiced:
                         mode = 'invoice'
@@ -224,15 +221,19 @@ class AccountAnalyticAccount(orm.Model):
                         continue
                     qty = move.product_uom_qty
                     
-                    # TODO
                     reply = product_pool.extract_product_data(
                         cr, uid, move, context=context)
                     (product_name, list_price, standard_price, 
                         discount_price, discount_vat) = reply
                     
+                    if activity_price == 'lst_price': 
+                        price = list_price
+                    else: # metel_sale
+                        price = discount_price
+                    
                     # TODO Get correct price:
-                    cost = qty * standard_price
-                    revenue = qty * move.price_unit # TODO change?!?
+                    cost = qty * move.product_id.standard_price #standard_price
+                    revenue = qty * price # move.price_unit # TODO change?!?
 
                     if not cost or not revenue:
                         total[mode][3] += 1 # error
