@@ -204,6 +204,7 @@ class AccountAnalyticAccount(orm.Model):
             ('account_id', '=', account_id),
             ('pick_move', '=', 'out'), # Only out movement
             ], context=context)
+        import pdb; pdb.set_trace()    
         if picking_ids:
             # TODO manage also state of picking: 
             pickings = picking_pool.browse(
@@ -235,7 +236,7 @@ class AccountAnalyticAccount(orm.Model):
                     product = move.product_id
                     if not product:
                         continue
-                    qty = move.product_uom_qty
+                    qty = move.product_qty #_uom
                     
                     #reply = product_pool.extract_product_data(
                     #    cr, uid, move, context=context)

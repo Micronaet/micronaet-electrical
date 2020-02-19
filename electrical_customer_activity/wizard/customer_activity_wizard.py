@@ -1173,7 +1173,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 summary[ws_name]['total_cost'] += subtotal1
                                 summary[ws_name]['total_discount'] += subtotal2
                                 summary[ws_name]['total_revenue'] += subtotal3
-                                
 
                         else: # Picking no movements:
                             data = self.data_mask_filter([
