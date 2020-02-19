@@ -358,7 +358,7 @@ class AccountAnalyticAccount(orm.Model):
                     cr, uid, expence_ids, context=context):
                 total[mode][0] += expence.total
                 total[mode][1] += expence.total_forced or expence.total
-            total[mode][2] += total[mode][1] - total[mode][0] 
+            total[mode][2] = total[mode][1] - total[mode][0] 
             
             res[account_id] += '''
                 <tr class='table_bf'>
