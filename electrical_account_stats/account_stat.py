@@ -247,7 +247,8 @@ class AccountAnalyticAccount(orm.Model):
                     #    price = discount_price
                     
                     cost = qty * product.standard_price
-                    revenue = qty * product.lst_price 
+                    # XXX Not as in report:
+                    revenue = qty * (product.lst_price * move.price_unit) 
                     # ex.: price # move.price_unit
 
                     if not cost or not revenue:
