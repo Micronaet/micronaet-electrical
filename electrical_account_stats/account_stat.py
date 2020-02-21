@@ -402,6 +402,10 @@ class AccountAnalyticAccount(orm.Model):
                 )),
             'expence': 
                 total['expence'][0],
+            'hours': sum((
+                total['intervent'][3],    
+                total['intervent_invoiced'][3],    
+                ))
             }
         res[account_id]['statinfo_summary'] += '''
             <table class='table_bf'>
@@ -410,6 +414,21 @@ class AccountAnalyticAccount(orm.Model):
                     <th>Costi</th>
                     <th>Totali</th>
                 </tr>
+
+                <tr class='table_bf'>
+                    <td colspan="3" align="center"><b>Ore</b></td>
+                </tr>
+
+                <tr class='table_bf'>
+                    <td class="td_text">Ore</td>
+                    %s
+                    %s
+                </tr>                
+                <tr class='table_bf'>
+                    <td class="td_text">Rimanenti</td>
+                    <td class="td_text">&nbsp;</td>
+                    %s
+                </tr>                
 
                 <tr class='table_bf'>
                     <td colspan="3" align="center"><b>Ricavi</b></td>
@@ -474,6 +493,10 @@ class AccountAnalyticAccount(orm.Model):
                     %s
                 </tr>                
                 ''' % (
+                    number_cell(total_summary['hours']),                        
+                    number_cell(account.total_hours),
+                    number_cell(account.total_hours - total_summary['hours']),
+
                     number_cell(account.total_amount),
                     number_cell(total['account_invoice'][1]),
                     number_cell(
@@ -490,6 +513,7 @@ class AccountAnalyticAccount(orm.Model):
                         total_summary.values())),
                     number_cell(total['account_invoice'][1] -sum(
                         total_summary.values())),                    
+                        
                     )
 
         return res
