@@ -116,7 +116,9 @@ class AccountAnalyticAccount(orm.Model):
     def _get_statinfo_complete(self, cr, uid, ids, fields, args, context=None):
         ''' Fields function for calculate 
         '''
+        # ---------------------------------------------------------------------
         # Utility:
+        # ---------------------------------------------------------------------
         def number_cell(value, negative='never', positive=False, bold=False):
             """ Return cell block for number
                 color: never, negative, empty
@@ -148,54 +150,16 @@ class AccountAnalyticAccount(orm.Model):
                 currency,
                 bold_off,
                 )
-                         
-        if len(ids) > 1:
-            return res
 
-        account_id = ids[0]
-        account = self.browse(cr, uid, account_id, context=context)
-        res = {
-            account_id: {
-                'statinfo_complete': '',
-                'statinfo_summary': '',
-                }
-            }
-
+        # ---------------------------------------------------------------------
+        #                             Procedure
+        # ---------------------------------------------------------------------                         
         # Pool used:
         picking_pool = self.pool.get('stock.picking')
         timesheet_pool = self.pool.get('hr.analytic.timesheet')
         expence_pool = self.pool.get('account.analytic.expence')
         product_pool = self.pool.get('product.product')
         mode_pool = self.pool.get('hr.intervent.user.mode')
-        
-        total = { 
-            # [Cost, Revenue, Gain, Error]
-            'picking': [0.0, 0.0, 0.0, 0.0, 0],
-            'ddt': [0.0, 0.0, 0.0, 0],
-            'invoice': [0.0, 0.0, 0.0, 0],
-            'account_invoice': [0.0, 0.0, 0.0, 0],
-
-            # [Cost, Revenue, Gain, Hour]
-            'intervent': [0.0, 0.0, 0.0, 0.0],
-            'intervent_invoiced': [0.0, 0.0, 0.0, 0.0],
-            
-            'expence': [0.0, 0.0, 0.0], # NOTE only cost!
-            }
-
-        # ---------------------------------------------------------------------
-        # Pre load data:
-        # ---------------------------------------------------------------------
-        partner = account.partner_id
-        partner_forced = {}
-        for forced in partner.mode_revenue_ids:        
-            partner_forced[forced.mode_id.id] = forced.list_price
-
-        # Load mode pricelist (to get revenue):
-        mode_pricelist = {}
-        mode_ids = mode_pool.search(cr, uid, [], context=context)
-        for mode in mode_pool.browse(
-                cr, uid, mode_ids, context=context):
-            mode_pricelist[mode.id] = mode.list_price
 
         # ---------------------------------------------------------------------
         # Common Header:
@@ -242,7 +206,46 @@ class AccountAnalyticAccount(orm.Model):
                      }
             </style>
             '''
+
+        if len(ids) > 1:
+            return res
+
+        account_id = ids[0]
+        account = self.browse(cr, uid, account_id, context=context)
+        res = {account_id: {
+            'statinfo_complete': '',
+            'statinfo_summary': '',
+            }}
+
+        total = { 
+            # [Cost, Revenue, Gain, Error]
+            'picking': [0.0, 0.0, 0.0, 0.0, 0],
+            'ddt': [0.0, 0.0, 0.0, 0],
+            'invoice': [0.0, 0.0, 0.0, 0],
+            'account_invoice': [0.0, 0.0, 0.0, 0],
+
+            # [Cost, Revenue, Gain, Hour]
+            'intervent': [0.0, 0.0, 0.0, 0.0],
+            'intervent_invoiced': [0.0, 0.0, 0.0, 0.0],
             
+            'expence': [0.0, 0.0, 0.0], # NOTE only cost!
+            }
+
+        # ---------------------------------------------------------------------
+        # Pre load data:
+        # ---------------------------------------------------------------------
+        partner = account.partner_id
+        partner_forced = {}
+        for forced in partner.mode_revenue_ids:        
+            partner_forced[forced.mode_id.id] = forced.list_price
+
+        # Load mode pricelist (to get revenue):
+        mode_pricelist = {}
+        mode_ids = mode_pool.search(cr, uid, [], context=context)
+        for mode in mode_pool.browse(
+                cr, uid, mode_ids, context=context):
+            mode_pricelist[mode.id] = mode.list_price
+
         res[account_id]['statinfo_complete'] += css_block
         res[account_id]['statinfo_summary'] += css_block
     
