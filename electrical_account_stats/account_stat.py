@@ -566,12 +566,14 @@ class AccountAnalyticAccount(orm.Model):
                             total_summary.values()),
                         negative='empty',
                         positive=True,
+                        bold=True,              
                         ),
                     number_cell(
                         total['account_invoice'][1] - sum(
                             total_summary.values()),
                         negative='empty',
                         positive=True,
+                        bold=True,              
                         ),
                     )
         return res
