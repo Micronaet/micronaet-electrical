@@ -212,13 +212,7 @@ class AccountAnalyticAccount(orm.Model):
             res[account_id] = {
                 'statinfo_complete': '',
                 'statinfo_summary': '',
-                'statinfo_hour_done': 0.0,
-                'statinfo_invoiced': 0.0,
-                'statinfo_remain_invoiced': 0.0,
-                'statinfo_total_cost': 0.0,
-                'statinfo_margin_nominal': 0.0,
-                'statinfo_margin_invoice': 0.0,
-                }
+                } # XXX Update after for other data
 
             total = { 
                 # [Cost, Revenue, Gain, Error]
@@ -456,6 +450,20 @@ class AccountAnalyticAccount(orm.Model):
                     total['intervent_invoiced'][3],    
                     ))
                 }
+            
+            # Update other data:                
+            res[account_id]['statinfo_hour_done'] = total_summary['hours']
+            res[account_id]['statinfo_hour_remain'] = account.total_hours - \
+                total_summary['hours']
+                
+            res[account_id]['statinfo_invoiced'] = total['account_invoice'][1]
+            res[account_id]['statinfo_remain_invoiced'] = account.total_amount - total['account_invoice'][1]
+            res[account_id]['statinfo_total_cost'] = -sum(total_summary.values())
+            res[account_id]['statinfo_margin_nominal'] = account.total_amount - sum(
+                total_summary.values())
+            res[account_id]['statinfo_margin_invoice'] = total['account_invoice'][1] - sum(
+                total_summary.values())
+                
             res[account_id]['statinfo_summary'] += '''
                 <table class='table_bf'>
                     <tr class='table_bf'>
@@ -545,10 +553,10 @@ class AccountAnalyticAccount(orm.Model):
                         # Hours:
                         number_cell(total_summary['hours']),                        
                         number_cell(account.total_hours, negative='empty'),
-                        number_cell(account.total_hours - \
-                            total_summary['hours'], 
-                                negative='negative',
-                                bold=True,
+                        number_cell(
+                            res[account_id]['statinfo_hour_remain'], 
+                            negative='negative',
+                            bold=True,
                             ),
 
                         # Account and Invoiced
@@ -558,7 +566,7 @@ class AccountAnalyticAccount(orm.Model):
                             ),
                         number_cell(total['account_invoice'][1]),
                         number_cell(
-                            account.total_amount - total['account_invoice'][1],
+                            res[account_id]['statinfo_remain_invoiced'],
                             negative='negative',          
                             bold=True,              
                             ),
@@ -568,24 +576,52 @@ class AccountAnalyticAccount(orm.Model):
                         number_cell(total_summary['works']),
                         number_cell(total_summary['expence']),
                         
-                        number_cell(-sum(total_summary.values())),
+                        number_cell(res[account_id]['statinfo_total_cost']),
 
                         number_cell(
-                            account.total_amount - sum(
-                                total_summary.values()),
+                            res[account_id]['statinfo_margin_nominal'],
                             negative='empty',
                             positive=True,
                             bold=True,              
                             ),
                         number_cell(
-                            total['account_invoice'][1] - sum(
-                                total_summary.values()),
+                            res[account_id]['statinfo_margin_invoice'],
                             negative='empty',
                             positive=True,
                             bold=True,              
                             ),
                         )
         return res
+        
+    def refresh_stats(self, cr, uid, ids, context=None):
+        """ Refresh stats data        
+        """
+        i = 0
+        total = len(ids)
+        for account in self.browse(cr, uid, ids, context=context):
+            i += 1
+            
+            if i % 10 == 0:
+                _logger.warning('Updating statistic account data: %s / %s' % (
+                    i, total))
+            
+            # Update single record:
+            self.write(cr, uid, [account.id], {
+                'history_hour_done': account.statinfo_hour_done,
+                'history_hour_remain' : account.statinfo_hour_remain,
+                'history_invoiced': account.statinfo_invoiced,
+                'history_remain_invoiced': account.statinfo_remain_invoiced,
+                'history_total_cost': account.statinfo_total_cost,
+                'history_margin_nominal': account.statinfo_margin_nominal,
+                'history_margin_invoice': account.statinfo_margin_invoice,                
+                }, context=context)
+        return True
+
+    def refresh_all_stats(self, cr, uid, ids, context=None):
+        """ Refresh stats data        
+        """
+        account_ids = self.search(cr, uid, [], context=context)
+        return self.refresh_stats(cr, uid, account_ids, context=context)
         
     _columns = {
         'statinfo_intervent': fields.function(
@@ -609,6 +645,9 @@ class AccountAnalyticAccount(orm.Model):
         'statinfo_hour_done': fields.function(
             _get_statinfo_complete, method=True, multi=True,
             type='float', string='Ore fatte'), 
+        'statinfo_hour_remain': fields.function(
+            _get_statinfo_complete, method=True, multi=True,
+            type='float', string='Ore fatte'), 
         'statinfo_invoiced': fields.function(
             _get_statinfo_complete, method=True, multi=True,
             type='float', string='Fatturato'), 
@@ -628,6 +667,8 @@ class AccountAnalyticAccount(orm.Model):
         # History:
         'history_hour_done': fields.float(
             'Ore fatte', digits=(16, 2)),
+        'history_hour_remain': fields.float(
+            'Ore residue', digits=(16, 2)),
         'history_invoiced': fields.float(
             'Fatturato', digits=(16, 2)),
         'history_remain_invoiced': fields.float(
