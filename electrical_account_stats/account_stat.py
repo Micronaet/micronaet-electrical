@@ -121,8 +121,7 @@ class AccountAnalyticAccount(orm.Model):
             """
             return '<td class="td_text td_number">%15.2f</td>' % round(
                 value or 0.0, round_to)
-             
-            
+                         
         if len(ids) > 1:
             return res
 
@@ -392,71 +391,31 @@ class AccountAnalyticAccount(orm.Model):
         # Summary block:
         # ---------------------------------------------------------------------
         res[account_id]['statinfo_summary'] += '''
-            <p><b>Riepilogo:</b></p>
-            <p>Da commessa: Totale ore: <b>%s</b>, Totale: <b>%s</b></p>
             <table class='table_bf'>
                 <tr class='table_bf'>
                     <th>Descrizione</th>                    
-                    <th>Costo</th>
-                    <th>Ricavo</th>
-                    <th>Utile</th>
-                </tr>''' % (
-                    account.total_hours,
-                    account.total_amount,
+                    <th>Valore</th>
+                    <th>Totali</th>
+                </tr>
+                
+                <tr class='table_bf'>
+                    <td class="td_text">Nominale</td>                    
+                    %s
+                    <td class="td_text">&nbsp;</td>
+                </tr>
+                
+                <tr class='table_bf'>
+                    <td class="td_text">Fatturato</td>                    
+                    %s
+                    <td class="td_text">&nbsp;</td>
+                </tr>
+
+                
+                ''' % (
+                    number_cell(account.total_amount),
+                    number_cell(total['account_invoice'][1]),
                     )
 
-        # TODO add correct value:        
-        summary_mask = '''
-            <tr class='table_bf'>
-                <td class="td_text">%s</td>%s%s%s
-            </tr>'''
-            
-        # Not Invoiced:
-        res[account_id]['statinfo_summary'] += summary_mask % (
-            'Non fatturato',
-            number_cell(
-                total['picking'][0] + total['ddt'][0] + total['intervent'][0]),
-            number_cell(
-                total['picking'][1] + total['ddt'][1] + total['intervent'][1]),
-            number_cell(
-                total['picking'][2] + total['ddt'][2] + total['intervent'][2]),
-            )
-
-        # Invoiced:
-        res[account_id]['statinfo_summary'] += summary_mask % (
-            'Fatturato',
-            number_cell(total['invoice'][0] + total['intervent_invoiced'][0]),
-            number_cell(total['invoice'][1] + total['intervent_invoiced'][1]),
-            number_cell(total['invoice'][2] + total['intervent_invoiced'][2]),
-            )
-
-        # Spese:
-        res[account_id]['statinfo_summary'] += summary_mask % (
-            'Spese',
-            number_cell(total['expence'][0]),
-            number_cell(total['expence'][1]),
-            number_cell(total['expence'][2]),
-            )
-
-        # Totale:
-        res[account_id]['statinfo_summary'] += summary_mask % (
-            '<b>Totale</b>',
-            number_cell(
-                total['picking'][0] + total['ddt'][0] + \
-                total['intervent'][0] + total['invoice'][0] + \
-                total['intervent_invoiced'][0] + total['expence'][0]),
-
-            number_cell(
-                total['picking'][1] + total['ddt'][1] + \
-                total['intervent'][1] + total['invoice'][1] + \
-                total['intervent_invoiced'][1] + total['expence'][1]),
-            
-            number_cell(
-                total['picking'][2] + total['ddt'][2] + \
-                total['intervent'][2] + total['invoice'][2] + \
-                total['intervent_invoiced'][2] + total['expence'][2]),
-            )            
-        res[account_id]['statinfo_summary'] += '</table>'
         return res
         
     _columns = {
