@@ -206,379 +206,385 @@ class AccountAnalyticAccount(orm.Model):
                      }
             </style>
             '''
+        res = {}
+        for account in self.browse(cr, uid, ids, context=context):
+            account_id = account.id
+            res[account_id] = {
+                'statinfo_complete': '',
+                'statinfo_summary': '',
+                'statinfo_hour_done': 0.0,
+                'statinfo_invoiced': 0.0,
+                'statinfo_remain_invoiced': 0.0,
+                'statinfo_total_cost': 0.0,
+                'statinfo_margin_nominal': 0.0,
+                'statinfo_margin_invoice': 0.0,
+                }
 
-        if len(ids) > 1:
-            return res
+            total = { 
+                # [Cost, Revenue, Gain, Error]
+                'picking': [0.0, 0.0, 0.0, 0.0, 0],
+                'ddt': [0.0, 0.0, 0.0, 0],
+                'invoice': [0.0, 0.0, 0.0, 0],
+                'account_invoice': [0.0, 0.0, 0.0, 0],
 
-        account_id = ids[0]
-        account = self.browse(cr, uid, account_id, context=context)
-        res = {account_id: {
-            'statinfo_complete': '',
-            'statinfo_summary': '',
-            }}
+                # [Cost, Revenue, Gain, Hour]
+                'intervent': [0.0, 0.0, 0.0, 0.0],
+                'intervent_invoiced': [0.0, 0.0, 0.0, 0.0],
+                
+                'expence': [0.0, 0.0, 0.0], # NOTE only cost!
+                }
 
-        total = { 
-            # [Cost, Revenue, Gain, Error]
-            'picking': [0.0, 0.0, 0.0, 0.0, 0],
-            'ddt': [0.0, 0.0, 0.0, 0],
-            'invoice': [0.0, 0.0, 0.0, 0],
-            'account_invoice': [0.0, 0.0, 0.0, 0],
+            # -----------------------------------------------------------------
+            # Pre load data:
+            # -----------------------------------------------------------------
+            partner = account.partner_id
+            partner_forced = {}
+            for forced in partner.mode_revenue_ids:        
+                partner_forced[forced.mode_id.id] = forced.list_price
 
-            # [Cost, Revenue, Gain, Hour]
-            'intervent': [0.0, 0.0, 0.0, 0.0],
-            'intervent_invoiced': [0.0, 0.0, 0.0, 0.0],
-            
-            'expence': [0.0, 0.0, 0.0], # NOTE only cost!
-            }
+            # Load mode pricelist (to get revenue):
+            mode_pricelist = {}
+            mode_ids = mode_pool.search(cr, uid, [], context=context)
+            for mode in mode_pool.browse(
+                    cr, uid, mode_ids, context=context):
+                mode_pricelist[mode.id] = mode.list_price
 
-        # ---------------------------------------------------------------------
-        # Pre load data:
-        # ---------------------------------------------------------------------
-        partner = account.partner_id
-        partner_forced = {}
-        for forced in partner.mode_revenue_ids:        
-            partner_forced[forced.mode_id.id] = forced.list_price
-
-        # Load mode pricelist (to get revenue):
-        mode_pricelist = {}
-        mode_ids = mode_pool.search(cr, uid, [], context=context)
-        for mode in mode_pool.browse(
-                cr, uid, mode_ids, context=context):
-            mode_pricelist[mode.id] = mode.list_price
-
-        res[account_id]['statinfo_complete'] += css_block
-        res[account_id]['statinfo_summary'] += css_block
-    
-        # ---------------------------------------------------------------------
-        # Picking analysis:
-        # ---------------------------------------------------------------------
-        picking_ids = picking_pool.search(cr, uid, [
-            ('account_id', '=', account_id),
-            ('pick_move', '=', 'out'), # Only out movement
-            ], context=context)
-        if picking_ids:
-            # TODO manage also state of picking: 
-            pickings = picking_pool.browse(
-                cr, uid, picking_ids, context=context)
-            partner = pickings[0].partner_id
-            activity_price = partner.activity_price
-
-            # Header:
-            res[account_id]['statinfo_complete'] += '''
-                <p><b>Consegne materiali (Ricavo usa: %s)</b>: [Tot.: %s]</p>
-                <table class='table_bf'>
-                <tr class='table_bf'>
-                    <th>Descrizione</th>
-                    <th>Costo</th>
-                    <th>Ricavo</th>
-                    <th>Utile</th>
-                    <th>Errori</th>
-                </tr>''' % (activity_price, len(picking_ids))
-            for picking in pickings:
-                if picking.ddt_id:
-                    if picking.ddt_id.is_invoiced:
-                        mode = 'invoice'
-                        total['account_invoice'][1] += \
-                            picking.ddt_id.invoice_amount
-                    else:
-                        mode = 'ddt'
-                else:        
-                    mode = 'picking'
-
-                for move in picking.move_lines:
-                    product = move.product_id
-                    if not product:
-                        continue
-                    qty = move.product_qty #_uom
-                    
-                    #reply = product_pool.extract_product_data(
-                    #    cr, uid, move, context=context)
-                    #(product_name, list_price, standard_price, 
-                    #    discount_price, discount_vat) = reply                    
-                    #if activity_price == 'lst_price': 
-                    #    price = list_price
-                    #else: # metel_sale
-                    #    price = discount_price
-                    
-                    cost = qty * product.standard_price
-                    # XXX Not as in report:
-                    revenue = qty * product.lst_price # or move.price_unit) 
-                    # ex.: price # move.price_unit
-
-                    if not cost or not revenue:
-                        total[mode][3] += 1 # error
-                        
-                    total[mode][0] += cost
-                    total[mode][1] += revenue
-
-            for mode, name in (('picking', 'Consegne'), ('ddt', 'DDT'), 
-                    ('invoice', 'Fatture'), ('account_invoice', 'Gestionale')):
-                    
-                total[mode][2] = total[mode][1] - total[mode][0]
-                res[account_id]['statinfo_complete'] += '''
-                    <tr class='table_bf'>
-                        <td class="td_text">%s</td>%s%s%s%s
-                    </tr>''' % (
-                        name,
-                        number_cell(total[mode][0]), # cost
-                        number_cell(total[mode][1]), # revenue
-                        number_cell(total[mode][2]), # gain
-                        number_cell(total[mode][3]), # error
-                        )
-            res[account_id]['statinfo_complete'] += '''</table><br/>'''
-        else:
-            res[account_id]['statinfo_complete'] += '''
-                <p><b>Consegne materiale</b>:<br/> Non presenti!</p>'''
-
-        # ---------------------------------------------------------------------
-        # Intervent:
-        # ---------------------------------------------------------------------
-        timesheet_ids = timesheet_pool.search(cr, uid, [
-            ('account_id', '=', account_id),
-            ('not_in_report', '=', False),
-            ], context=context)
+            res[account_id]['statinfo_complete'] += css_block
+            res[account_id]['statinfo_summary'] += css_block
         
-        if timesheet_ids:
-            # Header:
-            res[account_id]['statinfo_complete'] += '''
-                <p><b>Interventi totali</b>: [Tot.: %s]</p>
-                <table class='table_bf'>
-                <tr class='table_bf'>
-                    <th>Descrizione</th>
-                    <th>Costo</th>
-                    <th>Ricavo</th>
-                    <th>Utile</th>
-                    <th>H.</th>
-                </tr>''' % len(timesheet_ids)
-                
-            # TODO manage also state of picking:    
-            for ts in timesheet_pool.browse(
-                    cr, uid, timesheet_ids, context=context):
-                if ts.is_invoiced:
-                    mode = 'intervent_invoiced'
-                else:
-                    mode = 'intervent'
-                    
-                # Read revenue:        
-                user_mode_id = ts.user_mode_id.id
-                if user_mode_id in partner_forced: # partner forced
-                    unit_revenue = partner_forced[user_mode_id]
-                else: # read for default list:
-                    unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
+            # -----------------------------------------------------------------
+            # Picking analysis:
+            # -----------------------------------------------------------------
+            picking_ids = picking_pool.search(cr, uid, [
+                ('account_id', '=', account_id),
+                ('pick_move', '=', 'out'), # Only out movement
+                ], context=context)
+            if picking_ids:
+                # TODO manage also state of picking: 
+                pickings = picking_pool.browse(
+                    cr, uid, picking_ids, context=context)
+                partner = pickings[0].partner_id
+                activity_price = partner.activity_price
 
-                total[mode][0] -= ts.amount # Always negative
-                total[mode][1] += ts.unit_amount * unit_revenue  # revenue
-                total[mode][3] += ts.unit_amount # H.
-
-            for mode, name in (('intervent', 'Da fatturare'), 
-                    ('intervent_invoiced', 'Fatturati')):
-                total[mode][2] = total[mode][1] - total[mode][0]
-                
+                # Header:
                 res[account_id]['statinfo_complete'] += '''
+                    <p><b>Consegne materiali (Ricavo usa: %s)</b>: [Tot.: %s]</p>
+                    <table class='table_bf'>
                     <tr class='table_bf'>
-                        <td class="td_text">%s</td>%s%s%s%s
-                    </tr>''' % (
+                        <th>Descrizione</th>
+                        <th>Costo</th>
+                        <th>Ricavo</th>
+                        <th>Utile</th>
+                        <th>Errori</th>
+                    </tr>''' % (activity_price, len(picking_ids))
+                for picking in pickings:
+                    if picking.ddt_id:
+                        if picking.ddt_id.is_invoiced:
+                            mode = 'invoice'
+                            total['account_invoice'][1] += \
+                                picking.ddt_id.invoice_amount
+                        else:
+                            mode = 'ddt'
+                    else:        
+                        mode = 'picking'
+
+                    for move in picking.move_lines:
+                        product = move.product_id
+                        if not product:
+                            continue
+                        qty = move.product_qty #_uom
+                        
+                        #reply = product_pool.extract_product_data(
+                        #    cr, uid, move, context=context)
+                        #(product_name, list_price, standard_price, 
+                        #    discount_price, discount_vat) = reply                    
+                        #if activity_price == 'lst_price': 
+                        #    price = list_price
+                        #else: # metel_sale
+                        #    price = discount_price
+                        
+                        cost = qty * product.standard_price
+                        # XXX Not as in report:
+                        revenue = qty * product.lst_price # or move.price_unit) 
+                        # ex.: price # move.price_unit
+
+                        if not cost or not revenue:
+                            total[mode][3] += 1 # error
+                            
+                        total[mode][0] += cost
+                        total[mode][1] += revenue
+
+                for mode, name in (('picking', 'Consegne'), 
+                        ('ddt', 'DDT'), 
+                        ('invoice', 'Fatture'), 
+                        ('account_invoice', 'Gestionale')):
+                        
+                    total[mode][2] = total[mode][1] - total[mode][0]
+                    res[account_id]['statinfo_complete'] += '''
+                        <tr class='table_bf'>
+                            <td class="td_text">%s</td>%s%s%s%s
+                        </tr>''' % (
                             name,
                             number_cell(total[mode][0]), # cost
                             number_cell(total[mode][1]), # revenue
                             number_cell(total[mode][2]), # gain
-                            number_cell(total[mode][3]), # hour
+                            number_cell(total[mode][3]), # error
                             )
-            res[account_id]['statinfo_complete'] += '''</table><br/>'''
-        else:
-            res[account_id]['statinfo_complete'] += '''
-                <p><b>Interventi</b>:<br/>Non presenti!</p>'''
+                res[account_id]['statinfo_complete'] += '''</table><br/>'''
+            else:
+                res[account_id]['statinfo_complete'] += '''
+                    <p><b>Consegne materiale</b>:<br/> Non presenti!</p>'''
 
-        # ---------------------------------------------------------------------
-        # Expences:
-        # ---------------------------------------------------------------------
-        expence_ids = expence_pool.search(cr, uid, [
-            ('account_id', '=', account_id),
-            ('printable', '!=', 'none'),
-            ], context=context)
-        mode = 'expence'
-        if expence_ids:
-            # Header:
-            res[account_id]['statinfo_complete'] += '''
-                <p><b>Spese totali</b>: [Tot.: %s]</p>
-                <table class='table_bf'>
-                <tr class='table_bf'>
-                    <th>Descrizione</th>
-                    <th>Costo</th>
-                    <th>Ricavo</th>
-                    <th>Utile</th>
-                </tr>''' % len(expence_ids)
-                
-            for expence in expence_pool.browse(
-                    cr, uid, expence_ids, context=context):
-                total[mode][0] += expence.total
-                total[mode][1] += expence.total_forced or expence.total
-            total[mode][2] = total[mode][1] - total[mode][0] 
+            # -----------------------------------------------------------------
+            # Intervent:
+            # -----------------------------------------------------------------
+            timesheet_ids = timesheet_pool.search(cr, uid, [
+                ('account_id', '=', account_id),
+                ('not_in_report', '=', False),
+                ], context=context)
             
-            res[account_id]['statinfo_complete'] += '''
-                <tr class='table_bf'>
-                    <td class="td_text">Spese</td>%s%s%s
-                </tr>''' % (
-                    number_cell(total[mode][0]), # cost
-                    number_cell(total[mode][1]), # revenue
-                    number_cell(total[mode][2]), # gain
-                    )
-            res[account_id]['statinfo_complete'] += '''</table><br/>'''
-            
-        else:
-            res[account_id]['statinfo_complete'] += '''
-                <p><b>Spese</b>:<br/>Non presenti!</p>
-                '''
-        res[account_id]['statinfo_complete'] += '</table>'
-        
-        # ---------------------------------------------------------------------
-        # Summary block:
-        # ---------------------------------------------------------------------
-        total_summary = {
-            'delivery': sum(( 
-                total['picking'][0],
-                total['ddt'][0],
-                total['invoice'][0],                            
-                )),
-            'works': sum(( 
-                total['intervent'][0],
-                total['intervent_invoiced'][0],
-                )),
-            'expence': 
-                total['expence'][0],
-            'hours': sum((
-                total['intervent'][3],    
-                total['intervent_invoiced'][3],    
-                ))
-            }
-        res[account_id]['statinfo_summary'] += '''
-            <table class='table_bf'>
-                <tr class='table_bf'>
-                    <th>Descrizione</th>                    
-                    <th>Costi</th>
-                    <th>Totali</th>
-                </tr>
-
-                <tr class='table_bf'>
-                    <td colspan="3" align="center"><b>Ore</b></td>
-                </tr>
-
-                <tr class='table_bf'>
-                    <td class="td_text">Ore</td>
-                    %s
-                    %s
-                </tr>                
-                <tr class='table_bf'>
-                    <td class="td_text"><b>Rimanenti</b></td>
-                    <td class="td_text">&nbsp;</td>
-                    %s
-                </tr>                
-
-                <tr class='table_bf'>
-                    <td colspan="3" align="center"><b>Ricavi</b></td>
-                </tr>
-                
-                <tr class='table_bf'>
-                    <td class="td_text">Nominale</td>                    
-                    <td class="td_text">&nbsp;</td>
-                    %s
-                </tr>
-                
-                <tr class='table_bf'>
-                    <td class="td_text">Fatturato</td>                    
-                    <td class="td_text">&nbsp;</td>
-                    %s
-                </tr>
-
-                <tr class='table_bf'>
-                    <td class="td_text"><b>Residuo</b></td>                    
-                    <td class="td_text">&nbsp;</td>
-                    %s
-                </tr>
-                
-                <tr class='table_bf'>
-                    <td colspan="3" align="center"><b>Costi</b></td>
-                </tr>
-
-                <tr class='table_bf'>
-                    <td class="td_text">Consegnato</td>                    
-                    %s
-                    <td class="td_text">&nbsp;</td>
-                </tr>
-                <tr class='table_bf'>
-                    <td class="td_text">Lavori</td>                    
-                    %s
-                    <td class="td_text">&nbsp;</td>
-                </tr>
-                <tr class='table_bf'>
-                    <td class="td_text">Spese</td>                    
-                    %s
-                    <td class="td_text">&nbsp;</td>
-                </tr>                
-
-                <tr class='table_bf'>
-                    <td class="td_text"><b>Costi tot.</b></td>                    
-                    <td class="td_text">&nbsp;</td>
-                    %s
-                </tr>                
-
-                <tr class='table_bf'>
-                    <td colspan="3" align="center"><b>Margini</b></td>
-                </tr>
-
-                <tr class='table_bf'>
-                    <td class="td_text">Nominale</td>
-                    <td class="td_text">&nbsp;</td>
-                    %s
-                </tr>                
-                <tr class='table_bf'>
-                    <td class="td_text">Fatturato</td>                    
-                    <td class="td_text">&nbsp;</td>
-                    %s
-                </tr>                
-                ''' % (
-                    # Hours:
-                    number_cell(total_summary['hours']),                        
-                    number_cell(account.total_hours, negative='empty'),
-                    number_cell(account.total_hours - total_summary['hours'], 
-                        negative='negative',
-                        bold=True,
-                        ),
-
-                    # Account and Invoiced
-                    number_cell(
-                        account.total_amount,
-                        negative='empty',          
-                        ),
-                    number_cell(total['account_invoice'][1]),
-                    number_cell(
-                        account.total_amount - total['account_invoice'][1],
-                        negative='negative',          
-                        bold=True,              
-                        ),
-
-                    # Costs:
-                    number_cell(total_summary['delivery']),
-                    number_cell(total_summary['works']),
-                    number_cell(total_summary['expence']),
+            if timesheet_ids:
+                # Header:
+                res[account_id]['statinfo_complete'] += '''
+                    <p><b>Interventi totali</b>: [Tot.: %s]</p>
+                    <table class='table_bf'>
+                    <tr class='table_bf'>
+                        <th>Descrizione</th>
+                        <th>Costo</th>
+                        <th>Ricavo</th>
+                        <th>Utile</th>
+                        <th>H.</th>
+                    </tr>''' % len(timesheet_ids)
                     
-                    number_cell(-sum(total_summary.values())),
+                # TODO manage also state of picking:    
+                for ts in timesheet_pool.browse(
+                        cr, uid, timesheet_ids, context=context):
+                    if ts.is_invoiced:
+                        mode = 'intervent_invoiced'
+                    else:
+                        mode = 'intervent'
+                        
+                    # Read revenue:        
+                    user_mode_id = ts.user_mode_id.id
+                    if user_mode_id in partner_forced: # partner forced
+                        unit_revenue = partner_forced[user_mode_id]
+                    else: # read for default list:
+                        unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
 
-                    number_cell(
-                        account.total_amount - sum(
-                            total_summary.values()),
-                        negative='empty',
-                        positive=True,
-                        bold=True,              
-                        ),
-                    number_cell(
-                        total['account_invoice'][1] - sum(
-                            total_summary.values()),
-                        negative='empty',
-                        positive=True,
-                        bold=True,              
-                        ),
-                    )
+                    total[mode][0] -= ts.amount # Always negative
+                    total[mode][1] += ts.unit_amount * unit_revenue  # revenue
+                    total[mode][3] += ts.unit_amount # H.
+
+                for mode, name in (('intervent', 'Da fatturare'), 
+                        ('intervent_invoiced', 'Fatturati')):
+                    total[mode][2] = total[mode][1] - total[mode][0]
+                    
+                    res[account_id]['statinfo_complete'] += '''
+                        <tr class='table_bf'>
+                            <td class="td_text">%s</td>%s%s%s%s
+                        </tr>''' % (
+                                name,
+                                number_cell(total[mode][0]), # cost
+                                number_cell(total[mode][1]), # revenue
+                                number_cell(total[mode][2]), # gain
+                                number_cell(total[mode][3]), # hour
+                                )
+                res[account_id]['statinfo_complete'] += '''</table><br/>'''
+            else:
+                res[account_id]['statinfo_complete'] += '''
+                    <p><b>Interventi</b>:<br/>Non presenti!</p>'''
+
+            # -----------------------------------------------------------------
+            # Expences:
+            # -----------------------------------------------------------------
+            expence_ids = expence_pool.search(cr, uid, [
+                ('account_id', '=', account_id),
+                ('printable', '!=', 'none'),
+                ], context=context)
+            mode = 'expence'
+            if expence_ids:
+                # Header:
+                res[account_id]['statinfo_complete'] += '''
+                    <p><b>Spese totali</b>: [Tot.: %s]</p>
+                    <table class='table_bf'>
+                    <tr class='table_bf'>
+                        <th>Descrizione</th>
+                        <th>Costo</th>
+                        <th>Ricavo</th>
+                        <th>Utile</th>
+                    </tr>''' % len(expence_ids)
+                    
+                for expence in expence_pool.browse(
+                        cr, uid, expence_ids, context=context):
+                    total[mode][0] += expence.total
+                    total[mode][1] += expence.total_forced or expence.total
+                total[mode][2] = total[mode][1] - total[mode][0] 
+                
+                res[account_id]['statinfo_complete'] += '''
+                    <tr class='table_bf'>
+                        <td class="td_text">Spese</td>%s%s%s
+                    </tr>''' % (
+                        number_cell(total[mode][0]), # cost
+                        number_cell(total[mode][1]), # revenue
+                        number_cell(total[mode][2]), # gain
+                        )
+                res[account_id]['statinfo_complete'] += '''</table><br/>'''
+                
+            else:
+                res[account_id]['statinfo_complete'] += '''
+                    <p><b>Spese</b>:<br/>Non presenti!</p>
+                    '''
+            res[account_id]['statinfo_complete'] += '</table>'
+            
+            # -----------------------------------------------------------------
+            # Summary block:
+            # -----------------------------------------------------------------
+            total_summary = {
+                'delivery': sum(( 
+                    total['picking'][0],
+                    total['ddt'][0],
+                    total['invoice'][0],                            
+                    )),
+                'works': sum(( 
+                    total['intervent'][0],
+                    total['intervent_invoiced'][0],
+                    )),
+                'expence': 
+                    total['expence'][0],
+                'hours': sum((
+                    total['intervent'][3],    
+                    total['intervent_invoiced'][3],    
+                    ))
+                }
+            res[account_id]['statinfo_summary'] += '''
+                <table class='table_bf'>
+                    <tr class='table_bf'>
+                        <th>Descrizione</th>                    
+                        <th>Costi</th>
+                        <th>Totali</th>
+                    </tr>
+
+                    <tr class='table_bf'>
+                        <td colspan="3" align="center"><b>Ore</b></td>
+                    </tr>
+
+                    <tr class='table_bf'>
+                        <td class="td_text">Ore</td>
+                        %s
+                        %s
+                    </tr>                
+                    <tr class='table_bf'>
+                        <td class="td_text"><b>Rimanenti</b></td>
+                        <td class="td_text">&nbsp;</td>
+                        %s
+                    </tr>                
+
+                    <tr class='table_bf'>
+                        <td colspan="3" align="center"><b>Ricavi</b></td>
+                    </tr>
+                    
+                    <tr class='table_bf'>
+                        <td class="td_text">Nominale</td>                    
+                        <td class="td_text">&nbsp;</td>
+                        %s
+                    </tr>
+                    
+                    <tr class='table_bf'>
+                        <td class="td_text">Fatturato</td>                    
+                        <td class="td_text">&nbsp;</td>
+                        %s
+                    </tr>
+
+                    <tr class='table_bf'>
+                        <td class="td_text"><b>Residuo</b></td>                    
+                        <td class="td_text">&nbsp;</td>
+                        %s
+                    </tr>
+                    
+                    <tr class='table_bf'>
+                        <td colspan="3" align="center"><b>Costi</b></td>
+                    </tr>
+
+                    <tr class='table_bf'>
+                        <td class="td_text">Consegnato</td>                    
+                        %s
+                        <td class="td_text">&nbsp;</td>
+                    </tr>
+                    <tr class='table_bf'>
+                        <td class="td_text">Lavori</td>                    
+                        %s
+                        <td class="td_text">&nbsp;</td>
+                    </tr>
+                    <tr class='table_bf'>
+                        <td class="td_text">Spese</td>                    
+                        %s
+                        <td class="td_text">&nbsp;</td>
+                    </tr>                
+
+                    <tr class='table_bf'>
+                        <td class="td_text"><b>Costi tot.</b></td>                    
+                        <td class="td_text">&nbsp;</td>
+                        %s
+                    </tr>                
+
+                    <tr class='table_bf'>
+                        <td colspan="3" align="center"><b>Margini</b></td>
+                    </tr>
+
+                    <tr class='table_bf'>
+                        <td class="td_text">Nominale</td>
+                        <td class="td_text">&nbsp;</td>
+                        %s
+                    </tr>                
+                    <tr class='table_bf'>
+                        <td class="td_text">Fatturato</td>                    
+                        <td class="td_text">&nbsp;</td>
+                        %s
+                    </tr>                
+                    ''' % (
+                        # Hours:
+                        number_cell(total_summary['hours']),                        
+                        number_cell(account.total_hours, negative='empty'),
+                        number_cell(account.total_hours - \
+                            total_summary['hours'], 
+                                negative='negative',
+                                bold=True,
+                            ),
+
+                        # Account and Invoiced
+                        number_cell(
+                            account.total_amount,
+                            negative='empty',          
+                            ),
+                        number_cell(total['account_invoice'][1]),
+                        number_cell(
+                            account.total_amount - total['account_invoice'][1],
+                            negative='negative',          
+                            bold=True,              
+                            ),
+
+                        # Costs:
+                        number_cell(total_summary['delivery']),
+                        number_cell(total_summary['works']),
+                        number_cell(total_summary['expence']),
+                        
+                        number_cell(-sum(total_summary.values())),
+
+                        number_cell(
+                            account.total_amount - sum(
+                                total_summary.values()),
+                            negative='empty',
+                            positive=True,
+                            bold=True,              
+                            ),
+                        number_cell(
+                            total['account_invoice'][1] - sum(
+                                total_summary.values()),
+                            negative='empty',
+                            positive=True,
+                            bold=True,              
+                            ),
+                        )
         return res
         
     _columns = {
@@ -598,5 +604,39 @@ class AccountAnalyticAccount(orm.Model):
         'statinfo_summary': fields.function(
             _get_statinfo_complete, method=True, multi=True,
             type='text', string='Riepilogo statistico'), 
+
+        # Dynamic:
+        'statinfo_hour_done': fields.function(
+            _get_statinfo_complete, method=True, multi=True,
+            type='float', string='Ore fatte'), 
+        'statinfo_invoiced': fields.function(
+            _get_statinfo_complete, method=True, multi=True,
+            type='float', string='Fatturato'), 
+        'statinfo_remain_invoiced': fields.function(
+            _get_statinfo_complete, method=True, multi=True,
+            type='float', string='Residuo da fatt.'), 
+        'statinfo_total_cost': fields.function(
+            _get_statinfo_complete, method=True, multi=True,
+            type='float', string='Costo totale'), 
+        'statinfo_margin_nominal': fields.function(
+            _get_statinfo_complete, method=True, multi=True,
+            type='float', string='Margine nominale'), 
+        'statinfo_margin_invoice': fields.function(
+            _get_statinfo_complete, method=True, multi=True,
+            type='float', string='Margine fatturato'), 
+        
+        # History:
+        'history_hour_done': fields.float(
+            'Ore fatte', digits=(16, 2)),
+        'history_invoiced': fields.float(
+            'Fatturato', digits=(16, 2)),
+        'history_remain_invoiced': fields.float(
+            'Residuo da fatt.', digits=(16, 2)),
+        'history_total_cost': fields.float(
+            'Costo totale'), ', digits=(16, 2)),
+        'history_margin_nominal': fields.float(
+            'Margine nominale', digits=(16, 2)),
+        'history_margin_invoice': fields.float(
+            'Margine fatturato', digits=(16, 2)),
         }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
