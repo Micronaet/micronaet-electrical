@@ -42,7 +42,9 @@
     'init_xml': [],
     'demo': [],
     'data': [
+        'security/stats_group.xml',
         #'security/ir.model.access.csv',    
+
         'stat_button_view.xml',
         ],
     'active': False,

@@ -633,7 +633,7 @@ class AccountAnalyticAccount(orm.Model):
         'history_remain_invoiced': fields.float(
             'Residuo da fatt.', digits=(16, 2)),
         'history_total_cost': fields.float(
-            'Costo totale'), ', digits=(16, 2)),
+            'Costo totale', digits=(16, 2)),
         'history_margin_nominal': fields.float(
             'Margine nominale', digits=(16, 2)),
         'history_margin_invoice': fields.float(

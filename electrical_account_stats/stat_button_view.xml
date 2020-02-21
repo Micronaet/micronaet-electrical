@@ -20,6 +20,39 @@
                 </form>
             </field>
         </record>
+        <record model="ir.ui.view" id="view_account_analytic_account_cost_tree">
+            <field name="name">account.analytic.account.history.cost.form</field>
+            <field name="model">account.analytic.account</field>
+            <field name="priority" eval="40" />
+            <field name="arch" type="xml">
+                <tree string="Analisi analitica">
+                    <field name="partner_id" />
+                    <field name="name" />
+                    
+                    <field name="total_hours" />
+                    <field name="history_hour_done" />
+
+                    <field name="total_amount" />
+                    <field name="history_invoiced" />
+                    <field name="history_remain_invoiced" />
+                    <field name="history_total_cost" />
+                    <field name="history_margin_nominal" />
+                    <field name="history_margin_invoice" />                                        
+                    
+                    <field name="state" />
+                </tree>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_account_analytic_account_cost_tree">
+            <field name="name">Analisi statistica commesse</field>
+            <field name="res_model">account.analytic.account</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_account_analytic_account_cost_tree"/>
+            <field name="context">{}</field>
+            <field name="domain">[]</field>
+        </record>        
+
         <record model="ir.actions.act_window" id="action_stock_picking_form">
             <field name="name">Stock picking for account</field>
             <field name="res_model">stock.picking</field>
@@ -65,7 +98,6 @@
                 </div>
             </field>
         </record>
-
     </data>
 </openerp>
 
