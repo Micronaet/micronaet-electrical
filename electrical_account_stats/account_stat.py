@@ -142,6 +142,7 @@ class AccountAnalyticAccount(orm.Model):
             'picking': [0.0, 0.0, 0.0, 0.0, 0],
             'ddt': [0.0, 0.0, 0.0, 0],
             'invoice': [0.0, 0.0, 0.0, 0],
+            'account_invoice': [0.0, 0.0, 0.0, 0],
 
             # [Cost, Revenue, Gain, Hour]
             'intervent': [0.0, 0.0, 0.0, 0.0],
@@ -226,6 +227,8 @@ class AccountAnalyticAccount(orm.Model):
                 if picking.ddt_id:
                     if picking.ddt_id.is_invoiced:
                         mode = 'invoice'
+                        total['account_invoice'][1] account_invoice += \
+                            picking.ddt_id.invoice_amount
                     else:
                         mode = 'ddt'
                 else:        
@@ -258,7 +261,7 @@ class AccountAnalyticAccount(orm.Model):
                     total[mode][1] += revenue
 
             for mode, name in (('picking', 'Consegne'), ('ddt', 'DDT'), 
-                    ('invoice', 'Fatture')):
+                    ('invoice', 'Fatture'), ('account_invoice', 'Gestionale')):
                     
                 total[mode][2] = total[mode][1] - total[mode][0]
                 res[account_id] += '''
