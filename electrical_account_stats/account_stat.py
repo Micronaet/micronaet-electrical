@@ -227,7 +227,7 @@ class AccountAnalyticAccount(orm.Model):
                 if picking.ddt_id:
                     if picking.ddt_id.is_invoiced:
                         mode = 'invoice'
-                        total['account_invoice'][1] account_invoice += \
+                        total['account_invoice'][1] += \
                             picking.ddt_id.invoice_amount
                     else:
                         mode = 'ddt'
