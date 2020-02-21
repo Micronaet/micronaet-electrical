@@ -128,6 +128,11 @@ class AccountAnalyticAccount(orm.Model):
             else:   
                bold_on = bold_off = ''
 
+            currency = ''
+            for c in locale.currency(value, grouping=True):
+                if ord(c) < 127:
+                    currency += c
+
             if positive and value > 0.0: # #fcfc92
                 number_class = 'td_number_green'            
             elif negative == 'empty' and value <= 0.0: # #fcfc92
@@ -140,7 +145,7 @@ class AccountAnalyticAccount(orm.Model):
             return '<td class="td_text %s">%s%s%s</td>' % (
                 number_class,
                 bold_on,
-                locale.currency(value, grouping=True).split(' ')[-1],
+                currency,
                 bold_off,
                 )
                          
@@ -529,11 +534,13 @@ class AccountAnalyticAccount(orm.Model):
                     %s
                 </tr>                
                 ''' % (
+                    # Hours:
                     number_cell(total_summary['hours']),                        
                     number_cell(account.total_hours, negative='empty'),
                     number_cell(account.total_hours - total_summary['hours'], 
                         negative='negative'),
 
+                    # Account and Invoiced
                     number_cell(account.total_amount),
                     number_cell(total['account_invoice'][1]),
                     number_cell(
@@ -542,6 +549,7 @@ class AccountAnalyticAccount(orm.Model):
                         bold=True,              
                         ),
 
+                    # Costs:
                     number_cell(total_summary['delivery']),
                     number_cell(total_summary['works']),
                     number_cell(total_summary['expence']),
@@ -555,11 +563,11 @@ class AccountAnalyticAccount(orm.Model):
                         positive=True,
                         ),
                     number_cell(
-                        total['account_invoice'][1] -sum(
+                        total['account_invoice'][1] - sum(
                             total_summary.values()),
                         negative='empty',
                         positive=True,
-                        ),                                            
+                        ),
                     )
         return res
         
