@@ -25,6 +25,7 @@ import os
 import sys
 import logging
 import openerp
+import locale
 import openerp.netsvc as netsvc
 import openerp.addons.decimal_precision as dp
 from openerp.osv import fields, osv, expression, orm
@@ -116,8 +117,7 @@ class AccountAnalyticAccount(orm.Model):
         ''' Fields function for calculate 
         '''
         # Utility:
-        def number_cell(value, round_to=2, negative='never', 
-                positive=False, bold=False):
+        def number_cell(value, negative='never', positive=False, bold=False):
             """ Return cell block for number
                 color: never, negative, empty
             """
@@ -137,10 +137,10 @@ class AccountAnalyticAccount(orm.Model):
             else:    
                 number_class = 'td_number'
                 
-            return '<td class="td_text %s">%s%15.2f%s</td>' % (
+            return '<td class="td_text %s">%s%s%s</td>' % (
                 number_class,
                 bold_on,
-                round(value, round_to),
+                locale.currency(value, grouping=True).split(' ')[-1],
                 bold_off,
                 )
                          
