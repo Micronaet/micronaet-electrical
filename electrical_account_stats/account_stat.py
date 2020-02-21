@@ -538,7 +538,9 @@ class AccountAnalyticAccount(orm.Model):
                     number_cell(total_summary['hours']),                        
                     number_cell(account.total_hours, negative='empty'),
                     number_cell(account.total_hours - total_summary['hours'], 
-                        negative='negative'),
+                        negative='negative',
+                        bold=True,
+                        ),
 
                     # Account and Invoiced
                     number_cell(
