@@ -116,11 +116,33 @@ class AccountAnalyticAccount(orm.Model):
         ''' Fields function for calculate 
         '''
         # Utility:
-        def number_cell(value, round_to=2):
+        def number_cell(value, round_to=2, negative='never', 
+                positive=False, bold=False):
             """ Return cell block for number
+                color: never, negative, empty
             """
-            return '<td class="td_text td_number">%15.2f</td>' % round(
-                value or 0.0, round_to)
+            value = value or 0.0
+            if bold:
+               bold_on = '<b>'
+               bold_off = '</b>'
+            else:   
+               bold_on = bold_off = ''
+
+            if positive and value > 0.0: # #fcfc92
+                number_class = 'td_number_green'            
+            elif negative == 'empty' and value <= 0.0: # #fcfc92
+                number_class = 'td_number_red'
+            elif negative == 'negative' and value < 0.0:
+                number_class = 'td_number_red'
+            else:    
+                number_class = 'td_number'
+                
+            return '<td class="td_text %s">%s%15.2f%s</td>' % (
+                number_class,
+                bold_on,
+                round(value, round_to),
+                bold_off,
+                )
                          
         if len(ids) > 1:
             return res
@@ -185,6 +207,20 @@ class AccountAnalyticAccount(orm.Model):
                      border: 1px solid black;
                      padding: 3px;
                      width: 70px;
+                     }
+                .table_bf .td_number_red {
+                     text-align: right;
+                     border: 1px solid black;
+                     padding: 3px;
+                     width: 70px;
+                     background-color: #ffb8b8;
+                     }
+                .table_bf .td_number_green {
+                     text-align: right;
+                     border: 1px solid black;
+                     padding: 3px;
+                     width: 70px;
+                     background-color: #9cffb1;
                      }
                 .table_bf .td_text {
                      text-align: right;
@@ -425,7 +461,7 @@ class AccountAnalyticAccount(orm.Model):
                     %s
                 </tr>                
                 <tr class='table_bf'>
-                    <td class="td_text">Rimanenti</td>
+                    <td class="td_text"><b>Rimanenti</b></td>
                     <td class="td_text">&nbsp;</td>
                     %s
                 </tr>                
@@ -447,7 +483,7 @@ class AccountAnalyticAccount(orm.Model):
                 </tr>
 
                 <tr class='table_bf'>
-                    <td class="td_text">Residuo</td>                    
+                    <td class="td_text"><b>Residuo</b></td>                    
                     <td class="td_text">&nbsp;</td>
                     %s
                 </tr>
@@ -473,7 +509,7 @@ class AccountAnalyticAccount(orm.Model):
                 </tr>                
 
                 <tr class='table_bf'>
-                    <td class="td_text">Costi tot.</td>                    
+                    <td class="td_text"><b>Costi tot.</b></td>                    
                     <td class="td_text">&nbsp;</td>
                     %s
                 </tr>                
@@ -494,13 +530,16 @@ class AccountAnalyticAccount(orm.Model):
                 </tr>                
                 ''' % (
                     number_cell(total_summary['hours']),                        
-                    number_cell(account.total_hours),
-                    number_cell(account.total_hours - total_summary['hours']),
+                    number_cell(account.total_hours, negative='empty'),
+                    number_cell(account.total_hours - total_summary['hours'], 
+                        negative='negative'),
 
                     number_cell(account.total_amount),
                     number_cell(total['account_invoice'][1]),
                     number_cell(
-                        account.total_amount - total['account_invoice'][1]
+                        account.total_amount - total['account_invoice'][1],
+                        negative='negative',          
+                        bold=True,              
                         ),
 
                     number_cell(total_summary['delivery']),
@@ -509,13 +548,19 @@ class AccountAnalyticAccount(orm.Model):
                     
                     number_cell(-sum(total_summary.values())),
 
-                    number_cell(account.total_amount - sum(
-                        total_summary.values())),
-                    number_cell(total['account_invoice'][1] -sum(
-                        total_summary.values())),                    
-                        
+                    number_cell(
+                        account.total_amount - sum(
+                            total_summary.values()),
+                        negative='empty',
+                        positive=True,
+                        ),
+                    number_cell(
+                        total['account_invoice'][1] -sum(
+                            total_summary.values()),
+                        negative='empty',
+                        positive=True,
+                        ),                                            
                     )
-
         return res
         
     _columns = {
