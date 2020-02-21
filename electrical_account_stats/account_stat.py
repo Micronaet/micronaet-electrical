@@ -541,7 +541,10 @@ class AccountAnalyticAccount(orm.Model):
                         negative='negative'),
 
                     # Account and Invoiced
-                    number_cell(account.total_amount),
+                    number_cell(
+                        account.total_amount,
+                        negative='empty',          
+                        ),
                     number_cell(total['account_invoice'][1]),
                     number_cell(
                         account.total_amount - total['account_invoice'][1],
