@@ -390,30 +390,106 @@ class AccountAnalyticAccount(orm.Model):
         # ---------------------------------------------------------------------
         # Summary block:
         # ---------------------------------------------------------------------
+        total_summary = {
+            'delivery': sum(( 
+                total['picking'][0],
+                total['ddt'][0],
+                total['invoice'][0],                            
+                )),
+            'works': sum(( 
+                total['intervent'][0],
+                total['intervent_invoiced'][0],
+                )),
+            'expence': 
+                total['expence'][0],
+            }
         res[account_id]['statinfo_summary'] += '''
             <table class='table_bf'>
                 <tr class='table_bf'>
                     <th>Descrizione</th>                    
-                    <th>Valore</th>
+                    <th>Costi</th>
                     <th>Totali</th>
+                </tr>
+
+                <tr class='table_bf'>
+                    <td colspan="3" align="center"><b>Ricavi</b></td>
                 </tr>
                 
                 <tr class='table_bf'>
                     <td class="td_text">Nominale</td>                    
-                    %s
                     <td class="td_text">&nbsp;</td>
+                    %s
                 </tr>
                 
                 <tr class='table_bf'>
                     <td class="td_text">Fatturato</td>                    
+                    <td class="td_text">&nbsp;</td>
+                    %s
+                </tr>
+
+                <tr class='table_bf'>
+                    <td class="td_text">Residuo</td>                    
+                    <td class="td_text">&nbsp;</td>
+                    %s
+                </tr>
+                
+                <tr class='table_bf'>
+                    <td colspan="3" align="center"><b>Costi</b></td>
+                </tr>
+
+                <tr class='table_bf'>
+                    <td class="td_text">Consegnato</td>                    
                     %s
                     <td class="td_text">&nbsp;</td>
                 </tr>
+                <tr class='table_bf'>
+                    <td class="td_text">Lavori</td>                    
+                    %s
+                    <td class="td_text">&nbsp;</td>
+                </tr>
+                <tr class='table_bf'>
+                    <td class="td_text">Spese</td>                    
+                    %s
+                    <td class="td_text">&nbsp;</td>
+                </tr>                
 
-                
+                <tr class='table_bf'>
+                    <td class="td_text">Costi tot.</td>                    
+                    <td class="td_text">&nbsp;</td>
+                    %s
+                </tr>                
+
+                <tr class='table_bf'>
+                    <td colspan="3" align="center"><b>Margini</b></td>
+                </tr>
+
+                <tr class='table_bf'>
+                    <td class="td_text">Nominale</td>
+                    <td class="td_text">&nbsp;</td>
+                    %s
+                </tr>                
+                <tr class='table_bf'>
+                    <td class="td_text">Fatturato</td>                    
+                    <td class="td_text">&nbsp;</td>
+                    %s
+                </tr>                
                 ''' % (
                     number_cell(account.total_amount),
                     number_cell(total['account_invoice'][1]),
+                    number_cell(
+                        account.total_amount - total['account_invoice'][1]
+                        ),
+
+                    number_cell(total_summary['delivery']),
+                    number_cell(total_summary['works']),
+                    number_cell(total_summary['expence']),
+                    
+                    number_cell(-sum(total_summary.values())),
+
+                    number_cell(account.total_amount - sum(
+                        total_summary.values())),
+                    number_cell(total['account_invoice'][1] -sum(
+                        total_summary.values())),                    
                     )
 
         return res
