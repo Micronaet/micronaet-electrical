@@ -128,7 +128,12 @@ class AccountAnalyticAccount(orm.Model):
 
         account_id = ids[0]
         account = self.browse(cr, uid, account_id, context=context)
-        res = {account_id: ''}
+        res = {
+            account_id: {
+                'statinfo_complete': '',
+                'statinfo_summary': '',
+                }
+            }
 
         # Pool used:
         picking_pool = self.pool.get('stock.picking')
@@ -169,7 +174,7 @@ class AccountAnalyticAccount(orm.Model):
         # ---------------------------------------------------------------------
         # Common Header:
         # ---------------------------------------------------------------------
-        res[account_id] += '''
+        css_block = '''
             <style>
                 .table_bf {
                      border: 1px solid black;
@@ -198,6 +203,9 @@ class AccountAnalyticAccount(orm.Model):
             </style>
             '''
             
+        res[account_id]['statinfo_complete'] += css_block
+        res[account_id]['statinfo_summary'] += css_block
+    
         # ---------------------------------------------------------------------
         # Picking analysis:
         # ---------------------------------------------------------------------
@@ -213,7 +221,7 @@ class AccountAnalyticAccount(orm.Model):
             activity_price = partner.activity_price
 
             # Header:
-            res[account_id] += '''
+            res[account_id]['statinfo_complete'] += '''
                 <p><b>Consegne materiali (Ricavo usa: %s)</b>: [Tot.: %s]</p>
                 <table class='table_bf'>
                 <tr class='table_bf'>
@@ -264,7 +272,7 @@ class AccountAnalyticAccount(orm.Model):
                     ('invoice', 'Fatture'), ('account_invoice', 'Gestionale')):
                     
                 total[mode][2] = total[mode][1] - total[mode][0]
-                res[account_id] += '''
+                res[account_id]['statinfo_complete'] += '''
                     <tr class='table_bf'>
                         <td class="td_text">%s</td>%s%s%s%s
                     </tr>''' % (
@@ -274,9 +282,9 @@ class AccountAnalyticAccount(orm.Model):
                         number_cell(total[mode][2]), # gain
                         number_cell(total[mode][3]), # error
                         )
-            res[account_id] += '''</table><br/>'''
+            res[account_id]['statinfo_complete'] += '''</table><br/>'''
         else:
-            res[account_id] += '''
+            res[account_id]['statinfo_complete'] += '''
                 <p><b>Consegne materiale</b>:<br/> Non presenti!</p>'''
 
         # ---------------------------------------------------------------------
@@ -289,7 +297,7 @@ class AccountAnalyticAccount(orm.Model):
         
         if timesheet_ids:
             # Header:
-            res[account_id] += '''
+            res[account_id]['statinfo_complete'] += '''
                 <p><b>Interventi totali</b>: [Tot.: %s]</p>
                 <table class='table_bf'>
                 <tr class='table_bf'>
@@ -323,7 +331,7 @@ class AccountAnalyticAccount(orm.Model):
                     ('intervent_invoiced', 'Fatturati')):
                 total[mode][2] = total[mode][1] - total[mode][0]
                 
-                res[account_id] += '''
+                res[account_id]['statinfo_complete'] += '''
                     <tr class='table_bf'>
                         <td class="td_text">%s</td>%s%s%s%s
                     </tr>''' % (
@@ -333,9 +341,9 @@ class AccountAnalyticAccount(orm.Model):
                             number_cell(total[mode][2]), # gain
                             number_cell(total[mode][3]), # hour
                             )
-            res[account_id] += '''</table><br/>'''
+            res[account_id]['statinfo_complete'] += '''</table><br/>'''
         else:
-            res[account_id] += '''
+            res[account_id]['statinfo_complete'] += '''
                 <p><b>Interventi</b>:<br/>Non presenti!</p>'''
 
         # ---------------------------------------------------------------------
@@ -348,7 +356,7 @@ class AccountAnalyticAccount(orm.Model):
         mode = 'expence'
         if expence_ids:
             # Header:
-            res[account_id] += '''
+            res[account_id]['statinfo_complete'] += '''
                 <p><b>Spese totali</b>: [Tot.: %s]</p>
                 <table class='table_bf'>
                 <tr class='table_bf'>
@@ -364,7 +372,7 @@ class AccountAnalyticAccount(orm.Model):
                 total[mode][1] += expence.total_forced or expence.total
             total[mode][2] = total[mode][1] - total[mode][0] 
             
-            res[account_id] += '''
+            res[account_id]['statinfo_complete'] += '''
                 <tr class='table_bf'>
                     <td class="td_text">Spese</td>%s%s%s
                 </tr>''' % (
@@ -372,16 +380,18 @@ class AccountAnalyticAccount(orm.Model):
                     number_cell(total[mode][1]), # revenue
                     number_cell(total[mode][2]), # gain
                     )
-            res[account_id] += '''</table><br/>'''
+            res[account_id]['statinfo_complete'] += '''</table><br/>'''
             
         else:
-            res[account_id] += '''
-                <p><b>Spese</b>:<br/>Non presenti!</p>'''
+            res[account_id]['statinfo_complete'] += '''
+                <p><b>Spese</b>:<br/>Non presenti!</p>
+                '''
+        res[account_id]['statinfo_complete'] += '</table>'
         
         # ---------------------------------------------------------------------
         # Summary block:
         # ---------------------------------------------------------------------
-        res[account_id] += '''
+        res[account_id]['statinfo_summary'] += '''
             <p><b>Riepilogo:</b></p>
             <p>Da commessa: Totale ore: <b>%s</b>, Totale: <b>%s</b></p>
             <table class='table_bf'>
@@ -395,15 +405,14 @@ class AccountAnalyticAccount(orm.Model):
                     account.total_amount,
                     )
 
-        # TODO add correct value:
-        
+        # TODO add correct value:        
         summary_mask = '''
             <tr class='table_bf'>
                 <td class="td_text">%s</td>%s%s%s
             </tr>'''
             
         # Not Invoiced:
-        res[account_id] += summary_mask % (
+        res[account_id]['statinfo_summary'] += summary_mask % (
             'Non fatturato',
             number_cell(
                 total['picking'][0] + total['ddt'][0] + total['intervent'][0]),
@@ -414,7 +423,7 @@ class AccountAnalyticAccount(orm.Model):
             )
 
         # Invoiced:
-        res[account_id] += summary_mask % (
+        res[account_id]['statinfo_summary'] += summary_mask % (
             'Fatturato',
             number_cell(total['invoice'][0] + total['intervent_invoiced'][0]),
             number_cell(total['invoice'][1] + total['intervent_invoiced'][1]),
@@ -422,7 +431,7 @@ class AccountAnalyticAccount(orm.Model):
             )
 
         # Spese:
-        res[account_id] += summary_mask % (
+        res[account_id]['statinfo_summary'] += summary_mask % (
             'Spese',
             number_cell(total['expence'][0]),
             number_cell(total['expence'][1]),
@@ -430,7 +439,7 @@ class AccountAnalyticAccount(orm.Model):
             )
 
         # Totale:
-        res[account_id] += summary_mask % (
+        res[account_id]['statinfo_summary'] += summary_mask % (
             '<b>Totale</b>',
             number_cell(
                 total['picking'][0] + total['ddt'][0] + \
@@ -447,7 +456,7 @@ class AccountAnalyticAccount(orm.Model):
                 total['intervent'][2] + total['invoice'][2] + \
                 total['intervent_invoiced'][2] + total['expence'][2]),
             )            
-        res[account_id] += '</table>'
+        res[account_id]['statinfo_summary'] += '</table>'
         return res
         
     _columns = {
@@ -460,8 +469,12 @@ class AccountAnalyticAccount(orm.Model):
         'statinfo_picking': fields.function(
             _get_statinfo_picking, method=True, 
             type='integer', string='# of picking'), 
+
         'statinfo_complete': fields.function(
-            _get_statinfo_complete, method=True, 
-            type='text', string='Complete stats'), 
+            _get_statinfo_complete, method=True, multi=True,
+            type='text', string='Dettaglio statistico'), 
+        'statinfo_summary': fields.function(
+            _get_statinfo_complete, method=True, multi=True,
+            type='text', string='Riepilogo statistico'), 
         }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
