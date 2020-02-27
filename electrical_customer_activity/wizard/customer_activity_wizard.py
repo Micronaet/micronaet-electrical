@@ -1366,7 +1366,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             ddt.contact_id.name or '/',
                             ddt.name,
                             (formatLang(
-                                ddt.delivery_date, ddt.date))[:10],
+                                ddt.delivery_date or ddt.date))[:10],
                             
                             # Move:
                             'NESSUN PICKING',
