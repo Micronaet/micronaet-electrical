@@ -385,8 +385,8 @@ class MetelBase(orm.Model):
         for record in file_pool.browse(cr, uid, file_ids, context=context):
             logger = [] # List of error (reset every file)
             filename = record.filename
-            if not filename.startswith('GEW'):
-                continue
+            # if not filename.startswith('GEW'):
+            #    continue
             fullname = record.fullname
             force_update_mode = record.force_update_mode # 2 modes of update
                             
