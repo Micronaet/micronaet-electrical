@@ -1900,7 +1900,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         account.code,
                         account.name,
                         account.parent_id.name or '/',
-                        formatLang(account.from_date[:10]),
+                        '' if not account.from_date else \
+                            formatLang(account.from_date)[:10],
                         '/', #account.fiscal_position.name,
                         account.total_hours,
                         account.state,
