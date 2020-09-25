@@ -423,6 +423,7 @@ class MetelBase(orm.Model):
                     line_len = len(line)
                 if line_len != len(line):
                     if verbose:
+                        logger.append('%s. Riga con formato differente' % i)
                         _logger.error(
                             '%s. Different lenght: %s' % (i, line_len))
                     continue
