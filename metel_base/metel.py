@@ -236,6 +236,7 @@ class ProductCategory(orm.Model):
             parent_id=False, metel_mode=False, context=None):
         ''' Get (or create if not present) producer "code" and "name"
         '''
+        import pdb; pdb.set_trace()
         group_ids = self.search(cr, uid, [
             ('parent_id', '=', parent_id),
             ('metel_code', '=', code),
