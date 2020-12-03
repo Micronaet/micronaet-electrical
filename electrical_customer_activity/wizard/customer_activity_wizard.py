@@ -134,7 +134,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     intervent.account_id.partner_id.city or '',
                     intervent.account_id.partner_id.state_id.name or '',
                     intervent.name or '',
-                    intervent.description or '',
+                    intervent.intervention or '',
                 ], default_format=f_text)
         return excel_pool.return_attachment(cr, uid, 'user_activity')
 
