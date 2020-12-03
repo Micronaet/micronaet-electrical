@@ -65,6 +65,79 @@ class ResPartnerActivityWizard(orm.TransientModel):
     """
     _name = 'res.partner.activity.wizard'
 
+    def extract_user_activity(self, cr, uid, wiz_browse, context=None):
+        """ Report for user activity
+        """
+        excel_pool = self.pool.get('excel.writer')
+        intervent_pool = self.pool.get('hr.analytic.timesheet')
+
+        # Extract data from wizard:
+        user_id = wiz_browse.user_id.id
+        from_date = wiz_browse.from_date
+        to_date = wiz_browse.to_date
+
+        # ---------------------------------------------------------------------
+        # A. User activity:
+        # ---------------------------------------------------------------------
+        domain = [
+            ('min_date', '>=', '%s 00:00:00' % from_date),
+            ('min_date', '<=', '%s 23:59:59' % to_date),
+            ('user_id', '=', user_id),
+        ]
+
+        # ---------------------------------------------------------------------
+        # Excel create:
+        # ---------------------------------------------------------------------
+        ws_name = u'Attività utente'
+        excel_pool.create_worksheet(ws_name)
+
+        # Load formats:
+        f_title = excel_pool.get_format('title')
+        f_header = excel_pool.get_format('header')
+        f_text = excel_pool.get_format('text')
+        f_number = excel_pool.get_format('number')
+
+        # Setup columns
+        header = [
+            'Rif.', 'Utente',
+            'Data', 'Durata',
+            'Partner', 'Commessa', u'Città', 'Prov.',
+            'Oggetto', 'Descrizione',
+        ]
+        width = [
+            10, 20,
+            10, 6,
+            40, 35, 30, 20,
+            30, 50,
+        ]
+        excel_pool.column_width(ws_name, width)
+
+        # Print header
+        row = 0
+        excel_pool.write_xls_line(
+            ws_name, row, header, default_format=f_header)
+
+        intervent_ids = intervent_pool.search(
+            cr, uid, domain, context=context)
+        intervent_proxy = intervent_pool.browse(
+            cr, uid, intervent_ids, context=context)
+        for intervent in sorted(intervent_proxy, key=lambda i: i.date_start):
+            row += 1
+            excel_pool.write_xls_line(
+                ws_name, row, [
+                    intervent.ref or '',
+                    intervent.user_id.name or '',
+                    intervent.date_start or '',
+                    intervent.intervent_duration or '',
+                    intervent.intervent_partner_id.name or '',
+                    intervent.account_id.name or '',
+                    intervent.account_id.partner_id.city or '',
+                    intervent.account_id.partner_id.state_id.name or '',
+                    intervent.name or '',
+                    intervent.description or '',
+                ], default_format=f_text)
+        return excel_pool.return_attachment(cr, uid, 'user_activity')
+
     def material_update(self, cr, uid, material_rows, move, context=None):
         """ Update total from move:
         """
@@ -661,7 +734,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         for picking in picking_proxy:
             key = (
                 picking.pick_state,
-                #picking.partner_id.name,
+                # picking.partner_id.name,
                 picking.account_id.name,
                 )
             if key not in picking_db:
@@ -676,15 +749,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('partner_id', '=', partner_id),
             ('date', '>=', '%s 00:00:00' % from_date),
             ('date', '<=', '%s 23:59:59' % to_date),
-            #('invoice_id', '=', False), # Not Invoiced
+            # ('invoice_id', '=', False),  # Not Invoiced
             ]
 
         # Not invoiced only if not internal
-        #if report_mode != 'report':
+        # if report_mode != 'report':
         #    domain.append(('is_invoiced', '=', False))
         if ddt_mode == 'ddt':
             domain.append(('is_invoiced', '=', False))
-        #else:
+        # else:
         #    domain.append(('is_invoiced', '=', True))
 
         if contact_id:
