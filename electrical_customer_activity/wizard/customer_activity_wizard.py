@@ -99,14 +99,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         # Setup columns
         header = [
-            'Rif.', 'Utente',
-            'Data', 'Durata', u'Modalità',
+            'Utente',
+            'Data', 'Durata',
+            'Rif.', u'Modalità',
             'Partner', 'Commessa', u'Città', 'Prov.',
             'Oggetto', 'Descrizione',
         ]
         width = [
-            10, 20,
-            17, 6, 10,
+            20,
+            17, 10,
+            6, 10,
             45, 35, 30, 20,
             30, 70,
         ]
@@ -127,10 +129,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
             row += 1
             excel_pool.write_xls_line(
                 ws_name, row, [
-                    intervent.ref or '',
                     intervent.user_id.name or '',
                     intervent.date_start or '',
                     intervent.intervent_duration or '',
+                    intervent.ref or '',
                     intervent.mode or '',
                     intervent.intervent_partner_id.name or '',
                     intervent.account_id.name or '',
