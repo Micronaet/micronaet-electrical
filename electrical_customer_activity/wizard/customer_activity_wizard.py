@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 ###############################################################################
 #
-# ODOO (ex OpenERP) 
+# ODOO (ex OpenERP)
 # Open Source Management Solution
 # Copyright (C) 2001-2015 Micronaet S.r.l. (<https://micronaet.com>)
 # Developer: Nicola Riolini @thebrush (<https://it.linkedin.com/in/thebrush>)
@@ -13,7 +13,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
@@ -33,55 +33,55 @@ from dateutil.relativedelta import relativedelta
 from openerp import SUPERUSER_ID
 from openerp import tools
 from openerp.tools.translate import _
-from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT, 
-    DEFAULT_SERVER_DATETIME_FORMAT, 
-    DATETIME_FORMATS_MAP, 
+from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
+    DEFAULT_SERVER_DATETIME_FORMAT,
+    DATETIME_FORMATS_MAP,
     float_compare)
 
 _logger = logging.getLogger(__name__)
 
 # Utility:
 def formatLang(date):
-    ''' format date
-    '''
+    """ format date
+    """
     date = (date or '').strip()
     if not date:
         return ''
 
     date_part = (date or '')[:10]
     hour_part = (date or '')[10:]
-    
+
     italian_date = '%s/%s/%s%s' % (
-        date[8:10], 
-        date[5:7], 
-        date[:4], 
+        date[8:10],
+        date[5:7],
+        date[:4],
         hour_part,
         )
     return italian_date
-    
+
 class ResPartnerActivityWizard(orm.TransientModel):
-    ''' Wizard for partner activity
-    '''
+    """ Wizard for partner activity
+    """
     _name = 'res.partner.activity.wizard'
 
     def material_update(self, cr, uid, material_rows, move, context=None):
-        ''' Update total from move:
-        '''
+        """ Update total from move:
+        """
         product_pool = self.pool.get('product.product')
 
-        (product_name, list_price, standard_price, 
+        (product_name, list_price, standard_price,
             discount_price, discount_vat) = product_pool.extract_product_data(
                 cr, uid, move, context=context)
-        
+
         product = move.product_id
         # Use also key the product name, cost for XXX product
-        key = (product, product_name, discount_price) 
-        
+        key = (product, product_name, discount_price)
+
         qty = move.product_qty
         subtotal1 = standard_price * move.product_qty
         subtotal2 = discount_price * move.product_qty
         subtotal3 = list_price * move.product_qty
-        
+
         if key in material_rows:
             material_rows[key][0] += qty
             material_rows[key][4] += subtotal1
@@ -96,22 +96,22 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 subtotal1,
                 subtotal2,
                 subtotal3,
-                ] 
+                ]
         return True
 
     # -------------------------------------------------------------------------
-    # Onchange:    
+    # Onchange:
     # -------------------------------------------------------------------------
     def onchange_partner_private(self, cr, uid, ids, partner_id, context=None):
-        ''' Change default discount and price for private report
-        '''
+        """ Change default discount and price for private report
+        """
         res = {}
         if not partner_id:
             return res
-            
+
         partner_pool = self.pool.get('res.partner')
         partner = partner_pool.browse(cr, uid, partner_id, context=context)
-        
+
         res['value'] = {
             'activity_material_discount': partner.activity_material_discount,
             'activity_price': partner.activity_price,
@@ -119,24 +119,24 @@ class ResPartnerActivityWizard(orm.TransientModel):
         return res
 
     def data_mask_filter(self, data, mask):
-        ''' data = list of data
-            mask = bit list with 0 or 1 
+        """ data = list of data
+            mask = bit list with 0 or 1
             Using mask return data with value if 1 in the mask
-        '''
+        """
         if not mask:
-            return data    
+            return data
         return [data[i] for i in range(0, len(data)) if mask[i:i + 1] != '0']
 
     # -------------------------------------------------------------------------
     # Wizard button event:
     # -------------------------------------------------------------------------
     def action_print_touched(self, cr, uid, ids, context=None):
-        ''' List of partner touched in that period
-        '''
+        """ List of partner touched in that period
+        """
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
         from_date = wiz_browse.from_date
         to_date = wiz_browse.to_date
-        
+
         # Intervent management:
         intervent_mode = wiz_browse.intervent_mode
 
@@ -145,7 +145,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         excel_pool = self.pool.get('excel.writer')
 
-        partner_pool = self.pool.get('res.partner')        
+        partner_pool = self.pool.get('res.partner')
         picking_pool = self.pool.get('stock.picking')
         ddt_pool = self.pool.get('stock.ddt')
         invoice_pool = self.pool.get('account.invoice')
@@ -169,11 +169,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
         picking_ids = picking_pool.search(cr, uid, domain, context=context)
         picking_proxy = picking_pool.browse(
             cr, uid, picking_ids, context=context)
-        
+
         # Partner:
         picking_partner_ids = [item.partner_id.id for item in picking_proxy]
         partner_set.update(set(tuple(picking_partner_ids)))
-        
+
         # Contact:
         picking_contact_ids = [item.contact_id.id for item in picking_proxy]
         contact_set.update(set(tuple(picking_contact_ids)))
@@ -181,7 +181,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # Account:
         picking_account_ids = [item.account_id.id for item in picking_proxy]
         account_set.update(set(tuple(picking_account_ids)))
-    
+
         # ---------------------------------------------------------------------
         # B. DDT:
         # ---------------------------------------------------------------------
@@ -190,10 +190,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('is_invoiced', '=', False),
             ('delivery_date', '>=', '%s 00:00:00' % from_date),
             ('delivery_date', '<=', '%s 23:59:59' % to_date),
-            ]        
+            ]
         ddt_delivery_ids = set(
             ddt_pool.search(cr, uid, domain, context=context))
-        
+
         domain = [
             ('is_invoiced', '=', False),
             ('date', '>=', '%s 00:00:00' % from_date),
@@ -209,7 +209,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ))
 
         ddt_proxy = ddt_pool.browse(cr, uid, ddt_ids, context=context)
-        
+
         # Partner:
         ddt_partner_ids = [item.partner_id.id for item in ddt_proxy]
         partner_set.update(set(tuple(ddt_partner_ids)))
@@ -246,17 +246,17 @@ class ResPartnerActivityWizard(orm.TransientModel):
             #('account_id.is_extra_report', '=', False),
             ]
 
-        # Manage filter on invoiced intervent:    
+        # Manage filter on invoiced intervent:
         if intervent_mode == 'invoiced':
-            domain.append(('is_invoiced', '=', True))    
+            domain.append(('is_invoiced', '=', True))
         elif intervent_mode == 'pending':
-            domain.append(('is_invoiced', '=', False))    
-        # else all    
-            
+            domain.append(('is_invoiced', '=', False))
+        # else all
+
         intervent_ids = intervent_pool.search(cr, uid, domain, context=context)
         intervent_proxy = intervent_pool.browse(
                 cr, uid, intervent_ids, context=context)
-        
+
         # Partner
         intervent_partner_ids = [item.intervent_partner_id.id for item in \
             intervent_proxy]
@@ -266,7 +266,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         intervent_contact_ids = [item.intervent_contact_id.id for item in \
             intervent_proxy]
         contact_set.update(set(tuple(intervent_contact_ids)))
-        
+
         # Account:
         intervent_account_ids = [item.account_id.id for item in \
             intervent_proxy]
@@ -279,8 +279,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         ws_name = 'Partner'
         row = 0
         header = [
-            'Partner', 'Consegne', 'DDT', 
-            #'Fatture', 
+            'Partner', 'Consegne', 'DDT',
+            #'Fatture',
             'Interventi',
             ]
         width = [45, 10, 10, 10]
@@ -295,12 +295,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         # Setup columns
         excel_pool.column_width(ws_name, width)
-            
+
         # Print header
         excel_pool.write_xls_line(
             ws_name, row, header, default_format=f_header)
-        row += 1    
-        
+        row += 1
+
         partner_ids = tuple(partner_set)
         for partner in sorted(partner_pool.browse(
                 cr, uid, partner_ids, context=context),
@@ -315,7 +315,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 #partner_id in invoice_partner_ids,
                 partner_id in intervent_partner_ids,
                 ]
-            
+
             excel_pool.write_xls_line(
                 ws_name, row, data,
                 default_format=f_text
@@ -327,7 +327,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         row = 0
         header = [
             'Partner', 'Commessa', 'Consegne', 'DDT', 'Interventi',
-            #'Fatture',             
+            #'Fatture',
             ]
         width = [45, 40, 10, 10, 10]
         excel_pool.create_worksheet(ws_name)
@@ -340,12 +340,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         # Setup columns
         excel_pool.column_width(ws_name, width)
-            
+
         # Print header
         excel_pool.write_xls_line(
             ws_name, row, header, default_format=f_header)
-        row += 1    
-        
+        row += 1
+
         account_ids = tuple(account_set)
         for account in sorted(account_pool.browse(
                 cr, uid, account_ids, context=context),
@@ -354,7 +354,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ):
             if not account.name:
                 continue
-    
+
             partner = account.partner_id
             account_id = account.id
             data = [
@@ -365,7 +365,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 #account_id in invoice_account_ids,
                 account_id in intervent_account_ids,
                 ]
-            
+
             excel_pool.write_xls_line(
                 ws_name, row, data,
                 default_format=f_text
@@ -375,8 +375,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         ws_name = 'Contatti'
         row = 0
         header = [
-            'Contatti', 'Consegne', 'DDT', 
-            #'Fatture', 
+            'Contatti', 'Consegne', 'DDT',
+            #'Fatture',
             'Interventi',
             ]
         width = [45, 10, 10, 10]
@@ -385,12 +385,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         # Setup columns
         excel_pool.column_width(ws_name, width)
-            
+
         # Print header
         excel_pool.write_xls_line(
             ws_name, row, header, default_format=f_header)
-        row += 1    
-        
+        row += 1
+
         contact_ids = tuple(contact_set)
         for contact in sorted(partner_pool.browse(
                 cr, uid, contact_ids, context=context),
@@ -405,7 +405,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 #partner_id in invoice_partner_ids,
                 contact_id in intervent_contact_ids,
                 ]
-            
+
             excel_pool.write_xls_line(
                 ws_name, row, data,
                 default_format=f_text
@@ -416,10 +416,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
             cr, uid, 'partner_moved')
 
     def action_print(self, cr, uid, ids, context=None):
-        ''' Event for button done
-        '''
-        if context is None: 
-            context = {}        
+        """ Event for button done
+        """
+        if context is None:
+            context = {}
 
         product_pool = self.pool.get('product.product')
 
@@ -443,20 +443,20 @@ class ResPartnerActivityWizard(orm.TransientModel):
         intervent_mode = wiz_browse.intervent_mode
         ddt_mode = wiz_browse.ddt_mode
         mark_invoiced = wiz_browse.mark_invoiced
-        
+
         partner_text = 'Cliente: %s, ' % wiz_browse.partner_id.name
         # TODO intervent_mode, ddt_mode
         filter_text = \
             'Interventi del periodo: [%s - %s], %sContatto: %s, Commessa: %s%s' % (
                 formatLang(from_date) or '...',
                 formatLang(to_date) or '...',
-                
+
                 '' if report_mode == 'private' else partner_text,
                 wiz_browse.contact_id.name if wiz_browse.contact_id else '/',
-                
+
                 '[%s] %s' % (
-                    wiz_browse.account_id.code or '/', 
-                    wiz_browse.account_id.name,  
+                    wiz_browse.account_id.code or '/',
+                    wiz_browse.account_id.name,
                     ) if account_id else 'Tutte',
                 ', Solo senza commessa' if no_account else '',
                 )
@@ -478,40 +478,40 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 '', '', 2, # Summary hide col.
                 ],
             'Consegne': [
-                True, '', 
+                True, '',
                 '', 12,
                 '', '', 2, # Summary hide col.
                 ],
             'DDT': [
-                True, '', 
+                True, '',
                 '', 11,
                 '', '111', 2, # Summary hide col., Summary total
                 ],
 
             'Fatture': [
-                False, '', 
+                False, '',
                 '001', 6,
                 '', '001', 2, # Summary hide col., Summary total
                 ],
 
             'Spese': [
-                True, '', 
+                True, '',
                 '', 4, # Total line hide, Total position
                 '', '', 2, # TODO CHECK HERE!! # Summary hide col.
                 ],
 
             'Materiali': [
-                False, '1111100100', 
+                False, '1111100100',
                 #'', 11,
                 #'', '', 2, # Summary hide col., Summary total
                 ],
-            
+
             'Commesse': [
-                True, '', 
+                True, '',
                 '', 12,
                 '', '', 2, # Summary hide col.
                 ],
-            
+
             'Total': '',    # Mask for total
             }
 
@@ -523,7 +523,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             #mask['Interventi'][0] = False
             mask['DDT'][0] = False
             mask['Commesse'][0] = False
-            
+
             # -----------------------------------------------------------------
             # Hide columns:
             # -----------------------------------------------------------------
@@ -532,14 +532,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
             mask['DDT'][1] = ''
             #mask['Fatture'][1] = ''
             #mask['Riepilogo'][1] = ''
-            #mask['Commesse'][1] = ''            
+            #mask['Commesse'][1] = ''
 
             # -----------------------------------------------------------------
-            # Total block:            
+            # Total block:
             # -----------------------------------------------------------------
             mask['Consegne'][2] = '001'
             mask['Consegne'][3] = 5
-            
+
             mask['Interventi'][2] = '01'
             mask['Interventi'][3] = 7
 
@@ -551,7 +551,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 mask['Interventi'][4] = '0001'
                 mask['Consegne'][4] = '00001'
                 mask['DDT'][4] = '00001'
-                
+
                 # Summary total:
                 mask['Interventi'][5] = '01'
                 mask['Consegne'][5] = '001'
@@ -566,12 +566,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 mask['Interventi'][4] = '1101'
                 mask['Consegne'][4] = '11001'
                 mask['DDT'][4] = '11001'
-            
+
                 # Summary total:
                 mask['Interventi'][5] = '01'
                 mask['Consegne'][5] = '001'
                 mask['DDT'][5] = '001'
-                
+
             # -----------------------------------------------------------------
             # Total table:
             # -----------------------------------------------------------------
@@ -586,8 +586,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             mask['Consegne'][0] = False
             mask['DDT'][0] = False
             mask['Spese'][0] = False
-            mask['Commesse'][0] = False            
-            
+            mask['Commesse'][0] = False
+
         # ---------------------------------------------------------------------
         # Pool used:
         # ---------------------------------------------------------------------
@@ -612,7 +612,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             excel_pool.set_margins(ws_name, 0.3, 0.3)
             excel_pool.set_paper(ws_name) # Set A4
             excel_pool.fit_to_pages(ws_name, 1, 0)
-            excel_pool.set_format(    
+            excel_pool.set_format(
                 title_font='Arial', header_font='Arial', text_font='Arial')
 
         # ---------------------------------------------------------------------
@@ -624,7 +624,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         for mode in mode_pool.browse(
                 cr, uid, mode_ids, context=context):
             mode_pricelist[mode.id] = mode.list_price
-        
+
         # ---------------------------------------------------------------------
         #                          COLLECT DATA:
         # ---------------------------------------------------------------------
@@ -641,22 +641,22 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('ddt_id', '=', False), # Not DDT
             ('pick_move', '=', 'out'), # Only out movement
             ]
-            
+
         if contact_id:
             domain.append(('contact_id', '=', contact_id))
 
         if no_account:
-            domain.append(('account_id', '=', False))           
+            domain.append(('account_id', '=', False))
         elif account_id:
             domain.append(('account_id', '=', account_id))
-            
+
         picking_ids = picking_pool.search(cr, uid, domain, context=context)
         picking_proxy = picking_pool.browse(
             cr, uid, picking_ids, context=context)
         picking_db = {}
         for picking in picking_proxy:
             key = (
-                picking.pick_state, 
+                picking.pick_state,
                 #picking.partner_id.name,
                 picking.account_id.name,
                 )
@@ -676,18 +676,18 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ]
 
         # Not invoiced only if not internal
-        #if report_mode != 'report': 
+        #if report_mode != 'report':
         #    domain.append(('is_invoiced', '=', False))
         if ddt_mode == 'ddt':
             domain.append(('is_invoiced', '=', False))
         #else:
         #    domain.append(('is_invoiced', '=', True))
-            
+
         if contact_id:
             domain.append(('contact_id', '=', contact_id))
 
         if no_account:
-            domain.append(('account_id', '=', False))           
+            domain.append(('account_id', '=', False))
         elif account_id:
             domain.append(('account_id', '=', account_id))
 
@@ -723,7 +723,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # C. COLLECT INVOCE:
         # ---------------------------------------------------------------------
         invoice_db = {}
-        for invoice in manual_invoice_ids:        
+        for invoice in manual_invoice_ids:
             key = (
                 invoice.date,
                 )
@@ -745,13 +745,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
             domain.append(('intervent_contact_id', '=', contact_id))
 
         if no_account:
-            domain.append(('account_id', '=', False))           
+            domain.append(('account_id', '=', False))
         elif account_id:
             domain.append(('account_id', '=', account_id))
 
-        # Manage filter on invoiced intervent:    
+        # Manage filter on invoiced intervent:
         if intervent_mode == 'invoiced':
-            domain.append(('is_invoiced', '=', True))    
+            domain.append(('is_invoiced', '=', True))
         elif intervent_mode == 'pending':
             domain.append(('is_invoiced', '=', False))
         # TODO summary, detail
@@ -785,7 +785,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('partner_id', '=', partner_id),
             ]
         # XXX Note: Contacts dont' have account!
-    
+
         account_ids = account_pool.search(cr, uid, domain, context=context)
         account_proxy = account_pool.browse(
             cr, uid, account_ids, context=context)
@@ -811,11 +811,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('printable', '!=', 'none'),
             # TODO printable!
             ]
-        
-        # No account => all partner expences account    
+
+        # No account => all partner expences account
         if account_id:
             domain.append(('account_id', '=', account_id))
-        else:    
+        else:
             domain.append(('account_id.partner_id', '=', partner_id))
 
         expence_ids = expence_pool.search(cr, uid, domain, context=context)
@@ -852,59 +852,59 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Interventi': { # Invertent list
                 'row': 0,
                 'header': self.data_mask_filter([
-                    'Commessa', 'Contatto', 'Data', 'Intervento', 'Oggetto', 
-                    'Modo', 'Operazione', 
-                    'Utente', 'Durata', 'Indicate', 'Totale ore', 
-                    'Viaggio', 'H. Viaggio', 'Pausa', 'H. Pausa',  
+                    'Commessa', 'Contatto', 'Data', 'Intervento', 'Oggetto',
+                    'Modo', 'Operazione',
+                    'Utente', 'Durata', 'Indicate', 'Totale ore',
+                    'Viaggio', 'H. Viaggio', 'Pausa', 'H. Pausa',
                     'Richiesta', 'Intervento', 'Note',
-                    'Costo', 'Prezzo totale', 'Conteggio', 'Non usare', 
+                    'Costo', 'Prezzo totale', 'Conteggio', 'Non usare',
                     'Stato',
-                    'Fatt.',                                 
+                    'Fatt.',
                     ], mask['Interventi'][1]),
                 'width': self.data_mask_filter([
                     35, 20, 10, 15, 20, 15, 20,
-                    20, 10, 10, 10, 
+                    20, 10, 10, 10,
                     3, 10, 3, 10,
-                    30, 30, 30, 
+                    30, 30, 30,
                     10, 10, 10, 5, 15, 5,
                     ], mask['Interventi'][1]),
                 'total': {},
                 'cost': {},
                 'data': intervent_db,
-                },   
+                },
 
             'Consegne': { # Picking to delivery
                 'row': 0,
                 'header': self.data_mask_filter([
-                    'Commessa', 'Contatto', 'Picking', 'Data', 'Stato', 
-                    'Codice', 'Descrizione', 'UM', 
-                    'Q.', 'Costo ultimo', 'Scontato', 'Prezzo unitario', 
+                    'Commessa', 'Contatto', 'Picking', 'Data', 'Stato',
+                    'Codice', 'Descrizione', 'UM',
+                    'Q.', 'Costo ultimo', 'Scontato', 'Prezzo unitario',
                     'Sub. ultimo', 'Sub. scontato', 'Totale',
                     ], mask['Consegne'][1]),
                 'width': self.data_mask_filter([
-                    30, 30, 15, 10, 20, 
+                    30, 30, 15, 10, 20,
                     20, 35, 15,
-                    10, 10, 10, 10, 
+                    10, 10, 10, 10,
                     15, 15, 15, ], mask['Consegne'][1]),
                 'total': {},
-                'data': picking_db, 
-                },   
+                'data': picking_db,
+                },
 
             'DDT': { # DDT not invoiced
                 'row': 0,
                 'header': [
-                    'Commessa', 'Contatto', 'DDT', 'Data', 'Codice', 
-                    'Descrizione', 'UM', 
-                    'Q.', 'Costo ultimo', 'Scontato', 'METEL', 
+                    'Commessa', 'Contatto', 'DDT', 'Data', 'Codice',
+                    'Descrizione', 'UM',
+                    'Q.', 'Costo ultimo', 'Scontato', 'METEL',
                     'Sub. ultimo', 'Sub. scontato', 'Sub. METEL',
                     ],
                 'width': [
-                    35, 20, 15, 10, 25, 35, 10, 
+                    35, 20, 15, 10, 25, 35, 10,
                     15, 15, 15, 15,
                     20, 20, 20,
                     ],
                 'total': {},
-                'data': ddt_db, 
+                'data': ddt_db,
                 },
 
             'Fatture': { # DDT not invoiced
@@ -914,36 +914,36 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'Note', 'Totale',
                     ],
                 'width': [
-                    15, 20, 25, 25, 10, 40, 15, 
+                    15, 20, 25, 25, 10, 40, 15,
                     ],
                 'total': {},
-                'data': invoice_db, 
+                'data': invoice_db,
                 },
 
-            'Spese': { 
+            'Spese': {
                 'row': 0,
                 'header': [
-                    'Data', 'Comessa', 'Categoria', 'Descrizione', 
-                    'Costo ultimo', 'Scontato', 'Totale', 
+                    'Data', 'Comessa', 'Categoria', 'Descrizione',
+                    'Costo ultimo', 'Scontato', 'Totale',
                     ],
                 'width': [
                     12, 20, 20, 30, 10,
                     ],
                 'total': {},
-                'data': expence_db, 
+                'data': expence_db,
                 },
 
             'Materiali': { # List compress for code
                 'row': 0,
                 'header': [
-                    'Codice', 'Descrizione', 'UM', 'Q.', 
-                    'Costo ultimo', 
-                    #'Scontato', 'METEL', 
-                    'Sub. ultimo', 
+                    'Codice', 'Descrizione', 'UM', 'Q.',
+                    'Costo ultimo',
+                    #'Scontato', 'METEL',
+                    'Sub. ultimo',
                     #'Sub. scontato', 'Sub. METEL',
                     ],
                 'width': [
-                    15, 35, 7, 10, 
+                    15, 35, 7, 10,
                     15, 15, 15,
                     15, 15, 15,
                     ],
@@ -953,75 +953,75 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             'Commesse': { # Account
                 'row': 0,
-                'header': ['Fatturazione', 'Codice', 'Commessa', 'Padre', 
+                'header': ['Fatturazione', 'Codice', 'Commessa', 'Padre',
                     'Data', 'Posizione fiscale', 'Ore', 'Stato'],
-                'width': [25, 10, 30, 20, 
+                'width': [25, 10, 30, 20,
                     10, 20, 10, 10],
                 'total': {},
-                'data': account_db, 
-                },                
+                'data': account_db,
+                },
             }
 
         summary = {
             'Interventi': {
                 'header': ['Commessa', 'Intervento', 'Costo', 'Totale'],
                 'data': {},
-                'total_cost': 0.0, 
-                #'total_discount': 0.0, 
+                'total_cost': 0.0,
+                #'total_discount': 0.0,
                 'total_revenue': 0.0,
                 },
 
             'Consegne': {
-                'header': ['Commessa', 'Picking', 'Costo', 'Scontato', 
+                'header': ['Commessa', 'Picking', 'Costo', 'Scontato',
                     'Totale'],
                 'data': {},
-                'total_cost': 0.0, 
-                'total_discount': 0.0, 
-                'total_revenue': 0.0, 
+                'total_cost': 0.0,
+                'total_discount': 0.0,
+                'total_revenue': 0.0,
                 },
 
             'DDT': {
-                'header': ['Commessa', 'DDT', 'Costo', 'Scontato', 
+                'header': ['Commessa', 'DDT', 'Costo', 'Scontato',
                     'Totale'],
                 'data': {},
-                'total_cost': 0.0, 
-                'total_discount': 0.0, 
-                'total_revenue': 0.0, 
+                'total_cost': 0.0,
+                'total_discount': 0.0,
+                'total_revenue': 0.0,
                 },
-                
+
             'Fatture': {
                 'header': ['Data', 'Riferimento', 'Totale'],
                 'data': {},
-                'total_cost': 0.0, 
-                'total_discount': 0.0, 
-                'total_revenue': 0.0, 
+                'total_cost': 0.0,
+                'total_discount': 0.0,
+                'total_revenue': 0.0,
                 },
-                
+
             # TODO Spese!!!
             'Spese': {
-                'header': ['Commessa', 'Categoria', 'Costo', 'Scontato', 
+                'header': ['Commessa', 'Categoria', 'Costo', 'Scontato',
                     'Totale'],
                 'data': {},
-                'total_cost': 0.0, 
-                'total_discount': 0.0, 
-                'total_revenue': 0.0, 
+                'total_cost': 0.0,
+                'total_discount': 0.0,
+                'total_revenue': 0.0,
                 },
-                
-            
+
+
             'Commesse': {
                 'header': ['Commessa', 'Cliente'],
                 'data': {},
-                'total_cost': 0.0, 
-                #'total_discount': 0.0, 
-                'total_revenue': 0.0, 
-                },                
+                'total_cost': 0.0,
+                #'total_discount': 0.0,
+                'total_revenue': 0.0,
+                },
             }
 
         sheet_order = [
-            'Riepilogo', 
-            'Interventi', 
-            'Consegne', 
-            'DDT', 
+            'Riepilogo',
+            'Interventi',
+            'Consegne',
+            'DDT',
             'Fatture',
             'Spese',
             'Commesse',
@@ -1038,7 +1038,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 continue
 
             sheet = sheets[ws_name]
-            
+
             #if not sheet['data']:
             #    continue # No sheet creation
 
@@ -1051,37 +1051,37 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             # Load formats:
             if load_format:
-                excel_pool.set_format(    
+                excel_pool.set_format(
                     title_font='Arial', header_font='Arial', text_font='Arial')
 
                 f_number = excel_pool.get_format('number')
                 f_number_red = excel_pool.get_format('bg_red_number')
-                
+
                 f_title = excel_pool.get_format('title')
                 f_header = excel_pool.get_format('header')
-                
+
                 f_text = excel_pool.get_format('text')
                 f_text_red = excel_pool.get_format('bg_red')
                 load_format = False # once!
 
             # Setup columns
             excel_pool.column_width(ws_name, sheet['width'])
-            
+
             # Add title:
             if ws_name in ('Materiali', 'Riepilogo'):
                 # Filter text:
                 excel_pool.write_xls_line(ws_name, 0, [
                     filter_text,
                     ],default_format=f_title)
-                sheet['row'] += 2    
-                
-            
+                sheet['row'] += 2
+
+
             # Print header
             excel_pool.write_xls_line(
-                ws_name, sheet['row'], sheet['header'], 
+                ws_name, sheet['row'], sheet['header'],
                 default_format=f_header
                 )
-            sheet['row'] += 1    
+            sheet['row'] += 1
 
         # ---------------------------------------------------------------------
         # A. STOCK MATERIAL:
@@ -1092,7 +1092,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             summary_data = summary[ws_name]['data']
 
             total = sheet['total']
-            for key in picking_db:  
+            for key in picking_db:
                 for picking in picking_db[key]:
                     #document_total = 0.0
                     account = picking.account_id
@@ -1102,54 +1102,54 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                     if account_id not in total:
                         total[account_id] = 0.0
-                    
+
                     pick_total1 = 0.0
-                    pick_total2 = 0.0    
-                    pick_total3 = 0.0    
+                    pick_total2 = 0.0
+                    pick_total3 = 0.0
                     pick_error = False
                     if picking.move_lines:
                         if picking.move_lines:
                             for move in picking.move_lines:
-                                (product_name, list_price, standard_price, 
+                                (product_name, list_price, standard_price,
                                     discount_price, discount_vat) = \
                                     product_pool.extract_product_data(
                                         cr, uid, move, context=context)
-                                    
+
                                 subtotal1 = standard_price * move.product_qty
                                 subtotal2 = discount_price * move.product_qty
                                 subtotal3 = list_price * move.product_qty
-                                
+
                                 pick_total1 += subtotal1
                                 pick_total2 += subtotal2
                                 pick_total3 += subtotal3
-                                
+
                                 if not subtotal1 or not subtotal3:
                                     f_number_color = f_number_red
                                     f_text_color = f_text_red
                                     pick_error = True
-                                else:    
+                                else:
                                     f_number_color = f_number
                                     f_text_color = f_text
-                                    
-                                data = self.data_mask_filter([  
+
+                                data = self.data_mask_filter([
                                     # Header
                                     picking.account_id.name or 'NON ASSEGNATA',
                                     picking.contact_id.name or '/',
                                     picking.name,
                                     formatLang(picking.min_date[:10]),
                                     picking.pick_state,
-                                    
+
                                     # Move:
                                     move.product_id.default_code,
                                     product_name,
                                     move.product_uom.name,
                                     (move.product_qty, f_number_color),
-                                    
+
                                     # Unit price:
                                     (standard_price, f_number_color),
                                     (discount_price, f_number_color),
                                     (list_price, f_number_color),
-                                    
+
                                     # Total price:
                                     (subtotal1, f_number_color),
                                     (subtotal2, f_number_color),
@@ -1165,7 +1165,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 # ---------------------------------------------
                                 #                    TOTALS:
                                 # ---------------------------------------------
-                                # A. Total per account:                            
+                                # A. Total per account:
                                 #document_total += subtotal3
                                 total[account_id] += subtotal3
 
@@ -1182,7 +1182,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 picking.name,
                                 formatLang(picking.min_date[:10]),
                                 picking.pick_state,
-                                
+
                                 # Move:
                                 'NESSUN MOVIMENTO',
                                 '/',
@@ -1192,54 +1192,54 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 (0.0, f_number),
                                 (0.0, f_number),
                                 (0.0, f_number),
-                                
+
                                 (0.0, f_number),
                                 (0.0, f_number),
                                 (0.0, f_number),
                                 ], mask['Consegne'][1])
-                            
+
                             excel_pool.write_xls_line(
                                 ws_name, sheet['row'], data,
                                 default_format=f_text
                                 )
                             sheet['row'] += 1
-                            
-                    # Summary data (picking):         
+
+                    # Summary data (picking):
                     block_key = (picking.pick_state, account)
                     if block_key not in summary_data:
                         summary_data[block_key] = []
-                        
-                    # Summary color:    
-                    if pick_error:    
+
+                    # Summary color:
+                    if pick_error:
                         f_number_color = f_number_red
                         f_text_color = f_text_red
-                    else:    
+                    else:
                         f_number_color = f_number
                         f_text_color = f_text
-                        
+
                     summary_data[block_key].append((
-                        (account.name, f_text_color), 
-                        (picking.name, f_text_color), 
-                        
+                        (account.name, f_text_color),
+                        (picking.name, f_text_color),
+
                         (pick_total1, f_number_color),
                         (pick_total2, f_number_color),
                         (pick_total3, f_number_color),
-                        )) 
+                        ))
 
                 # -------------------------------------------------------------
                 # Total line at the end of the block:
                 # -------------------------------------------------------------
                 excel_pool.write_xls_line(
-                    ws_name, 
-                    sheet['row'], 
+                    ws_name,
+                    sheet['row'],
                     self.data_mask_filter([
                         (summary[ws_name]['total_cost'], f_number),
                         (summary[ws_name]['total_discount'], f_number),
-                        (summary[ws_name]['total_revenue'], f_number),                    
-                        ], mask['Consegne'][2]), 
-                    default_format=f_text, 
+                        (summary[ws_name]['total_revenue'], f_number),
+                        ], mask['Consegne'][2]),
+                    default_format=f_text,
                     col=mask['Consegne'][3])
-                        
+
         # ---------------------------------------------------------------------
         # B. DDT MATERIAL:
         # ---------------------------------------------------------------------
@@ -1249,7 +1249,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             summary_data = summary[ws_name]['data']
 
             total = sheet['total']
-            for key in ddt_db:        
+            for key in ddt_db:
                 for ddt in ddt_db[key]:
                     ddt_total1 = 0.0
                     ddt_total2 = 0.0
@@ -1267,7 +1267,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             if picking.move_lines:
                                 for move in picking.move_lines:
                                     product = move.product_id
-                                    (product_name, list_price, standard_price, 
+                                    (product_name, list_price, standard_price,
                                         discount_price, discount_vat) = \
                                         product_pool.extract_product_data(
                                             cr, uid, move, context=context)
@@ -1278,27 +1278,27 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                         discount_price * move.product_qty
                                     subtotal3 = \
                                         list_price * move.product_qty
-                                    
+
                                     ddt_total1 += subtotal1
                                     ddt_total2 += subtotal2
                                     ddt_total3 += subtotal3
-                                    
+
                                     if not subtotal1 or not subtotal3:
                                         f_number_color = f_number_red
                                         f_text_color = f_text_red
                                         ddt_error = True
-                                    else:    
+                                    else:
                                         f_number_color = f_number
                                         f_text_color = f_text
-                                    
-                                    data = self.data_mask_filter([  
+
+                                    data = self.data_mask_filter([
                                         # Header
                                         ddt.account_id.name,
                                         ddt.contact_id.name or '/',
                                         ddt.name,
                                         (formatLang(
                                             ddt.delivery_date or ddt.date))[:10],
-                                        
+
                                         # Move:
                                         product.default_code,
                                         product_name,
@@ -1309,7 +1309,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                         (standard_price, f_number_color),
                                         (discount_price, f_number_color),
                                         (list_price, f_number_color),
-                                        
+
                                         # Total price:
                                         (subtotal1, f_number_color),
                                         (subtotal2, f_number_color),
@@ -1325,9 +1325,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     # -----------------------------------------
                                     #                    TOTALS:
                                     # -----------------------------------------
-                                    # A. Total per account:    
+                                    # A. Total per account:
                                     total[account_id] += subtotal3 # XXX
-                                    
+
                                     # B. Line total in same sheet:
                                     summary[ws_name][
                                         'total_cost'] += subtotal1
@@ -1345,7 +1345,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     ddt.name,
                                     (formatLang(
                                         ddt.delivery_date or ddt.date))[:10],
-                                    
+
                                     # Move:
                                     'NESSUN MOVIMENTO',
                                     '/',
@@ -1353,13 +1353,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     (0.0, f_number),
                                     (0.0, f_number),
                                     ], mask['DDT'][1])
-                                
+
                                 excel_pool.write_xls_line(
                                     ws_name, sheet['row'], data,
                                     default_format=f_text
                                     )
                                 sheet['row'] += 1
-                    else: # no 
+                    else: # no
                         data = self.data_mask_filter([
                             # Header
                             ddt.account_id.name or 'NON ASSEGNATA',
@@ -1367,7 +1367,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             ddt.name,
                             (formatLang(
                                 ddt.delivery_date or ddt.date))[:10],
-                            
+
                             # Move:
                             'NESSUN PICKING',
                             '/',
@@ -1375,46 +1375,46 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             (0.0, f_number),
                             (0.0, f_number),
                             ], mask['DDT'][1])
-                        
+
                         excel_pool.write_xls_line(
                             ws_name, sheet['row'], data,
                             default_format=f_text
                             )
                         sheet['row'] += 1
 
-                    # Summary data (picking):         
+                    # Summary data (picking):
                     block_key = (account.name, ddt.name)
                     if block_key not in summary_data:
                         summary_data[block_key] = []
-                        
-                    # Summary color:    
-                    if ddt_error:    
+
+                    # Summary color:
+                    if ddt_error:
                         f_number_color = f_number_red
                         f_text_color = f_text_red
-                    else:    
+                    else:
                         f_number_color = f_number
                         f_text_color = f_text
-                        
+
                     summary_data[block_key].append((
-                        (account.name, f_text_color), 
-                        (ddt.name, f_text_color), 
-                        
+                        (account.name, f_text_color),
+                        (ddt.name, f_text_color),
+
                         (ddt_total1, f_number_color),
                         (ddt_total2, f_number_color),
                         (ddt_total3, f_number_color),
-                        )) 
+                        ))
 
             # -----------------------------------------------------------------
             # Total line at the end of the block:
             # -----------------------------------------------------------------
             excel_pool.write_xls_line(
-                ws_name, 
-                sheet['row'], 
+                ws_name,
+                sheet['row'],
                 self.data_mask_filter([
                     (summary[ws_name]['total_cost'], f_number),
                     (summary[ws_name]['total_discount'], f_number),
                     (summary[ws_name]['total_revenue'], f_number),
-                    ], mask['DDT'][2]), 
+                    ], mask['DDT'][2]),
                 default_format=f_text, col=mask['DDT'][3])
 
 
@@ -1429,7 +1429,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             summary_data = summary[ws_name]['data']
 
             total = sheet['total']
-            for key in invoice_db:        
+            for key in invoice_db:
                 for invoice in invoice_db[key]:
                     invoice_total1 = 0.0
                     invoice_total2 = 0.0
@@ -1442,12 +1442,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         account_used.append(account)
                     if account_id not in total:
                         total[account_id] = 0.0
-                    
-                    subtotal3 = invoice.total                    
+
+                    subtotal3 = invoice.total
                     #ddt_total1 += subtotal1 ddt_total2 += subtotal2
                     invoice_total3 += subtotal3
-                    
-                    data = self.data_mask_filter([  
+
+                    data = self.data_mask_filter([
                         # Header
                         formatLang(invoice.date),
                         invoice.account_id.name,
@@ -1467,9 +1467,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     # -----------------------------------------
                     #                    TOTALS:
                     # -----------------------------------------
-                    # A. Total per account:    
+                    # A. Total per account:
                     total[account_id] += subtotal3 # XXX
-                    
+
                     # B. Line total in same sheet:
                     #summary[ws_name][
                     #    'total_cost'] += subtotal1
@@ -1478,28 +1478,28 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     summary[ws_name][
                         'total_revenue'] += subtotal3
 
-                    # Summary data (picking):         
+                    # Summary data (picking):
                     block_key = (invoice.name)
                     if block_key not in summary_data:
                         summary_data[block_key] = []
-                        
+
                     summary_data[block_key].append((
                         formatLang(invoice.date),
-                        (invoice.name, f_text),                        
+                        (invoice.name, f_text),
                         (invoice_total3, f_number),
-                        )) 
+                        ))
 
             # -----------------------------------------------------------------
             # Total line at the end of the block:
             # -----------------------------------------------------------------
             excel_pool.write_xls_line(
-                ws_name, 
-                sheet['row'], 
+                ws_name,
+                sheet['row'],
                 self.data_mask_filter([
                     (summary[ws_name]['total_cost'], f_number),
                     (summary[ws_name]['total_discount'], f_number),
                     (summary[ws_name]['total_revenue'], f_number),
-                    ], mask['Fatture'][2]), 
+                    ], mask['Fatture'][2]),
                 default_format=f_text, col=mask['Fatture'][3])
 
         # ---------------------------------------------------------------------
@@ -1520,8 +1520,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                     if category.id not in total: # TODO
                         total[category.id] = 0.0
-                    
-                    data = self.data_mask_filter([  
+
+                    data = self.data_mask_filter([
                         account.name or '',
                         formatLang(expence.date),
                         category.name or '',
@@ -1538,24 +1538,24 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     sheet['row'] += 1
 
                     # ---------------------------------------------------------
-                    # Summary data (expence):         
+                    # Summary data (expence):
                     # ---------------------------------------------------------
                     block_key = (account, category)
                     if block_key not in summary_data:
                         summary_data[block_key] = []
-                        
+
                     summary_data[block_key].append((
-                        (account.name, f_text), 
-                        (category.name, f_text),                         
+                        (account.name, f_text),
+                        (category.name, f_text),
                         (subtotal1, f_number),
                         (subtotal2, f_number),
                         (subtotal3, f_number),
-                        )) 
-                        
+                        ))
+
                     # ---------------------------------------------
                     #                    TOTALS:
                     # ---------------------------------------------
-                    # A. Total per account:                            
+                    # A. Total per account:
                     total[category.id] += subtotal1
 
                     # B. Line total in same sheet:
@@ -1568,14 +1568,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Total line at the end of the block:
             # -------------------------------------------------------------
             excel_pool.write_xls_line(
-                ws_name, 
-                sheet['row'], 
+                ws_name,
+                sheet['row'],
                 self.data_mask_filter([
                     (summary[ws_name]['total_cost'], f_number),
                     (summary[ws_name]['total_discount'], f_number),
-                    (summary[ws_name]['total_revenue'], f_number),                    
-                    ], mask['Spese'][2]), 
-                default_format=f_text, 
+                    (summary[ws_name]['total_revenue'], f_number),
+                    ], mask['Spese'][2]),
+                default_format=f_text,
                 col=mask['Spese'][3])
 
         # ---------------------------------------------------------------------
@@ -1583,7 +1583,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         if mask['Materiali'][0]:
             ws_name = 'Materiali'
-            sheet = sheets[ws_name]            
+            sheet = sheets[ws_name]
             material_rows = {}
 
             # -----------------------------------------------------------------
@@ -1595,13 +1595,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         if picking.move_lines:
                             for move in picking.move_lines:
                                 self.material_update(
-                                    cr, uid, material_rows, move, 
+                                    cr, uid, material_rows, move,
                                     context=context)
 
             # -----------------------------------------------------------------
-            # Read DDT:                                        
+            # Read DDT:
             # -----------------------------------------------------------------
-            for key in ddt_db:        
+            for key in ddt_db:
                 for ddt in ddt_db[key]:
                     if ddt.picking_ids:
                         for picking in ddt.picking_ids:
@@ -1619,23 +1619,23 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     material_rows, key=lambda x: x[0].default_code):
                 record = material_rows[key]
 
-                # Unpack data:    
-                (product, product_name, discount_price) = key    
-                
-                data = self.data_mask_filter([  
+                # Unpack data:
+                (product, product_name, discount_price) = key
+
+                data = self.data_mask_filter([
                     # Move:
                     product.default_code,
                     product_name,
                     move.product_uom.name,
-                    
+
                     (record[0], f_number),
 
-                    (record[1], f_number), 
+                    (record[1], f_number),
                     (record[2], f_number),
                     (record[3], f_number),
 
-                    (record[4], f_number), 
-                    (record[5], f_number), 
+                    (record[4], f_number),
+                    (record[5], f_number),
                     (record[6], f_number),
                     ], mask['Materiali'][1])
 
@@ -1643,7 +1643,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 sub1 += record[4]
                 sub2 += record[5]
                 sub3 += record[6]
-                
+
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], data,
                     default_format=f_text,
@@ -1651,7 +1651,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 sheet['row'] += 1
 
             # Total for block:
-            data = self.data_mask_filter([  
+            data = self.data_mask_filter([
                 ('Totale', f_title), '', '', '', '', '', '',
                 sub1, sub2, sub3,
                 ], mask['Materiali'][1])
@@ -1662,7 +1662,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             excel_pool.merge_cell(ws_name, [
                 sheet['row'], 0, sheet['row'], 4, # TODO parametrize on header
                 ])
-                
+
             # -----------------------------------------------------------------
             # Excel page Materiali: 2. Intervent
             # -----------------------------------------------------------------
@@ -1672,25 +1672,25 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 sheet['row'] += 2
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], [
-                        'Descrizione', 'Costo', 'H.', 
+                        'Descrizione', 'Costo', 'H.',
                         ], default_format=f_header)
 
                 sheet['row'] += 1
-                
+
                 for key in intervent_db:
                     for intervent in sorted(
-                            intervent_db[key], 
+                            intervent_db[key],
                             key=lambda x: x.date_start,
                             ):
-                            
-                        # Remove not in report:    
+
+                        # Remove not in report:
                         if intervent.not_in_report:
-                            continue 
-                        
+                            continue
+
                         # TODO Jump invoiced?
                         if intervent.is_invoiced:
                             continue
-       
+
                         # -----------------------------------------------------
                         # Totals:
                         # -----------------------------------------------------
@@ -1706,7 +1706,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             (sub_amount, f_number),
                             (sub_h, f_number),
                             ], default_format=f_text)
-                    
+
 
             # -----------------------------------------------------------------
             # Excel page Materiali: 3. Expences
@@ -1718,7 +1718,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], [
-                        'Descrizione', 'Costo', 
+                        'Descrizione', 'Costo',
                         #'Costo esposto',
                         ], default_format=f_header)
 
@@ -1727,18 +1727,18 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     for expence in expence_db[key]:
                         subtotal1 += expence.total
 
-                # Total:        
+                # Total:
                 excel_pool.write_xls_line(
-                    ws_name, sheet['row'], [  
+                    ws_name, sheet['row'], [
                         'Spese extra',
                         (subtotal1, f_number),
                         ], default_format=f_text,
                     )
 
-            # Total cost:        
+            # Total cost:
             sheet['row'] += 2
             excel_pool.write_xls_line(
-                ws_name, sheet['row'], [  
+                ws_name, sheet['row'], [
                     'Tot. costi materiali, interventi e spese extra: EUR %s' % sum(
                         (sub1, subtotal1, sub_amount)),
                     ], default_format=f_title,
@@ -1752,13 +1752,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
             summary_data = summary[ws_name]['data']
 
             partner_forced = False # update first time!
-            
+
             total = sheet['total']
             cost = sheet['cost']
 
             for key in intervent_db:
                 for intervent in sorted(
-                        intervent_db[key], 
+                        intervent_db[key],
                         key=lambda x: x.date_start,
                         ):
                     # Readability:
@@ -1768,18 +1768,18 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     account_id = account.id
                     user_id = user.id
                     user_mode_id = intervent.user_mode_id.id
-                    
+
                     # ---------------------------------------------------------
                     # Initial setup of mapping and forced price database:
                     # ---------------------------------------------------------
                     if partner_forced == False:
                         partner_forced = {}
-                        for forced in partner.mode_revenue_ids:        
+                        for forced in partner.mode_revenue_ids:
                             partner_forced[forced.mode_id.id] = \
                                 forced.list_price
                     # ---------------------------------------------------------
 
-                    # Read revenue:        
+                    # Read revenue:
                     if user_mode_id in partner_forced: # partner forced
                         unit_revenue = partner_forced[user_mode_id]
                     else: # read for default list:
@@ -1791,7 +1791,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     if account_id not in total:
                         total[account_id] = 0.0
                         cost[account_id] = 0.0
-                    
+
                     #document_total = 0.0
                     this_revenue = intervent.unit_amount * unit_revenue
                     this_cost = -intervent.amount
@@ -1800,7 +1800,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         f_number_color = f_number_red
                         f_text_color = f_text_red
                         ddt_error = True
-                    else:    
+                    else:
                         f_number_color = f_number
                         f_text_color = f_text
 
@@ -1813,30 +1813,30 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         intervent.mode,
                         intervent.operation_id.name or '',
                         intervent.user_id.name,
-                        
+
                         # Intervent:
                         intervent.intervent_duration,
                         intervent.intervent_total,
                         intervent.unit_amount,
 
-                        # Extra hour:                    
+                        # Extra hour:
                         intervent.trip_require,
-                        intervent.trip_hour,                    
+                        intervent.trip_hour,
                         intervent.break_require,
                         intervent.break_hour,
-                        
+
                         # Text:
                         intervent.intervention_request,
                         intervent.intervention or intervent.name,
                         intervent.internal_note,
-                        
+
                         # Revenue:
                         (this_cost, f_number_color), # total cost
                         (this_revenue, f_number_color), # total revenue
-                        
+
                         intervent.to_invoice.name or '/',
                         'X' if intervent.not_in_report else '',
-                        
+
                         intervent.state,
                         'X' if intervent.is_invoiced else '',
                         ], mask['Interventi'][1])
@@ -1847,26 +1847,26 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         )
                     sheet['row'] += 1
 
-                    # Summary data (Intervent):   
+                    # Summary data (Intervent):
                     #block_key = (account.name, intervent.ref)
                     block_key = (account.name, intervent.date_start)
                     if block_key not in summary_data:
                         summary_data[block_key] = []
                     summary_data[block_key].append((
-                        (account.name, f_text_color), 
-                        (intervent.ref, f_text_color), 
+                        (account.name, f_text_color),
+                        (intervent.ref, f_text_color),
 
-                        (this_cost, f_number_color),                    
+                        (this_cost, f_number_color),
                         (this_revenue, f_number_color),
                         ))
 
                     # ---------------------------------------------------------
                     # Totals:
                     # ---------------------------------------------------------
-                    # A. Total per account:                            
+                    # A. Total per account:
                     cost[account_id] += this_cost
                     total[account_id] += this_revenue
-                    
+
                     # B. Line total in same sheet:
                     summary[ws_name]['total_cost'] += this_cost
                     summary[ws_name]['total_revenue'] += this_revenue
@@ -1875,13 +1875,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # Total line at the end of the block:
                 # -------------------------------------------------------------
                 excel_pool.write_xls_line(
-                    ws_name, 
-                    sheet['row'], 
+                    ws_name,
+                    sheet['row'],
                     self.data_mask_filter([
                         (summary[ws_name]['total_cost'], f_number),
                         (summary[ws_name]['total_revenue'], f_number),
-                        ], mask['Interventi'][2]), 
-                    default_format=f_text, 
+                        ], mask['Interventi'][2]),
+                    default_format=f_text,
                     col=mask['Interventi'][3])
 
         # ---------------------------------------------------------------------
@@ -1906,14 +1906,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         account.total_hours,
                         account.state,
                         ], mask['Commesse'][1])
-                    
+
                     excel_pool.write_xls_line(
                         ws_name, sheet['row'], data,
                         default_format=f_text
                         )
                     sheet['row'] += 1
 
-            
+
             # Block account used:
             sheet['row'] += 2
             excel_pool.write_xls_line(
@@ -1928,7 +1928,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 )
 
             sheet['row'] += 1
-            for account in account_used:   
+            for account in account_used:
                 if not account:
                     continue
                 data = self.data_mask_filter([
@@ -1941,7 +1941,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     account.total_hours,
                     account.state,
                     ], mask['Commesse'][1])
-                
+
                 excel_pool.write_xls_line(
                     ws_name, sheet['row'], data,
                     default_format=f_text
@@ -1956,7 +1956,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             sheet = sheets[ws_name]
 
             for block in sheet_order[1:-2]: # Jump TODO commesse?!?
-                
+
                 # Check if sheet must be created:
                 if block in mask and not mask[block][0]:
                     continue
@@ -1973,46 +1973,46 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 sheet['row'] += 1
 
                 excel_pool.write_xls_line(
-                    ws_name, 
-                    sheet['row'], 
+                    ws_name,
+                    sheet['row'],
                     self.data_mask_filter(
                         block_record['header'], mask[block][4]),
                     default_format=f_header
                     )
                 sheet['row'] += 1
-                
+
                 for key in sorted(block_record['data']):
                     if report_mode != 'summary':
-                        for record in block_record['data'][key]: 
+                        for record in block_record['data'][key]:
                             excel_pool.write_xls_line(
-                                ws_name, 
-                                sheet['row'], 
+                                ws_name,
+                                sheet['row'],
                                 self.data_mask_filter(record, mask[block][4]),
                                 default_format=f_text,
                                 )
                             sheet['row'] += 1
 
-                # -------------------------------------------------------------                 
-                # Total line:        
-                # -------------------------------------------------------------                  
+                # -------------------------------------------------------------
+                # Total line:
+                # -------------------------------------------------------------
                 if 'total_discount' in summary[block]:
                     data = self.data_mask_filter([
                         (summary[block]['total_cost'], f_number),
                         (summary[block]['total_discount'], f_number),
                         (summary[block]['total_revenue'], f_number),
                         ], mask[block][5])
-                else:        
+                else:
                     data = self.data_mask_filter([
                         (summary[block]['total_cost'], f_number),
                         (summary[block]['total_revenue'], f_number),
                         ], mask[block][5])
 
                 excel_pool.write_xls_line(
-                    ws_name, sheet['row'], data, default_format=f_text, 
+                    ws_name, sheet['row'], data, default_format=f_text,
                     col=mask[block][6])
 
                 sheet['row'] += 1
-        
+
             # -----------------------------------------------------------------
             # TOTAL BLOCK:
             # -----------------------------------------------------------------
@@ -2021,8 +2021,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             excel_pool.write_xls_line(
                 ws_name, sheet['row'], self.data_mask_filter([
                     'Blocco',
-                    'Costo', 
-                    'Scontato', 
+                    'Costo',
+                    'Scontato',
                     'Listino',
                     ], mask['Total']), default_format=f_header)
             total = {
@@ -2038,22 +2038,22 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 total_cost = summary[block].get('total_cost', 0.0)
                 total_discount = summary[block].get('total_discount', 0.0)
                 total_revenue = summary[block].get('total_revenue', 0.0)
-                
+
                 if not any((total_cost, total_discount, total_revenue)):
                     continue
 
                 sheet['row'] += 1
                 excel_pool.write_xls_line(
-                    ws_name, sheet['row'], 
-                    self.data_mask_filter([ 
-                        block, 
+                    ws_name, sheet['row'],
+                    self.data_mask_filter([
+                        block,
                         (total_cost, f_number),
                         (total_discount, f_number),
                         (total_revenue, f_number),
                         ], mask['Total']), default_format=f_text)
 
                 # -------------------------------------------------------------
-                # Total  
+                # Total
                 # -------------------------------------------------------------
                 total['total_cost'] += total_cost
                 total['total_discount'] += total_discount
@@ -2067,22 +2067,22 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 (total.get('total_cost', 0.0), f_number),
                 (total.get('total_discount', 0.0), f_number),
                 (total.get('total_revenue', 0.0), f_number),
-                ], mask['Total']), default_format=f_text)            
+                ], mask['Total']), default_format=f_text)
 
         # ---------------------------------------------------------------------
         #                            PRIVATE MODE:
         # ---------------------------------------------------------------------
-        if report_mode == 'private':            
+        if report_mode == 'private':
             ws_name = 'Ridotta'
             row = 0
 
             partner = wiz_browse.partner_id # For information
-            company = partner.company_id            
+            company = partner.company_id
 
             f_number = excel_pool.get_format('number')
-            f_number_red = excel_pool.get_format('bg_red_number')            
+            f_number_red = excel_pool.get_format('bg_red_number')
             f_title = excel_pool.get_format('title')
-            f_header = excel_pool.get_format('header')            
+            f_header = excel_pool.get_format('header')
             f_text = excel_pool.get_format('text')
             f_text_red = excel_pool.get_format('bg_red')
 
@@ -2095,14 +2095,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
             data_image = excel_pool.clean_odoo_binary(logo_field)
 
             excel_pool.row_height(ws_name, (row, ), height=65)
-            excel_pool.write_image(ws_name, row, 0, 
-                x_offset=0, y_offset=0, 
-                x_scale=0.25, y_scale=0.25, 
+            excel_pool.write_image(ws_name, row, 0,
+                x_offset=0, y_offset=0,
+                x_scale=0.25, y_scale=0.25,
                 positioning=2,
-                filename=False, 
-                data=data_image, 
+                filename=False,
+                data=data_image,
                 tip='Logo',
-                #url=False, 
+                #url=False,
                 )
             excel_pool.write_xls_line(ws_name, row, [
                 '',
@@ -2115,14 +2115,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     company.phone or '',
                     ),
                 ], default_format=f_title)
-                        
+
             row += 2
             # Partner information:
             excel_pool.write_xls_line(ws_name, row, [
                 ('Cliente', f_title),
                 u'%s' % partner.name,
                 ], default_format=f_title)
-            row += 1             
+            row += 1
             excel_pool.write_xls_line(ws_name, row, [
                 ('Indirizzo', f_title),
                 'Via %s - %s %s' % (
@@ -2140,7 +2140,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ],default_format=f_title)
 
             private_summary = []
-            
+
             # -----------------------------------------------------------------
             # A. STOCK MATERIAL:
             # -----------------------------------------------------------------
@@ -2155,43 +2155,43 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 row += 1
                 excel_pool.write_xls_line(
                     ws_name, row, [
-                        'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
+                        'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario',
                         'Totale',
                         ], default_format=f_header)
 
                 total = 0.0
-                for key in picking_db:  
+                for key in picking_db:
                     for picking in picking_db[key]:
                         if picking.move_lines:
                             for move in picking.move_lines:
                                 # Extract data:
-                                (product_name, list_price, standard_price, 
+                                (product_name, list_price, standard_price,
                                     discount_price, discount_vat) = \
                                     product_pool.extract_product_data(
                                         cr, uid, move, context=context)
-                                
+
                                 if activity_price == 'lst_price':
                                     price = list_price
                                 elif activity_price == 'metel_sale':
                                     price = discount_price
                                 else: # discount_vat
                                     price = discount_vat
-                                subtotal = price * move.product_qty                            
-                                
+                                subtotal = price * move.product_qty
+
                                 if subtotal:
                                     f_number_color = f_number
                                     f_text_color = f_text
-                                else:    
+                                else:
                                     f_number_color = f_number_red
                                     f_text_color = f_text_red
                                     pick_error = True
-                                    
+
                                 data = [
                                     move.product_id.default_code,
                                     product_name,
                                     move.product_uom.name,
                                     (move.product_qty, f_number_color),
-                                    
+
                                     (price, f_number_color),
                                     (subtotal, f_number_color),
                                     ]
@@ -2208,21 +2208,21 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # -------------------------------------------------------------
                 # Total line at the end of the block:
                 # -------------------------------------------------------------
-                row += 1 
+                row += 1
                 excel_pool.write_xls_line(
-                    ws_name, row, [(total, f_number)], default_format=f_text, 
+                    ws_name, row, [(total, f_number)], default_format=f_text,
                     col=5)
-                    
+
                 # Discount if present:
                 if activity_material_discount:
-                    row += 1 
+                    row += 1
                     discount = total * (
                         100.0 - activity_material_discount) / 100.0
                     excel_pool.write_xls_line(
                         ws_name, row, [
                             '- %s%% Sconto' % activity_material_discount,
                             (discount, f_number),
-                            ], default_format=f_text, 
+                            ], default_format=f_text,
                         col=4)
                     private_summary.append(('Consegne', discount))
                 else:
@@ -2242,40 +2242,40 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 row += 1
                 excel_pool.write_xls_line(
                     ws_name, row, [
-                        'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
+                        'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario',
                         'Totale',
                         ], default_format=f_header)
 
                 total = 0.0
-                for key in ddt_db:        
+                for key in ddt_db:
                     for ddt in ddt_db[key]:
                         if ddt.picking_ids:
                             for picking in ddt.picking_ids:
-                                for move in picking.move_lines:                                
+                                for move in picking.move_lines:
                                     # Extract data:
                                     product = move.product_id
-                                    (product_name, list_price, standard_price, 
+                                    (product_name, list_price, standard_price,
                                         discount_price, discount_vat) = \
                                         product_pool.extract_product_data(
                                             cr, uid, move, context=context)
-                                
+
                                     if activity_price == 'lst_price':
                                         price = list_price
                                     elif activity_price == 'metel_sale':
                                         price = discount_price
                                     else: # metel_sale_vat
                                         price = discount_vat
-                                            
+
                                     subtotal = price * move.product_qty
                                     if subtotal:
                                         f_number_color = f_number
                                         f_text_color = f_text
-                                    else:    
+                                    else:
                                         f_number_color = f_number_red
                                         f_text_color = f_text_red
                                         ddt_error = True
-                                    
-                                    data = [  
+
+                                    data = [
                                         product.default_code,
                                         product_name,
                                         move.product_uom.name,
@@ -2295,25 +2295,25 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     #                    TOTALS:
                                     # -----------------------------------------
                                     total += subtotal
-                            
+
                 # -------------------------------------------------------------
                 # Total line at the end of the block:
                 # -------------------------------------------------------------
-                row += 1 
+                row += 1
                 excel_pool.write_xls_line(
-                    ws_name, row, [(total, f_number)], default_format=f_text, 
+                    ws_name, row, [(total, f_number)], default_format=f_text,
                     col=5)
 
                 # Discount if present:
                 if activity_material_discount:
-                    row += 1 
+                    row += 1
                     discount = total * (
                         100.0 - activity_material_discount) / 100.0
                     excel_pool.write_xls_line(
                         ws_name, row, [
                             '- %s%% Sconto' % activity_material_discount,
                             (discount, f_number),
-                            ], default_format=f_text, 
+                            ], default_format=f_text,
                         col=4)
                     private_summary.append(('DDT', discount))
                 else:
@@ -2323,20 +2323,20 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # C. INTERVENT:
             # -----------------------------------------------------------------
             if any(intervent_db.values()):
-                partner_forced = False # update first time!        
+                partner_forced = False # update first time!
                 total = 0.0
 
                 # Print header
                 row += 2
                 excel_pool.write_xls_line(
                     ws_name, row, [
-                        'MANODOPERA', '', '', '', '', 
+                        'MANODOPERA', '', '', '', '',
                         ], default_format=f_header)
 
                 row += 1
                 excel_pool.write_xls_line(
                     ws_name, row, [
-                        #'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario', 
+                        #'Codice', 'Descrizione', 'UM', 'Q.', 'Prezzo unitario',
                         #'Totale',
                         'Data', 'Intervento', 'H.', 'Utente', 'Prezzo totale',
                         ], default_format=f_header)
@@ -2347,17 +2347,17 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         user = intervent.user_id
                         partner = intervent.intervent_partner_id
                         user_mode_id = intervent.user_mode_id.id
-                        
+
                         # -----------------------------------------------------
                         # Initial setup of mapping and forced price database:
                         # -----------------------------------------------------
                         if partner_forced == False:
                             partner_forced = {}
-                            for forced in partner.mode_revenue_ids:        
+                            for forced in partner.mode_revenue_ids:
                                 partner_forced[forced.mode_id.id] = \
                                     forced.list_price
                         # -----------------------------------------------------
-                        # Read revenue:        
+                        # Read revenue:
                         if user_mode_id in partner_forced: # partner forced
                             unit_revenue = partner_forced[user_mode_id]
                         else: # read for default list:
@@ -2370,7 +2370,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         if this_revenue:
                             f_number_color = f_number
                             f_text_color = f_text
-                        else:    
+                        else:
                             f_number_color = f_number_red
                             f_text_color = f_text_red
                             ddt_error = True
@@ -2398,7 +2398,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 excel_pool.write_xls_line(
                     ws_name, row, [
                         (total, f_number),
-                        ], 
+                        ],
                     default_format=f_text, col=4)
                 private_summary.append(('Interventi', total))
 
@@ -2413,16 +2413,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ws_name, row, [
                     'Blocco', 'Totale',
                     ], default_format=f_header)
-            
+
             for block, subtotal in private_summary:
                 row += 1
                 total += subtotal
                 excel_pool.write_xls_line(
                     ws_name, row, [
-                        block, 
+                        block,
                         (subtotal, f_number),
                         ], default_format=f_text)
-            row += 1            
+            row += 1
             excel_pool.write_xls_line(
                 ws_name, row, [
                     total,
@@ -2435,14 +2435,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Internal:
             ('partner', 'Lista clienti'), # List custsomer touched
             ('report', 'Stampa interna'), # Internal detail (ex customer)
-            
+
             # Client:
             ('detail', 'Dettagliata cliente'),
             ('summary', 'Riepilogativa cliente'),
 
             ('private', 'Stampa cliente'),
             ], 'Mode', required=True),
-            
+
         'partner_id': fields.many2one(
             'res.partner', 'Partner'),
         'contact_id': fields.many2one(
@@ -2454,10 +2454,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         'from_date': fields.date('From date >= ', required=True),
         'to_date': fields.date('To date <=', required=True),
-        'float_time': fields.boolean('Formatted hour', 
+        'float_time': fields.boolean('Formatted hour',
             help='If checked print hour in HH:MM format'),
 
-        # DDT management:         
+        # DDT management:
         'ddt_mode': fields.selection([
             ('ddt', 'DDT non fatturati'),
             ('all', 'Tutto'),
@@ -2472,7 +2472,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ], 'Intervent mode', required=True,
             help='Select intervent depend on invoice mode'),
 
-        'mark_invoiced': fields.boolean('Mark intervent as invoiced', 
+        'mark_invoiced': fields.boolean('Mark intervent as invoiced',
             help='All selected intervent will be marked as invoiced'),
 
         # Private report:
@@ -2484,7 +2484,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('lst_price', 'List price'),
             ], 'Price used (report activity'),
         }
-        
+
     _defaults = {
         'mode': lambda *x: 'report',
         'float_time': lambda *x: True,
