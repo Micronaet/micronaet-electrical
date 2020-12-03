@@ -116,6 +116,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         row = 0
         excel_pool.write_xls_line(
             ws_name, row, header, default_format=f_header)
+        excel_pool.autofilter(ws_name, row, 0, row, len(header))
+        excel_pool.freeze_panes(ws_name, 1, 2)
 
         intervent_ids = intervent_pool.search(
             cr, uid, domain, context=context)
