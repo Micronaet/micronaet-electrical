@@ -117,7 +117,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             17, 10,
             6, 10,
             45, 35, 30, 20,
-            30, 70,
+            30, 80,
         ]
         excel_pool.column_width(ws_name, width)
 
