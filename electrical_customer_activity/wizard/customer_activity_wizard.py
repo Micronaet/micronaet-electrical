@@ -70,6 +70,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
         """
         excel_pool = self.pool.get('excel.writer')
         intervent_pool = self.pool.get('hr.analytic.timesheet')
+        mode_convert = {
+            'phone': 'Telefonico',
+            'passenger': 'Passeggero',
+            'customer': 'Cliente',
+            'connection': 'Teleassistenza',
+            'company': 'Azienda',
+        }
 
         # Extract data from wizard:
         user_id = wiz_browse.user_id.id
@@ -133,7 +140,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     intervent.date_start or '',
                     intervent.intervent_duration or '',
                     intervent.ref or '',
-                    intervent.mode or '',
+                    mode_convert.get(intervent.mode, ''),
                     intervent.intervent_partner_id.name or '',
                     intervent.account_id.name or '',
                     intervent.account_id.partner_id.city or '',
