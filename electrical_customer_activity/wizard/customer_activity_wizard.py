@@ -80,8 +80,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # A. User activity:
         # ---------------------------------------------------------------------
         domain = [
-            ('min_date', '>=', '%s 00:00:00' % from_date),
-            ('min_date', '<=', '%s 23:59:59' % to_date),
+            ('date_start', '>=', '%s 00:00:00' % from_date),
+            ('date_start', '<=', '%s 23:59:59' % to_date),
             ('user_id', '=', user_id),
         ]
 
@@ -591,8 +591,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         # Customer report different setup:
         if report_mode == 'user':
-            return extract_user_activity(
-                self, cr, uid, wiz_browse, context=context)
+            return self.extract_user_activity(
+                cr, uid, wiz_browse, context=context)
         if report_mode in ('detail', 'summary'):
             # -----------------------------------------------------------------
             # Hide page:
@@ -607,9 +607,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
             mask['Interventi'][1] = '011100010010000110010000'
             mask['Consegne'][1] = '000001111001001'
             mask['DDT'][1] = ''
-            #mask['Fatture'][1] = ''
-            #mask['Riepilogo'][1] = ''
-            #mask['Commesse'][1] = ''
+            # mask['Fatture'][1] = ''
+            # mask['Riepilogo'][1] = ''
+            # mask['Commesse'][1] = ''
 
             # -----------------------------------------------------------------
             # Total block:
@@ -2520,6 +2520,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'res.partner', 'Partner'),
         'contact_id': fields.many2one(
             'res.partner', 'Contact'),
+        'user_id': fields.many2one(
+            'res.users', 'Operatore'),
 
         'account_id': fields.many2one(
             'account.analytic.account', 'Account'),

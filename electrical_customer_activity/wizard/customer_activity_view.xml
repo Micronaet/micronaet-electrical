@@ -28,7 +28,7 @@
                    <group colspan="4" col="4">
                         <separator string="Mode:" colspan="4"/>
                         <field name="mode" />
-                        <field name="user_id" attrs="{'invisible': [('mode','!=','user')]}"/>
+                        <field name="user_id" attrs="{'invisible': [('mode','!=','user')], 'required': [('mode','=','user')]}"/>
 
                         <separator string="Period:" colspan="4"/>
                         <field name="from_date" />
@@ -38,7 +38,7 @@
                             <page string="Cliente">
                                <group colspan="4" col="4">
                                     <separator string="Relation:" colspan="4" attrs="{'invisible': [('mode','=','partner')]}"/>
-                                    <field name="partner_id" domain="[('is_company', '=', True)]" attrs="{'required': [('mode','!=','partner')], 'invisible': [('mode','=','partner')]}" on_change="onchange_partner_private(partner_id)"/>
+                                    <field name="partner_id" domain="[('is_company', '=', True)]" attrs="{'required': [('mode','not in',('partner', 'user'))], 'invisible': [('mode','=','partner')]}" on_change="onchange_partner_private(partner_id)"/>
                                     <field name="contact_id" attrs="{'invisible': [('mode','=','partner')]}"/>
                                     <field name="account_id" domain="[('type','in',['normal','contract']),'|',('partner_id','=',False),('partner_id','=',partner_id)]" attrs="{'invisible': [('mode','=','partner')]}" colspan="2"/><!--('state', '&lt;&gt;', 'close')/>-->
                                     <field name="no_account" attrs="{'invisible': [('mode','=','partner')]}"/>
