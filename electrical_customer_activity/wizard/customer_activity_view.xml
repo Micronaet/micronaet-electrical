@@ -12,7 +12,7 @@
                </field>
            </field>
        </record>
-       
+
        <!-- account.distribution.stats.wizard -->
        <record id="res_partner_activity_wizard_view" model="ir.ui.view">
             <field name="name">Personal stats report</field>
@@ -24,17 +24,17 @@
                        <button name="action_print_touched" string="Print partner touched" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('mode','!=','partner')]}" />
                        O
                        <button string="Cancel" class="oe_link" special="cancel" />
-                   </header>                   
+                   </header>
                    <group colspan="4" col="4">
                         <separator string="Mode:" colspan="4"/>
                         <field name="mode" />
-                        <newline/>
-                        
+                        <field name="user_id" attrs="{'invisible': [('mode','!=','user')]}"/>
+
                         <separator string="Period:" colspan="4"/>
                         <field name="from_date" />
                         <field name="to_date" />
-                   
-                        <notebook colspan="4">
+
+                        <notebook colspan="4" attrs="{'invisible': [('mode','=','user')]}">
                             <page string="Cliente">
                                <group colspan="4" col="4">
                                     <separator string="Relation:" colspan="4" attrs="{'invisible': [('mode','=','partner')]}"/>
@@ -46,7 +46,7 @@
                                     <separator string="Private parameters:" colspan="4" attrs="{'invisible': [('mode', '!=', 'private')]}"/>
                                     <field name="activity_material_discount" attrs="{'invisible': [('mode', '!=', 'private')]}"/>
                                     <field name="activity_price" attrs="{'required': [('mode', '=', 'private')], 'invisible': [('mode', '!=', 'private')]}"/>
-                        
+
                                </group>
                             </page>
                             <page string="Contabilità">
@@ -54,7 +54,7 @@
                                     <separator string="DDT:" colspan="4" />
                                     <field name="ddt_mode" />
                                     <newline/>
-                                    
+
                                     <separator string="Intervent management:" colspan="4" />
                                     <field name="intervent_mode" />
                                     <field name="mark_invoiced" attrs="{'invisible': ['|',('intervent_mode', '=', 'invoiced'),('mode','=','partner')]}"/>
@@ -78,10 +78,10 @@
           <field name="view_mode">form</field>
           <field name="target">new</field>
           <field name="view_id" ref="res_partner_activity_wizard_view"/>
-      </record>      
-      <menuitem 
-           parent="base.menu_partner_form" 
-           id="menu_res_partner_activity_wizard_view" 
+      </record>
+      <menuitem
+           parent="base.menu_partner_form"
+           id="menu_res_partner_activity_wizard_view"
            action="action_res_partner_activity_wizard_view"
            sequence="10"
            />
