@@ -30,9 +30,9 @@ from openerp import SUPERUSER_ID, api
 from openerp import tools
 from openerp.tools.translate import _
 from openerp.tools.float_utils import float_round as round
-from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT, 
-    DEFAULT_SERVER_DATETIME_FORMAT, 
-    DATETIME_FORMATS_MAP, 
+from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
+    DEFAULT_SERVER_DATETIME_FORMAT,
+    DATETIME_FORMATS_MAP,
     float_compare)
 
 
@@ -40,7 +40,7 @@ _logger = logging.getLogger(__name__)
 
 
 class ProductCategory(orm.Model):
-    """ Model name: Product cagegory:   
+    """ Model name: Product category:
         Create structure: ELECTROCOD
     """
     _inherit = 'product.category'
@@ -48,20 +48,20 @@ class ProductCategory(orm.Model):
     # -------------------------------------------------------------------------
     # Utility:
     # -------------------------------------------------------------------------
-    def get_electrocod_category(self, cr, uid, code='ELECTROCOD', 
+    def get_electrocod_category(self, cr, uid, code='ELECTROCOD',
             name=False, parent_id=False, context=None):
-        ''' Create and return missed product category:
-        '''
+        """ Create and return missed product category:
+        """
         group_ids = self.search(cr, uid, [
-            #('parent_id', '=', parent_id), # for search without parent_id
+            # ('parent_id', '=', parent_id), # for search without parent_id
             ('electrocod_code', '=', code),
             ], context=context)
-        if group_ids:    
+        if group_ids:
             # Update:
             self.write(cr, uid, group_ids, {
                 'metel_mode': 'electrocod',
                 }, context=context)
-            return group_ids[0]        
+            return group_ids[0]
         else:
             return self.create(cr, uid, {
                 'parent_id': parent_id,
@@ -69,14 +69,15 @@ class ProductCategory(orm.Model):
                 'name': name or code or '?',
                 'metel_mode': 'electrocod',
                 }, context=context)
-        
-    def scheduled_electrocod_import_data(self, cr, uid, filename=False, 
+
+    def scheduled_electrocod_import_data(
+            self, cr, uid, filename=False,
             root_name='ELECTROCOD', ec_check=37, context=None):
-        ''' Import all electrocod group structure 
-            filename: fullname of electrocod csv file            
+        """ Import all electrocod group structure
+            filename: fullname of electrocod csv file
             root_name: Root group name and code (used as KEY!)
             ec_check: char in file where start code of electrocod
-        '''
+        """
         _logger.info('Electrocod import!')
         not_found = 'NOTFOUND'
 
@@ -87,20 +88,20 @@ class ProductCategory(orm.Model):
         root_id = self.get_electrocod_category(
             cr, uid, code=root_name, context=context)
 
-        # Missed category: NOTFOUND (create but not used here)    
+        # Missed category: NOTFOUND (create but not used here)
         missed_id = self.get_electrocod_category(
             cr, uid, code='NOTFOUND', parent_id=root_id, context=context)
 
         # ---------------------------------------------------------------------
         # Read all file and save in database:
         # ---------------------------------------------------------------------
-        filename = os.path.expanduser(filename)        
+        filename = os.path.expanduser(filename)
         f_code = open(filename, 'r')
         i = 0
-        levels = {} # saved with level        
+        levels = {} # saved with level
         line_text = f_code.read()
-        lines = line_text.split('\r')        
-        
+        lines = line_text.split('\r')
+
         code = False # Used also for append name splitted on next line
         code_level = False
         no_name_start = ('0', '1')
@@ -109,39 +110,39 @@ class ProductCategory(orm.Model):
             line = line.strip()
             if line[ec_check + 2: ec_check + 3] != '.' and \
                     line[ec_check + 3: ec_check + 4] != '-': # Dot position
-                    
-                # Append part in new line for name:    
-                if line[0:1] not in no_name_start: # Part of name in new line                
+
+                # Append part in new line for name:
+                if line[0:1] not in no_name_start: # Part of name in new line
                     part = ' ' + ' '.join(filter(
-                        lambda x:x and x[:1] not in no_name_start, 
+                        lambda x:x and x[:1] not in no_name_start,
                         '{}'.format(line.split(' '))))
                         # line.split(' ')))
                     levels[level][code] += part
-                    
+
                 continue # no data line
             data = line[ec_check:].split(' - ')
             if len(data) != 2:
                 _logger.error('No standard Electrocode line: %s' % line)
                 continue
-            
+
             # -----------------------------------------------------------------
-            # Manage level:    
+            # Manage level:
             # -----------------------------------------------------------------
             code = data[0].strip()
             name = u'{}'.format(data[1].strip())
-            #name = data[1].strip()
+            # name = data[1].strip()
 
             code_level = code.split('.')
             level = len(code_level)
-            
+
             # -----------------------------------------------------------------
             # Save record for creation (next loop)
             # -----------------------------------------------------------------
             if level not in levels:
-                levels[level] = {}                
-            levels[level][code] = name         
+                levels[level] = {}
+            levels[level][code] = name
         f_code.close()
-        
+
         nodes = {
             # Master node has no code for search
             root_name: root_id, # Not used only for collect correct key
@@ -169,17 +170,16 @@ class ProductCategory(orm.Model):
                     }
                 if group_ids:
                     self.write(cr, uid, group_ids[0], data, context=context)
-                    nodes[code_node] = group_ids[0]      
-                    _logger.info('Node update: [%s] %s' % (code, name))    
+                    nodes[code_node] = group_ids[0]
+                    _logger.info('Node update: [%s] %s' % (code, name))
                 else:
-                    nodes[code_node] = self.create(cr, uid, data, 
+                    nodes[code_node] = self.create(cr, uid, data,
                         context=context)
-                    _logger.info('Node create: [%s] %s' % (code, name))    
+                    _logger.info('Node create: [%s] %s' % (code, name))
         _logger.info('Electrocod import end!')
         return nodes
 
     _columns = {
-        'electrocod_code': fields.char('Electrocod code', size=18, 
+        'electrocod_code': fields.char('Electrocod code', size=18,
             help='Electrocod code'),
         }
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
