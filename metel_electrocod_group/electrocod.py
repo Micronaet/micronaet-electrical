@@ -48,7 +48,8 @@ class ProductCategory(orm.Model):
     # -------------------------------------------------------------------------
     # Utility:
     # -------------------------------------------------------------------------
-    def get_electrocod_category(self, cr, uid, code='ELECTROCOD',
+    def get_electrocod_category(
+            self, cr, uid, code='ELECTROCOD',
             name=False, parent_id=False, context=None):
         """ Create and return missed product category:
         """
@@ -102,7 +103,7 @@ class ProductCategory(orm.Model):
         line_text = f_code.read()
         lines = line_text.split('\r')
 
-        code = False # Used also for append name splitted on next line
+        code = False  # Used also for append name splitted on next line
         code_level = False
         no_name_start = ('0', '1')
         for line in lines:
@@ -112,9 +113,9 @@ class ProductCategory(orm.Model):
                     line[ec_check + 3: ec_check + 4] != '-':  # Dot position
 
                 # Append part in new line for name:
-                if line[0:1] not in no_name_start: # Part of name in new line
+                if line[0:1] not in no_name_start:  # Part of name in new line
                     part = ' ' + ' '.join(filter(
-                        lambda x:x and x[:1] not in no_name_start,
+                        lambda x: x and x[:1] not in no_name_start,
                         '{}'.format(line.split(' '))))  # line.split(' ')))
                     levels[level][code] += part
 
@@ -144,14 +145,14 @@ class ProductCategory(orm.Model):
 
         nodes = {
             # Master node has no code for search
-            root_name: root_id, # Not used only for collect correct key
-            '': root_id, # Used with join no level
+            root_name: root_id,  # Not used only for collect correct key
+            '': root_id,  # Used with join no level
             }
         for level in sorted(levels):
             for code, name in levels[level].iteritems():
                 code_part = code.split('.')
                 code_node = code.replace('.', '')
-                code_parent = ''.join(code_part[:-1]) # Code without .
+                code_parent = ''.join(code_part[:-1])  # Code without .
                 parent_id = nodes.get(code_parent, False)
                 if not parent_id:
                     _logger.error('Parent not found: %s' % code_parent)
