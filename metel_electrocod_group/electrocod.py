@@ -109,14 +109,13 @@ class ProductCategory(orm.Model):
             i += 1
             line = line.strip()
             if line[ec_check + 2: ec_check + 3] != '.' and \
-                    line[ec_check + 3: ec_check + 4] != '-': # Dot position
+                    line[ec_check + 3: ec_check + 4] != '-':  # Dot position
 
                 # Append part in new line for name:
                 if line[0:1] not in no_name_start: # Part of name in new line
                     part = ' ' + ' '.join(filter(
                         lambda x:x and x[:1] not in no_name_start,
-                        '{}'.format(line.split(' '))))
-                        # line.split(' ')))
+                        '{}'.format(line.split(' '))))  # line.split(' ')))
                     levels[level][code] += part
 
                 continue # no data line
