@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<openerp>
+    <data noupdate="1">
+        <record id="aeroo_new_receipt_wizard_pdf_report" model="ir.actions.report.xml">
+            <field name="name">Scontrino</field>
+            <field name="type">ir.actions.report.xml</field>
+            <field name="model">new.receipt.wizard</field>
+            <field name="report_name">new_receipt_wizard_report</field>
+            <field name="report_type">aeroo</field>
+            <field name="in_format">oo-odt</field>
+            <!--<field name="out_format" eval="ref('report_aeroo_ooo.report_mimetypes_pdf_odt')" />-->
+            <field name="parser_loc">electrical_corresponding_daily/report/corresponding_parser.py</field>
+            <field name="report_rml">electrical_corresponding_daily/report/corresponding.odt</field>
+            <field name="parser_state">loc</field>
+            <field name="tml_source">file</field>
+        </record>
+
+        <ir_set>
+            <field eval="'action'" name="key"/>
+            <field eval="'client_print_multi'" name="key2"/>
+            <field eval="['new.receipt.wizard']" name="models"/>
+            <field name="name">new_receipt_wizard_report_action</field>
+            <field eval="'ir.actions.report.xml,'+str(aeroo_new_receipt_wizard_pdf_report)" name="value"/>
+            <field eval="True" name="isobject"/>
+            <field eval="True" name="replace"/>
+        </ir_set>
+    </data>
+</openerp>
+

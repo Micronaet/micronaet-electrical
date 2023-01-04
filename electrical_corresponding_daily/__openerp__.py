@@ -47,6 +47,8 @@
         'security/corresponding_group.xml',
         'data/receipt_sequence.xml',
 
+        'report/corresponding_report.xml',
+        
         'wizard/receipt_view.xml',
         'corresponding_view.xml',
         ],

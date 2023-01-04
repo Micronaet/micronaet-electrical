@@ -10,6 +10,7 @@
                    <header>
                        <button name="dummy_action" string="Total" type="object" attrs="{'invisible': [('state','=','done')]}" class="oe_highlight"/>
                        <button name="action_done" string="Confirm" type="object" icon="gtk-jump-to" attrs="{'invisible': [('state','=','done')]}" class="oe_highlight"/>
+                       <button name="action_print" string="Stampa scontrino" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('state','!=','done')]}"/>
                        <field name="state" widget="statusbar" />
                    </header>
                    <group colspan="4" col="4">
@@ -56,7 +57,7 @@
           <field name="view_type">form</field>
           <field name="view_mode">form</field>
           <field name="view_id" ref="new_receipt_wizard_view"/>
-      </record>  
+      </record>
 
       <record model="ir.actions.act_window" id="action_new_receipt_wizard_tree_view">
           <field name="name">Receipt pending</field>
@@ -64,8 +65,8 @@
           <field name="view_type">form</field>
           <field name="view_mode">tree,form</field>
           <field name="view_id" ref="view_new_receipt_wizard_tree" />
-          <field name="domain">[('state', '=', 'draft')]</field>              
-      </record>  
-          
+          <field name="domain">[('state', '=', 'draft')]</field>
+      </record>
+
     </data>
 </openerp>
