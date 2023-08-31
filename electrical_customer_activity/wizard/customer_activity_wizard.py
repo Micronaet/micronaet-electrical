@@ -507,8 +507,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
         if context is None:
             context = {}
 
-        product_pool = self.pool.get('product.product')
-
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
         partner_id = wiz_browse.partner_id.id  # Mandatory:
         contact_id = wiz_browse.contact_id.id
@@ -651,7 +649,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 mask['Interventi'][6] = 0
                 mask['Consegne'][6] = 0
                 mask['DDT'][6] = 0
-            else: # detail
+            else:  # detail
                 # Summary line:
                 mask['Interventi'][4] = '1101'
                 mask['Consegne'][4] = '11001'
@@ -686,10 +684,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # Account:
         picking_pool = self.pool.get('stock.picking')
         ddt_pool = self.pool.get('stock.ddt')
-        invoice_pool = self.pool.get('account.invoice')
         account_pool = self.pool.get('account.analytic.account')
         product_pool = self.pool.get('product.product')
         expence_pool = self.pool.get('account.analytic.expence')
+        # invoice_pool = self.pool.get('account.invoice')
 
         # Interventi:
         intervent_pool = self.pool.get('hr.analytic.timesheet')
@@ -728,8 +726,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('partner_id', '=', partner_id),
             ('min_date', '>=', '%s 00:00:00' % from_date),
             ('min_date', '<=', '%s 23:59:59' % to_date),
-            ('ddt_id', '=', False), # Not DDT
-            ('pick_move', '=', 'out'), # Only out movement
+            ('ddt_id', '=', False),  # Not DDT
+            ('pick_move', '=', 'out'),  # Only out movement
             ]
 
         if contact_id:
@@ -801,7 +799,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         ddt_db = {}
         for ddt in ddt_proxy:
             key = (
-                #ddt.partner_id.name,
+                # ddt.partner_id.name,
                 ddt.account_id.name,
                 ddt.name,
                 )
@@ -829,7 +827,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('intervent_partner_id', '=', partner_id),
             ('date_start', '>=', from_date),
             ('date_start', '<=', to_date),
-            #('account_id.is_extra_report', '=', False),
+            # ('account_id.is_extra_report', '=', False),
             ]
         if contact_id:
             domain.append(('intervent_contact_id', '=', contact_id))
@@ -853,8 +851,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         for intervent in intervent_proxy:
             key = (
                 intervent.account_id.name,
-                #intervent.date_start, # XXX error?
-                #intervent.ref,
+                # intervent.date_start, # XXX error?
+                # intervent.ref,
                 )
             if key not in intervent_db:
                 intervent_db[key] = []
@@ -882,7 +880,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         account_db = {}
         for account in account_proxy:
             key = (
-                #account.partner_id.name,
+                # account.partner_id.name,
                 account.account_mode,
                 account.name,
                 )
@@ -899,10 +897,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('date', '>=', from_date),
             ('date', '<=', to_date),
             ('printable', '!=', 'none'),
-            # TODO printable!
+            # todo printable!
             ]
 
-        # No account => all partner expences account
+        # No account => all partner expenses account
         if account_id:
             domain.append(('account_id', '=', account_id))
         else:
@@ -929,17 +927,17 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             # Summary sheet:
             # -----------------------------------------------------------------
-            'Riepilogo': { # Summary
+            'Riepilogo': {  # Summary
                 'row': -1,
                 'header': [],
                 'width': [40, 25, 15, 15, 15],
-                'data': True, # Create sheet
+                'data': True,  # Create sheet
                 },
 
             # -----------------------------------------------------------------
             # Sheet detail:
             # -----------------------------------------------------------------
-            'Interventi': { # Invertent list
+            'Interventi': {  # Invertent list
                 'row': 0,
                 'header': self.data_mask_filter([
                     'Commessa', 'Contatto', 'Data', 'Intervento', 'Oggetto',
@@ -963,7 +961,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'data': intervent_db,
                 },
 
-            'Consegne': { # Picking to delivery
+            'Consegne': {  # Picking to delivery
                 'row': 0,
                 'header': self.data_mask_filter([
                     'Commessa', 'Contatto', 'Picking', 'Data', 'Stato',
@@ -980,7 +978,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'data': picking_db,
                 },
 
-            'DDT': { # DDT not invoiced
+            'DDT': {  # DDT not invoiced
                 'row': 0,
                 'header': [
                     'Commessa', 'Contatto', 'DDT', 'Data', 'Codice',
@@ -997,7 +995,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'data': ddt_db,
                 },
 
-            'Fatture': { # DDT not invoiced
+            'Fatture': {  # DDT not invoiced
                 'row': 0,
                 'header': [
                     'Data', 'Commessa', 'Destinazione', 'Contatto', 'Rif.',
@@ -1023,29 +1021,31 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'data': expence_db,
                 },
 
-            'Materiali': { # List compress for code
+            'Materiali': {  # List compress for code
                 'row': 0,
                 'header': [
                     'Codice', 'Descrizione', 'UM', 'Q.',
                     'Costo ultimo',
-                    #'Scontato', 'METEL',
+                    # 'Scontato', 'METEL',
                     'Sub. ultimo',
-                    #'Sub. scontato', 'Sub. METEL',
+                    # 'Sub. scontato', 'Sub. METEL',
                     ],
                 'width': [
                     15, 35, 7, 10,
                     15, 15, 15,
                     15, 15, 15,
                     ],
-                #'total': {},
-                #'data': ,
+                # 'total': {},
+                # 'data': ,
                 },
 
             'Commesse': { # Account
                 'row': 0,
-                'header': ['Fatturazione', 'Codice', 'Commessa', 'Padre',
+                'header': [
+                    'Fatturazione', 'Codice', 'Commessa', 'Padre',
                     'Data', 'Posizione fiscale', 'Ore', 'Stato'],
-                'width': [25, 10, 30, 20,
+                'width': [
+                    25, 10, 30, 20,
                     10, 20, 10, 10],
                 'total': {},
                 'data': account_db,
@@ -1057,13 +1057,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'header': ['Commessa', 'Intervento', 'Costo', 'Totale'],
                 'data': {},
                 'total_cost': 0.0,
-                #'total_discount': 0.0,
+                # 'total_discount': 0.0,
                 'total_revenue': 0.0,
                 },
 
             'Consegne': {
-                'header': ['Commessa', 'Picking', 'Costo', 'Scontato',
-                    'Totale'],
+                'header': [
+                    'Commessa', 'Picking', 'Costo', 'Scontato', 'Totale'],
                 'data': {},
                 'total_cost': 0.0,
                 'total_discount': 0.0,
@@ -1071,8 +1071,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 },
 
             'DDT': {
-                'header': ['Commessa', 'DDT', 'Costo', 'Scontato',
-                    'Totale'],
+                'header': [
+                    'Commessa', 'DDT', 'Costo', 'Scontato', 'Totale'],
                 'data': {},
                 'total_cost': 0.0,
                 'total_discount': 0.0,
@@ -1087,10 +1087,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'total_revenue': 0.0,
                 },
 
-            # TODO Spese!!!
+            # todo Spese!!!
             'Spese': {
-                'header': ['Commessa', 'Categoria', 'Costo', 'Scontato',
-                    'Totale'],
+                'header': [
+                    'Commessa', 'Categoria', 'Costo', 'Scontato', 'Totale'],
                 'data': {},
                 'total_cost': 0.0,
                 'total_discount': 0.0,
@@ -1102,7 +1102,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'header': ['Commessa', 'Cliente'],
                 'data': {},
                 'total_cost': 0.0,
-                #'total_discount': 0.0,
+                # 'total_discount': 0.0,
                 'total_revenue': 0.0,
                 },
             }
@@ -1129,7 +1129,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             sheet = sheets[ws_name]
 
-            #if not sheet['data']:
+            # if not sheet['data']:
             #    continue # No sheet creation
 
             # Create sheet:
@@ -1164,7 +1164,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     filter_text,
                     ],default_format=f_title)
                 sheet['row'] += 2
-
 
             # Print header
             excel_pool.write_xls_line(
@@ -1256,7 +1255,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 #                    TOTALS:
                                 # ---------------------------------------------
                                 # A. Total per account:
-                                #document_total += subtotal3
+                                # document_total += subtotal3
                                 total[account_id] += subtotal3
 
                                 # B. Line total in same sheet:
@@ -1425,7 +1424,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                         'total_discount'] += subtotal2
                                     summary[ws_name][
                                         'total_revenue'] += subtotal3
-
 
                             else:  # Picking no movements:
                                 data = self.data_mask_filter([
@@ -2039,7 +2037,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ws_name = 'Riepilogo'
             sheet = sheets[ws_name]
 
-            for block in sheet_order[1:-2]:  # Jump TODO commesse?!?
+            for block in sheet_order[1:-2]:  # Jump todo commesse?!?
 
                 # Check if sheet must be created:
                 if block in mask and not mask[block][0]:
