@@ -366,7 +366,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         row = 0
         header = [
             'Partner', 'Consegne', 'DDT',
-            #'Fatture',
+            # 'Fatture',
             'Interventi',
             ]
         width = [45, 10, 10, 10]
@@ -488,7 +488,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 contact.name,
                 contact_id in picking_contact_ids,
                 contact_id in ddt_contact_ids,
-                #partner_id in invoice_partner_ids,
+                # partner_id in invoice_partner_ids,
                 contact_id in intervent_contact_ids,
                 ]
 
@@ -510,7 +510,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         product_pool = self.pool.get('product.product')
 
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
-        partner_id = wiz_browse.partner_id.id # Mandatory:
+        partner_id = wiz_browse.partner_id.id  # Mandatory:
         contact_id = wiz_browse.contact_id.id
         account_id = wiz_browse.account_id.id
         from_date = wiz_browse.from_date
@@ -531,9 +531,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         mark_invoiced = wiz_browse.mark_invoiced
 
         partner_text = 'Cliente: %s, ' % wiz_browse.partner_id.name
-        # TODO intervent_mode, ddt_mode
+        # todo intervent_mode, ddt_mode
         filter_text = \
-            'Interventi del periodo: [%s - %s], %sContatto: %s, Commessa: %s%s' % (
+            'Interventi del periodo: [%s - %s], %s' \
+            'Contatto: %s, Commessa: %s%s' % (
                 formatLang(from_date) or '...',
                 formatLang(to_date) or '...',
 
@@ -559,8 +560,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ],
 
             'Interventi': [
-                True, '', # Hide block, Col Hide
-                '', 18, # Total line hide, Total position
+                True, '',  # Hide block, Col Hide
+                '', 18,  # Total line hide, Total position
                 '', '', 2,  # Summary hide col.
                 ],
             'Consegne': [
@@ -2541,7 +2542,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         'from_date': fields.date('From date >= ', required=True),
         'to_date': fields.date('To date <=', required=True),
-        'float_time': fields.boolean('Formatted hour',
+        'float_time': fields.boolean(
+            'Formatted hour',
             help='If checked print hour in HH:MM format'),
 
         # DDT management:
