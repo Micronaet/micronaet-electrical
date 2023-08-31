@@ -546,11 +546,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ', Solo senza commessa' if no_account else '',
                 )
 
-        # Mask mode for 5 views:
+        # ---------------------------------------------------------------------
+        #                          Mask mode for 5 views:
+        # ---------------------------------------------------------------------
         mask = {
             # Sheet: Hide bloc, Col hide, Total hide, total position
             #        Summary line mask
-
             'Riepilogo': [
                 True,  # '', # Hide block, Col Hide
                 # '', 18, # Total line hide, Total position
@@ -600,10 +601,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Total': '',  # Mask for total
             }
 
-        # Customer report different setup:
+        # ---------------------------------------------------------------------
+        #                    Setup depend on report mode:
+        # ---------------------------------------------------------------------
+        # A. Customer report different setup:
         if report_mode == 'user':
             return self.extract_user_activity(
                 cr, uid, wiz_browse, context=context)
+
+        # B.: Other report mode:
+        # Setup columns printed and other custom part depend on mode:
         if report_mode in ('detail', 'summary'):
             # -----------------------------------------------------------------
             # Hide page:
