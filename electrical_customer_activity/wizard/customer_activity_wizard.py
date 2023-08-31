@@ -623,7 +623,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Hide columns:
             # -----------------------------------------------------------------
             mask['Interventi'][1] = '011100010010000110010000'
-            mask['Consegne'][1] = '000001111001001'
+            mask['Consegne'][1] = '000011111001001'
             mask['DDT'][1] = ''
             # mask['Fatture'][1] = ''
             # mask['Riepilogo'][1] = ''
@@ -700,18 +700,18 @@ class ResPartnerActivityWizard(orm.TransientModel):
         intervent_pool = self.pool.get('hr.analytic.timesheet')
         mode_pool = self.pool.get('hr.intervent.user.mode')
 
-        # Create first page for private:
+        # Create first page only for private mode:
         if report_mode == 'private':
             ws_name = 'Ridotta'
             excel_pool.create_worksheet(ws_name)
             excel_pool.set_margins(ws_name, 0.3, 0.3)
-            excel_pool.set_paper(ws_name) # Set A4
+            excel_pool.set_paper(ws_name)  # Set A4
             excel_pool.fit_to_pages(ws_name, 1, 0)
             excel_pool.set_format(
                 title_font='Arial', header_font='Arial', text_font='Arial')
 
         # ---------------------------------------------------------------------
-        # Startup:
+        #                            Startup:
         # ---------------------------------------------------------------------
         # Load mode pricelist (to get revenue):
         mode_pricelist = {}
@@ -815,7 +815,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ddt_db[key].append(ddt)
 
         # ---------------------------------------------------------------------
-        # C. COLLECT INVOCE:
+        # C. COLLECT INVOICE:
         # ---------------------------------------------------------------------
         invoice_db = {}
         for invoice in manual_invoice_ids:
@@ -827,7 +827,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             invoice_db[key].append(invoice)
 
         # ---------------------------------------------------------------------
-        # D. COLLECT INTERVENT:
+        # D. COLLECT INTERVENTION:
         # ---------------------------------------------------------------------
         # Domain:
         domain = [
@@ -836,6 +836,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('date_start', '<=', to_date),
             # ('account_id.is_extra_report', '=', False),
             ]
+        # todo manage ticket here?
+
         if contact_id:
             domain.append(('intervent_contact_id', '=', contact_id))
 
@@ -873,13 +875,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 intervent_ids))
 
         # ---------------------------------------------------------------------
-        # E. COLLECT ACCOUNT:
+        # E. COLLECT ACCOUNTING DATA:
         # ---------------------------------------------------------------------
         # Domain:
         domain = [
             ('partner_id', '=', partner_id),
             ]
-        # XXX Note: Contacts dont' have account!
+        # XXX Note: Contacts don't have account!
 
         account_ids = account_pool.search(cr, uid, domain, context=context)
         account_proxy = account_pool.browse(
@@ -896,10 +898,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
             account_db[key].append(account)
 
         # ---------------------------------------------------------------------
-        # F. EXPENCES:
+        # F. EXTRA EXPENSES:
         # ---------------------------------------------------------------------
         # Domain:
-        # TODO wizard parameter
+        # todo wizard parameter
         domain = [
             ('date', '>=', from_date),
             ('date', '<=', to_date),
@@ -1250,6 +1252,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     (subtotal1, f_number_color),
                                     (subtotal2, f_number_color),
                                     (subtotal3, f_number_color),
+
                                     ], mask['Consegne'][1])
 
                                 excel_pool.write_xls_line(
