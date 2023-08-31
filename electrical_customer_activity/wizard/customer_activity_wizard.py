@@ -700,6 +700,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
         intervent_pool = self.pool.get('hr.analytic.timesheet')
         mode_pool = self.pool.get('hr.intervent.user.mode')
 
+        # Mapping:
+        pick_state_map = {
+            'todo': 'Da fare',
+            'ready': 'Pronte',
+            'delivered': 'Consegnato',
+            }
+
         # Create first page only for private mode:
         if report_mode == 'private':
             ws_name = 'Ridotta'
@@ -1235,7 +1242,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     picking.contact_id.name or '/',
                                     picking.name,
                                     formatLang(picking.min_date[:10]),
-                                    picking.pick_state,
+                                    pick_state_map.get(picking.pick_state, ''),
 
                                     # Move:
                                     move.product_id.default_code,
