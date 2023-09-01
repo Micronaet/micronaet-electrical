@@ -224,7 +224,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
         from_date = wiz_browse.from_date
         to_date = wiz_browse.to_date
 
-        picking_mode = wiz_browse.picking_mode
         intervent_mode = wiz_browse.intervent_mode
 
         # ---------------------------------------------------------------------
@@ -252,15 +251,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('ddt_id', '=', False),  # Not DDT
             ('pick_move', '=', 'out'),  # Only out movement
             ]
-
-        pdb.set_trace()
-        if picking_mode == 'todo':
-            domain.append(
-                ('pick_state', 'in', ('todo', 'ready')))
-        elif picking_mode == 'delivered':
-            domain.append(
-                ('pick_state', '=', 'delivered'))
-        # else = all
 
         picking_ids = picking_pool.search(cr, uid, domain, context=context)
         picking_proxy = picking_pool.browse(
@@ -364,8 +354,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         contact_set.update(set(tuple(intervent_contact_ids)))
 
         # Account:
-        intervent_account_ids = [item.account_id.id for item in \
-            intervent_proxy]
+        intervent_account_ids = [item.account_id.id for item in
+                                 intervent_proxy]
         account_set.update(set(tuple(intervent_account_ids)))
 
         # ---------------------------------------------------------------------
@@ -472,7 +462,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         row = 0
         header = [
             'Contatti', 'Consegne', 'DDT',
-            #'Fatture',
+            # 'Fatture',
             'Interventi',
             ]
         width = [45, 10, 10, 10]
@@ -535,6 +525,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         # Intervent management:
         intervent_mode = wiz_browse.intervent_mode
+        picking_mode = wiz_browse.picking_mode
         ddt_mode = wiz_browse.ddt_mode
         mark_invoiced = wiz_browse.mark_invoiced
 
@@ -753,6 +744,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('ddt_id', '=', False),  # Not DDT
             ('pick_move', '=', 'out'),  # Only out movement
             ]
+
+        if picking_mode == 'todo':
+            domain.append(
+                ('pick_state', 'in', ('todo', 'ready')))
+        elif picking_mode == 'delivered':
+            domain.append(
+                ('pick_state', '=', 'delivered'))
+        # else = all
 
         if contact_id:
             domain.append(('contact_id', '=', contact_id))
@@ -1065,7 +1064,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # 'data': ,
                 },
 
-            'Commesse': { # Account
+            'Commesse': {  # Account
                 'row': 0,
                 'header': [
                     'Fatturazione', 'Codice', 'Commessa', 'Padre',
