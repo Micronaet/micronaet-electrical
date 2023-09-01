@@ -23,6 +23,7 @@
 
 
 import os
+import pdb
 import sys
 import logging
 import openerp
@@ -252,6 +253,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('pick_move', '=', 'out'),  # Only out movement
             ]
 
+        pdb.set_trace()
         if picking_mode == 'todo':
             domain.append(
                 ('pick_state', 'in', ('todo', 'ready')))
