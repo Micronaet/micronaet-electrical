@@ -249,8 +249,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         domain = [
             ('min_date', '>=', '%s 00:00:00' % from_date),
             ('min_date', '<=', '%s 23:59:59' % to_date),
-            ('ddt_id', '=', False), # Not DDT
-            ('pick_move', '=', 'out'), # Only out movement
+            ('ddt_id', '=', False),  # Not DDT
+            ('pick_move', '=', 'out'),  # Only out movement
             ]
         picking_ids = picking_pool.search(cr, uid, domain, context=context)
         picking_proxy = picking_pool.browse(
@@ -324,7 +324,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         '''
 
         # ---------------------------------------------------------------------
-        # D. Intervent:
+        # D. Intervention:
         # ---------------------------------------------------------------------
         domain = [
             ('date_start', '>=', from_date),
@@ -853,7 +853,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         elif account_id:
             domain.append(('account_id', '=', account_id))
 
-        # Manage filter on invoiced intervent:
+        # Manage filter on invoiced intervention:
         if intervent_mode == 'invoiced':
             domain.append(('is_invoiced', '=', True))
         elif intervent_mode == 'pending':
@@ -1280,7 +1280,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 summary[ws_name]['total_discount'] += subtotal2
                                 summary[ws_name]['total_revenue'] += subtotal3
 
-                        else: # Picking no movements:
+                        else:  # Picking no movements:
                             data = self.data_mask_filter([
                                 # Header
                                 picking.account_id.name or 'NON ASSEGNATA',
@@ -2561,6 +2561,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Formatted hour',
             help='If checked print hour in HH:MM format'),
 
+        # Picking management:
+        'picking_mode': fields.selection([
+            ('todo', 'Da consegnare'),
+            ('delivered', 'Consegnati'),
+            ('all', 'Tutti'),
+            ], 'Modo picking', required=True,
+            help='Indica quali documenti di consegna materiale considerare'
+                 'nella stampa.'),
+
         # DDT management:
         'ddt_mode': fields.selection([
             ('ddt', 'DDT non fatturati'),
@@ -2595,6 +2604,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         'from_date': lambda *x: datetime.now().strftime('%Y-%m-01'),
         'to_date': lambda *x: (
             datetime.now() + relativedelta(months=1)).strftime('%Y-%m-01'),
+        'picking_mode': lambda *x: 'all',
         'ddt_mode': lambda *x: 'ddt',
         'intervent_mode': lambda *x: 'pending',
         }

@@ -51,6 +51,10 @@
                             </page>
                             <page string="Contabilità">
                                <group colspan="4" col="4">
+                                    <separator string="Picking:" colspan="4" />
+                                    <field name="picking_mode" />
+                                    <newline/>
+
                                     <separator string="DDT:" colspan="4" />
                                     <field name="ddt_mode" />
                                     <newline/>
