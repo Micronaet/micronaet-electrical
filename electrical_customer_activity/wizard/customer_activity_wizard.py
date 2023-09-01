@@ -223,7 +223,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         from_date = wiz_browse.from_date
         to_date = wiz_browse.to_date
 
-        # Intervent management:
+        picking_mode = wiz_browse.picking_mode
         intervent_mode = wiz_browse.intervent_mode
 
         # ---------------------------------------------------------------------
@@ -234,10 +234,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
         partner_pool = self.pool.get('res.partner')
         picking_pool = self.pool.get('stock.picking')
         ddt_pool = self.pool.get('stock.ddt')
-        invoice_pool = self.pool.get('account.invoice')
+        # invoice_pool = self.pool.get('account.invoice')
         account_pool = self.pool.get('account.analytic.account')
         intervent_pool = self.pool.get('hr.analytic.timesheet')
-        product_pool = self.pool.get('product.product')
 
         partner_set = set()
         contact_set = set()
@@ -252,6 +251,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('ddt_id', '=', False),  # Not DDT
             ('pick_move', '=', 'out'),  # Only out movement
             ]
+
+        if picking_mode == 'todo':
+            domain.append(
+                ('pick_state', 'in', ('todo', 'ready')))
+        elif picking_mode == 'delivered':
+            domain.append(
+                ('pick_state', '=', 'delivered'))
+        # else = all
+
         picking_ids = picking_pool.search(cr, uid, domain, context=context)
         picking_proxy = picking_pool.browse(
             cr, uid, picking_ids, context=context)
@@ -1168,7 +1176,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                 f_text = excel_pool.get_format('text')
                 f_text_red = excel_pool.get_format('bg_red')
-                load_format = False # once!
+                load_format = False  # once!
 
             # Setup columns
             excel_pool.column_width(ws_name, sheet['width'])
@@ -1178,7 +1186,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # Filter text:
                 excel_pool.write_xls_line(ws_name, 0, [
                     filter_text,
-                    ],default_format=f_title)
+                    ], default_format=f_title)
                 sheet['row'] += 2
 
             # Print header
