@@ -206,11 +206,19 @@ class ResPartnerActivityWizard(orm.TransientModel):
             for day in sorted(summary_db[user]):
                 row += 1
                 day_dt = datetime.strptime(day, DEFAULT_SERVER_DATE_FORMAT)
+                dow_name = dow.get(day_dt.weekday())
+
+                total = summary_db[user][day]
+                if dow_name in ('Dom.', 'Sab.'):
+                    extra = total
+                else:
+                    extra = max(0.0, total - 8.0)
                 excel_pool.write_xls_line(
                     ws_name, row, [
                         day,
-                        dow.get(day_dt.weekday()),
-                        (summary_db[user][day], f_number),
+                        dow_name,
+                        (total, f_number),
+                        (extra, f_number),
                     ], default_format=f_text)
 
         return excel_pool.return_attachment(cr, uid, 'user_activity')
