@@ -218,7 +218,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         day,
                         dow_name,
                         (total, f_number),
-                        (extra, f_number),
+                        (extra or '', f_number),
                     ], default_format=f_text)
 
         return excel_pool.return_attachment(cr, uid, 'user_activity')
