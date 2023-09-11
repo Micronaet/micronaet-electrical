@@ -148,7 +148,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             if user not in summary_db:
                 summary_db[user] = {}
             if date not in summary_db[user]:
-                summary_db[user][date] = total_h
+                summary_db[user][date] = 0.0
+            summary_db[user][date] += total_h
 
             excel_pool.write_xls_line(
                 ws_name, row, [
