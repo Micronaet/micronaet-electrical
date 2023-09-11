@@ -69,6 +69,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
     def extract_user_activity(self, cr, uid, wiz_browse, context=None):
         """ Report for user activity
         """
+        dow = {
+            0: 'Dom.',
+            1: 'Lun.',
+            2: 'Mar.',
+            3: 'Mer.',
+            4: 'Gio.',
+            5: 'Ven.',
+            6: 'Sab.',
+            7: 'Dom.',
+        }
         excel_pool = self.pool.get('excel.writer')
         intervent_pool = self.pool.get('hr.analytic.timesheet')
         mode_convert = {
@@ -172,11 +182,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
         ws_name = u'Riepilogo'
         excel_pool.create_worksheet(ws_name)
         header = [
-            'Data', 'H. Utente',
+            'Data', 'Giorno', 'H. Utente',
         ]
         width = [
-            20,
-            30,
+            12,
+            5,
+            7,
         ]
         excel_pool.column_width(ws_name, width)
         row = 0
@@ -184,12 +195,18 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ws_name, row, header, default_format=f_header)
 
         for user in summary_db:
-            user_name = user.name or ''
-            for day in summary_db[user]:
+            row += 1
+            excel_pool.write_xls_line(
+                ws_name, row, [
+                    user.name or '',
+                ], default_format=f_title)
+            for day in sorted(summary_db[user]):
                 row += 1
+                day_dt = datetime.strptime(day, DEFAULT_SERVER_DATE_FORMAT)
                 excel_pool.write_xls_line(
                     ws_name, row, [
                         day,
+                        dow.get(day_dt.weekday()),
                         summary_db[user][day],
                     ], default_format=f_text)
 
