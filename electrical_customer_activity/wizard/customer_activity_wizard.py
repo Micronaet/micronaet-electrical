@@ -203,6 +203,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             row += 1
             excel_pool.write_xls_line(
                 ws_name, row, header, default_format=f_header)
+            master_total = [0.0, 0.0]
             for day in sorted(summary_db[user]):
                 row += 1
                 day_dt = datetime.strptime(day, DEFAULT_SERVER_DATE_FORMAT)
@@ -213,6 +214,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     extra = total
                 else:
                     extra = max(0.0, total - 8.0)
+
+                master_total[0] += total
+                master_total[1] += extra
                 excel_pool.write_xls_line(
                     ws_name, row, [
                         day,
@@ -221,6 +225,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         (extra or '', f_number),
                     ], default_format=f_text)
 
+            # Total:
+            row += 1
+            excel_pool.write_xls_line(
+                ws_name, row, [
+                    '',
+                    '',
+                    (master_total[0], f_number),
+                    (master_total[1], f_number),
+                ], default_format=f_text)
         return excel_pool.return_attachment(cr, uid, 'user_activity')
 
     def material_update(self, cr, uid, material_rows, move, context=None):
