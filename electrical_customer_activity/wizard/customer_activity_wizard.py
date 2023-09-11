@@ -96,6 +96,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         # Excel create:
         # ---------------------------------------------------------------------
+        # Activity detail:
+        # ---------------------------------------------------------------------
         ws_name = u'Attività utente'
         excel_pool.create_worksheet(ws_name)
 
@@ -129,17 +131,30 @@ class ResPartnerActivityWizard(orm.TransientModel):
         excel_pool.autofilter(ws_name, row, 0, row, len(header))
         excel_pool.freeze_panes(ws_name, 1, 2)
 
+        # Collect data:
+        summary_db = {}
         intervent_ids = intervent_pool.search(
             cr, uid, domain, context=context)
         intervent_proxy = intervent_pool.browse(
             cr, uid, intervent_ids, context=context)
         for intervent in sorted(intervent_proxy, key=lambda i: i.date_start):
             row += 1
+
+            # Collect summary:
+            user = intervent.user_id
+            date = str(intervent.date_start)[:10]
+            total_h = intervent.intervent_duration
+
+            if user not in summary_db:
+                summary_db[user] = {}
+            if date not in summary_db[user]:
+                summary_db[user][date] = total_h
+
             excel_pool.write_xls_line(
                 ws_name, row, [
-                    intervent.user_id.name or '',
+                    user.name or '',
                     intervent.date_start or '',
-                    intervent.intervent_duration or '',
+                    total_h or '',
                     intervent.ref or '',
                     mode_convert.get(intervent.mode, ''),
                     intervent.intervent_partner_id.name or '',
@@ -149,6 +164,34 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     intervent.name or '',
                     intervent.intervention or '',
                 ], default_format=f_text)
+
+        # ---------------------------------------------------------------------
+        # Summary page:
+        # ---------------------------------------------------------------------
+        ws_name = u'Riepilogo'
+        excel_pool.create_worksheet(ws_name)
+        header = [
+            'Data', 'H. Utente',
+        ]
+        width = [
+            20,
+            30,
+        ]
+        excel_pool.column_width(ws_name, width)
+        row = 0
+        excel_pool.write_xls_line(
+            ws_name, row, header, default_format=f_header)
+
+        for user in summary_db:
+            user_name = user.name or ''
+            for day in summary_db[user]:
+                row += 1
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        day,
+                        summary_db[user][day],
+                    ], default_format=f_text)
+
         return excel_pool.return_attachment(cr, uid, 'user_activity')
 
     def material_update(self, cr, uid, material_rows, move, context=None):
