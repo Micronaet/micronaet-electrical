@@ -182,24 +182,27 @@ class ResPartnerActivityWizard(orm.TransientModel):
         ws_name = u'Riepilogo'
         excel_pool.create_worksheet(ws_name)
         header = [
-            'Data', 'Giorno', 'H. Utente',
+            'Data', 'Giorno', 'H. Utente', 'H. extra',
         ]
         width = [
             12,
             5,
             7,
+            7,
         ]
         excel_pool.column_width(ws_name, width)
         row = 0
-        excel_pool.write_xls_line(
-            ws_name, row, header, default_format=f_header)
 
         for user in summary_db:
-            row += 1
+            if row:  # Jump first line
+                row += 1
             excel_pool.write_xls_line(
                 ws_name, row, [
                     user.name or '',
                 ], default_format=f_title)
+            row += 1
+            excel_pool.write_xls_line(
+                ws_name, row, header, default_format=f_header)
             for day in sorted(summary_db[user]):
                 row += 1
                 day_dt = datetime.strptime(day, DEFAULT_SERVER_DATE_FORMAT)
@@ -207,7 +210,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     ws_name, row, [
                         day,
                         dow.get(day_dt.weekday()),
-                        summary_db[user][day],
+                        (summary_db[user][day], f_number),
                     ], default_format=f_text)
 
         return excel_pool.return_attachment(cr, uid, 'user_activity')
