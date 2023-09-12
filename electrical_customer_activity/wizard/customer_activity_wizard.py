@@ -219,7 +219,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # excel_pool.autofilter(ws_name, row, 0, row, len(header))
         excel_pool.freeze_panes(ws_name, 1, 1)
 
-        for user in summary_db:
+        for user in sorted(summary_db, key=lambda u: u.name):
             row += 1
             excel_pool.write_xls_line(
                 ws_name, row, [
@@ -246,8 +246,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     ], default_format=f_text, col=pos)
 
             # Total:
-            row += 1
             '''
+            row += 1
             excel_pool.write_xls_line(
                 ws_name, row, [
                     '',
