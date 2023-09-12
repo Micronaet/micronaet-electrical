@@ -116,8 +116,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
         domain = [
             ('date_start', '>=', '%s 00:00:00' % from_date),
             ('date_start', '<=', '%s 23:59:59' % to_date),
-            ('user_id', '=', user_id),
         ]
+        if user_id:
+            domain.append(
+                ('user_id', '=', user_id),
+                )
 
         # ---------------------------------------------------------------------
         # Excel create:
