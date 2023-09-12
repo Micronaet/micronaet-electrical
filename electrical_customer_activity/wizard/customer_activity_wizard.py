@@ -108,7 +108,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             header_date[this_date_text] = counter
             dow_text = dow.get(this_date.weekday())
             header_date_text.append('%s\n%s' % (
-                this_date_text[5:],
+                this_date_text,
                 dow_text,
             ))
             this_date += timedelta(days=1)
@@ -197,6 +197,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         ws_name = u'Riepilogo'
         excel_pool.create_worksheet(ws_name)
+
+        row = 0
         header = [
             'Operatore',
         ]
@@ -205,12 +207,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         width = [
             25,
-        ]
-        width.extend([10 for i in range(len(header_date))])
+            ]
+        width.extend([9 for i in range(len(header_date))])
         excel_pool.column_width(ws_name, width)
-        row = 0
+        excel_pool.row_height(ws_name, [row], height=30)
         excel_pool.write_xls_line(
             ws_name, row, header, default_format=f_header)
+        excel_pool.autofilter(ws_name, row, 0, row, len(header))
+        excel_pool.freeze_panes(ws_name, 1, 1)
 
         for user in summary_db:
             row += 1
