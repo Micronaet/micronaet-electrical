@@ -69,6 +69,29 @@ class ResPartnerActivityWizard(orm.TransientModel):
     def extract_user_activity(self, cr, uid, wiz_browse, context=None):
         """ Report for user activity
         """
+        # Utilty:
+        def parse_hours(total, dow_name, excel_format):
+            """ Parse hours
+            """
+            if total:
+                if dow_name in ('Dom.', 'Sab.'):
+                    extra = total
+                else:
+                    extra = max(0.0, total - 8.0)
+                ordinary = total - extra
+
+                if total == 8.0:
+                    excel_color = excel_format['green']
+                elif extra > 0:
+                    excel_color = excel_format['blue']
+                else:
+                    excel_color = excel_format['red']
+            else:  # Day without data
+                total = ordinary = extra = ''
+                excel_color = excel_format['grey']
+            return total, ordinary, extra, excel_color
+
+
         report_mode = wiz_browse.mode
 
         dow = {
@@ -265,31 +288,18 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     ws_name, row, header,
                     default_format=excel_format['header'])
                 master_total = [0.0, 0.0, 0.0]
+
                 for record in row_date:
                     day, dow_name = record
                     row += 1
 
                     total = summary_db[user].get(day)
+                    total, ordinary, extra, excel_color = \
+                        parse_hours(total, dow_name, excel_format)
                     if total:
-                        if dow_name in ('Dom.', 'Sab.'):
-                            extra = total
-                        else:
-                            extra = max(0.0, total - 8.0)
-                        ordinary = total - extra
-
                         master_total[0] += total
                         master_total[1] += ordinary
                         master_total[2] += extra
-                        if total == 8.0:
-                            excel_color = excel_format['green']
-                        elif extra > 0:
-                            excel_color = excel_format['blue']
-                        else:
-                            excel_color = excel_format['red']
-
-                    else:  # Day without data
-                        total = ordinary = extra = ''
-                        excel_color = excel_format['grey']
 
                     excel_pool.write_xls_line(
                         ws_name, row, [
