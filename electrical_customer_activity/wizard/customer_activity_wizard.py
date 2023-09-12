@@ -96,6 +96,18 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         # A. User activity:
         # ---------------------------------------------------------------------
+        header_date = {}
+        this_date = datetime.strptime(
+            from_date[:10], DEFAULT_SERVER_DATE_FORMAT)
+        this_end_date = datetime.strptime(
+            to_date[:10], DEFAULT_SERVER_DATE_FORMAT)
+        counter = 0
+        while this_date <= this_end_date:
+            header_date[this_date.strftime(DEFAULT_SERVER_DATE_FORMAT)] = \
+                counter
+            this_date += timedelta(days=1)
+            counter += 1
+
         domain = [
             ('date_start', '>=', '%s 00:00:00' % from_date),
             ('date_start', '<=', '%s 23:59:59' % to_date),
