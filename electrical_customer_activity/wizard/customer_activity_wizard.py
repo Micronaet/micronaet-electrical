@@ -70,7 +70,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         """ Report for user activity
         """
         # Utilty:
-        def parse_hours(total, dow_name, excel_format):
+        def parse_hours(total, dow_name, excel_format, none_color='grey'):
             """ Parse hours
             """
             if total:
@@ -82,13 +82,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                 if total == 8.0:
                     excel_color = excel_format['green']
+                elif total >= 10.0:
+                    excel_color = excel_format['yellow']
                 elif extra > 0:
                     excel_color = excel_format['blue']
                 else:
                     excel_color = excel_format['red']
             else:  # Day without data
                 total = ordinary = extra = ''
-                excel_color = excel_format['grey']
+                excel_color = excel_format[none_color]
             return total, ordinary, extra, excel_color
 
 
@@ -360,7 +362,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     total = summary_db[user].get(day, '')
 
                     total, ordinary, extra, excel_color = \
-                        parse_hours(total, dow_name, excel_format)
+                        parse_hours(total, dow_name, excel_format,
+                                    none_color='white')
                     excel_pool.write_xls_line(
                         ws_name, row, [total],
                         default_format=excel_color['number'],
