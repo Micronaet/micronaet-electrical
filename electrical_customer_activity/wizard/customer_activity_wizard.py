@@ -70,14 +70,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
         """ Report for user activity
         """
         dow = {
-            0: 'Dom.',
-            1: 'Lun.',
-            2: 'Mar.',
-            3: 'Mer.',
-            4: 'Gio.',
-            5: 'Ven.',
-            6: 'Sab.',
-            7: 'Dom.',
+            0: 'Lun.',
+            1: 'Mar.',
+            2: 'Mer.',
+            3: 'Gio.',
+            4: 'Ven.',
+            5: 'Sab.',
+            6: 'Dom.',
         }
         excel_pool = self.pool.get('excel.writer')
         intervent_pool = self.pool.get('hr.analytic.timesheet')
