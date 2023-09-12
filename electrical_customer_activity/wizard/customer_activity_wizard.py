@@ -220,7 +220,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ], default_format=f_text)
             master_total = [0.0, 0.0]
             for day in header_date:
-                pos = fixed_cols + header_date[day]
+                pos = fixed_cols + header_date[day] - 1
                 total = summary_db[user].get(day, '')
 
                 extra = ''
