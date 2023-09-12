@@ -213,7 +213,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         excel_pool.row_height(ws_name, [row], height=30)
         excel_pool.write_xls_line(
             ws_name, row, header, default_format=f_header)
-        excel_pool.autofilter(ws_name, row, 0, row, len(header))
+        # excel_pool.autofilter(ws_name, row, 0, row, len(header))
         excel_pool.freeze_panes(ws_name, 1, 1)
 
         for user in summary_db:
