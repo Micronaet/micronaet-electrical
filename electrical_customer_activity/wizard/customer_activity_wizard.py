@@ -80,8 +80,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
             5: 'Sab.',
             6: 'Dom.',
         }
-        excel_pool = self.pool.get('excel.writer')
         intervent_pool = self.pool.get('hr.analytic.timesheet')
+        user_pool = self.pool.get('res.users')
+
         mode_convert = {
             'phone': 'Telefonico',
             'passenger': 'Passeggero',
@@ -125,6 +126,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             this_date += timedelta(days=1)
             counter += 1
+
         domain = [
             ('date_start', '>=', '%s 00:00:00' % from_date),
             ('date_start', '<=', '%s 23:59:59' % to_date),
@@ -139,14 +141,36 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         # Activity detail:
         # ---------------------------------------------------------------------
+        excel_pool = self.pool.get('excel.writer')
+
         ws_name = u'Attività utente'
         excel_pool.create_worksheet(ws_name)
 
         # Load formats:
-        f_title = excel_pool.get_format('title')
-        f_header = excel_pool.get_format('header')
-        f_text = excel_pool.get_format('text')
-        f_number = excel_pool.get_format('number')
+        excel_format = {
+            'title': excel_pool.get_format('title'),
+            'header': excel_pool.get_format('header'),
+            'white': {
+                'text': excel_pool.get_format('text'),
+                'number': excel_pool.get_format('number'),
+                },
+            'red': {
+                'text': excel_pool.get_format('text'),
+                'number': excel_pool.get_format('number'),
+                },
+            'grey': {
+                'text': excel_pool.get_format('text'),
+                'number': excel_pool.get_format('number'),
+                },
+            'blue': {
+                'text': excel_pool.get_format('text'),
+                'number': excel_pool.get_format('number'),
+                },
+            'yellow': {
+                'text': excel_pool.get_format('text'),
+                'number': excel_pool.get_format('number'),
+                },
+            }
 
         # Setup columns
         header = [
@@ -168,7 +192,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # Print header
         row = 0
         excel_pool.write_xls_line(
-            ws_name, row, header, default_format=f_header)
+            ws_name, row, header, default_format=excel_format['header'])
         excel_pool.autofilter(ws_name, row, 0, row, len(header))
         excel_pool.freeze_panes(ws_name, 1, 2)
 
@@ -205,7 +229,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     intervent.account_id.partner_id.state_id.name or '',
                     intervent.name or '',
                     intervent.intervention or '',
-                ], default_format=f_text)
+                ], default_format=excel_format['white']['text'])
 
         # ---------------------------------------------------------------------
         #                        Summary page:
@@ -232,19 +256,17 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 excel_pool.write_xls_line(
                     ws_name, row, [
                         user.name or '',
-                    ], default_format=f_title)
+                    ], default_format=excel_format['title'])
                 excel_pool.merge_cell(ws_name, [row, 0, row, 4])
 
                 row += 1
                 excel_pool.write_xls_line(
-                    ws_name, row, header, default_format=f_header)
+                    ws_name, row, header,
+                    default_format=excel_format['header'])
                 master_total = [0.0, 0.0, 0.0]
-                # for day in sorted(summary_db[user]):
                 for record in row_date:
                     day, dow_name = record
                     row += 1
-                    # day_dt = datetime.strptime(day, DEFAULT_SERVER_DATE_FORMAT)
-                    # dow_name = dow.get(day_dt.weekday())
 
                     total = summary_db[user].get(day)
                     if total:
@@ -263,10 +285,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         ws_name, row, [
                             day,
                             dow_name,
-                            (total, f_number),
-                            (ordinary, f_number),
-                            (extra or '', f_number),
-                        ], default_format=f_text)
+                            (total, excel_format['white']['number']),
+                            (ordinary, excel_format['white']['number']),
+                            (extra or '', excel_format['white']['number']),
+                        ], default_format=excel_format['white']['text'])
 
                 # Total:
                 row += 1
@@ -275,10 +297,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     ws_name, row, [
                         'TOTALE:',
                         '',
-                        (master_total[0], f_number),
-                        (master_total[1], f_number),
-                        (master_total[2], f_number),
-                    ], default_format=f_text)
+                        (master_total[0], excel_format['white']['number']),
+                        (master_total[1], excel_format['white']['number']),
+                        (master_total[2], excel_format['white']['number']),
+                    ], default_format=excel_format['white']['text'])
 
         # ---------------------------------------------------------------------
         #                        Foglio presenze:
@@ -290,7 +312,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             row = 0
             header = [
                 'Operatore',
-            ]
+                ]
             fixed_cols = len(header)
             header.extend(header_date_text)
 
@@ -301,8 +323,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             excel_pool.column_width(ws_name, width)
             excel_pool.row_height(ws_name, [row], height=30)
             excel_pool.write_xls_line(
-                ws_name, row, header, default_format=f_header)
-            # excel_pool.autofilter(ws_name, row, 0, row, len(header))
+                ws_name, row, header,
+                default_format=excel_format['header'])
             excel_pool.freeze_panes(ws_name, 1, 1)
 
             for user in sorted(summary_db, key=lambda u: u.name):
@@ -310,38 +332,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 excel_pool.write_xls_line(
                     ws_name, row, [
                         user.name or '',
-                    ], default_format=f_text)
-                master_total = [0.0, 0.0]
+                    ], default_format=excel_format['white']['text'])
+
                 for day in header_date:
                     pos = fixed_cols + header_date[day] - 1
                     total = summary_db[user].get(day, '')
-
-                    extra = ''
-                    extra_total = 0
-                    # if dow_name in ('Dom.', 'Sab.'):
-                    #    extra = total
-                    # else:
-                    #    extra = max(0.0, total - 8.0)
-
-                    # master_total[0] += total
-                    # master_total[1] += extra
                     excel_pool.write_xls_line(
                         ws_name, row, [
-                            (total, f_number),
-                            # (extra or '', f_number),
-                        ], default_format=f_text, col=pos)
-
-                # Total:
-                '''
-                row += 1
-                excel_pool.write_xls_line(
-                    ws_name, row, [
-                        '',
-                        '',
-                        (master_total[0], f_number),
-                        (master_total[1], f_number),
-                    ], default_format=f_text)
-                '''
+                            (total, excel_format['white']['number']),
+                        ], default_format=excel_format['white']['text'],
+                        col=pos)
         return excel_pool.return_attachment(cr, uid, 'user_activity')
 
     def material_update(self, cr, uid, material_rows, move, context=None):
