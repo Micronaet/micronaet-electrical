@@ -102,7 +102,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             from_date[:10], DEFAULT_SERVER_DATE_FORMAT)
         this_end_date = datetime.strptime(
             to_date[:10], DEFAULT_SERVER_DATE_FORMAT)
-        counter = 0
+        counter = 1
         while this_date <= this_end_date:
             this_date_text = this_date.strftime(DEFAULT_SERVER_DATE_FORMAT)
             header_date[this_date_text] = counter
