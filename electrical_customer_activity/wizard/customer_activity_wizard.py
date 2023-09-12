@@ -154,8 +154,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'number': excel_pool.get_format('number'),
                 },
             'red': {
-                'text': excel_pool.get_format('text'),
-                'number': excel_pool.get_format('number'),
+                'text': excel_pool.get_format('bg_red'),
+                'number': excel_pool.get_format('bg_red_number'),
+                },
+            'green': {
+                'text': excel_pool.get_format('bg_green'),
+                'number': excel_pool.get_format('bg_green_number'),
                 },
             'grey': {
                 'text': excel_pool.get_format('bg_grey'),
@@ -166,8 +170,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'number': excel_pool.get_format('bg_blue_number'),
                 },
             'yellow': {
-                'text': excel_pool.get_format('text'),
-                'number': excel_pool.get_format('number'),
+                'text': excel_pool.get_format('bg_yellow'),
+                'number': excel_pool.get_format('bg_yellow_number'),
                 },
             }
 
@@ -228,7 +232,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     intervent.account_id.partner_id.state_id.name or '',
                     intervent.name or '',
                     intervent.intervention or '',
-                ], default_format=excel_format['white']['text'])
+                    ], default_format=excel_format['white']['text'])
 
         # ---------------------------------------------------------------------
         #                        Summary page:
@@ -276,10 +280,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         master_total[0] += total
                         master_total[1] += ordinary
                         master_total[2] += extra
-                        if extra > 0:
+                        if total == 8.0:
+                            excel_color = excel_format['green']
+                        elif extra > 0:
                             excel_color = excel_format['blue']
                         else:
-                            excel_color = excel_format['white']
+                            excel_color = excel_format['red']
 
                     else:  # Day without data
                         total = ordinary = extra = ''
