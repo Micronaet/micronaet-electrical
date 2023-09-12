@@ -132,8 +132,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         counter = 1
         while this_date <= this_end_date:
             this_date_text = this_date.strftime(DEFAULT_SERVER_DATE_FORMAT)
-            header_date[this_date_text] = counter
             dow_text = dow.get(this_date.weekday())
+            header_date[this_date_text] = counter, dow_text
             header_date_text.append('%s\n%s' % (
                 '%s/%s/%s' % (
                     this_date_text[-2:],
@@ -354,9 +354,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         user.name or '',
                     ], default_format=excel_format['white']['text'])
 
-                for day in header_date:
-                    pos = fixed_cols + header_date[day] - 1
+                for key in header_date:
+                    day, dow_name = key
+                    pos = fixed_cols + header_date[key] - 1
                     total = summary_db[user].get(day, '')
+
+                    total, ordinary, extra, excel_color = \
+                        parse_hours(total, dow_name, excel_format)
                     excel_pool.write_xls_line(
                         ws_name, row, [
                             (total, excel_format['white']['number']),
