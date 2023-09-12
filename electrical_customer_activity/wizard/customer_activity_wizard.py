@@ -226,7 +226,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 row += 1
                 excel_pool.write_xls_line(
                     ws_name, row, header, default_format=f_header)
-                master_total = [0.0, 0.0]
+                master_total = [0.0, 0.0, 0.0]
                 for day in sorted(summary_db[user]):
                     row += 1
                     day_dt = datetime.strptime(day, DEFAULT_SERVER_DATE_FORMAT)
