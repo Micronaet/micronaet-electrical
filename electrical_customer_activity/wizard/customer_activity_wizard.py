@@ -97,17 +97,22 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # A. User activity:
         # ---------------------------------------------------------------------
         header_date = {}
+        header_date_text = []
         this_date = datetime.strptime(
             from_date[:10], DEFAULT_SERVER_DATE_FORMAT)
         this_end_date = datetime.strptime(
             to_date[:10], DEFAULT_SERVER_DATE_FORMAT)
         counter = 0
         while this_date <= this_end_date:
-            header_date[this_date.strftime(DEFAULT_SERVER_DATE_FORMAT)] = \
-                counter
+            this_date_text = this_date.strftime(DEFAULT_SERVER_DATE_FORMAT)
+            header_date[this_date_text] = counter
+            dow_text = dow.get(this_date.weekday())
+            header_date_text.append('%s\n%s' % (
+                this_date_text,
+                dow_text,
+            ))
             this_date += timedelta(days=1)
             counter += 1
-
         domain = [
             ('date_start', '>=', '%s 00:00:00' % from_date),
             ('date_start', '<=', '%s 23:59:59' % to_date),
@@ -193,51 +198,49 @@ class ResPartnerActivityWizard(orm.TransientModel):
         ws_name = u'Riepilogo'
         excel_pool.create_worksheet(ws_name)
         header = [
-            'Data', 'Giorno', 'H. Utente', 'H. extra',
+            'Operatore',
         ]
+        fixed_cols = len(header)
+        header.extend(header_date_text)
+
         width = [
             12,
-            5,
-            7,
-            7,
         ]
+        width.extend([7 for i in range(len(header_date))])
         excel_pool.column_width(ws_name, width)
         row = 0
+        excel_pool.write_xls_line(
+            ws_name, row, header_date_text, default_format=f_title)
 
         for user in summary_db:
-            if row:  # Jump first line
-                row += 1
+            row += 1
             excel_pool.write_xls_line(
                 ws_name, row, [
                     user.name or '',
-                ], default_format=f_title)
-            row += 1
-            excel_pool.write_xls_line(
-                ws_name, row, header, default_format=f_header)
+                ], default_format=f_text)
             master_total = [0.0, 0.0]
-            for day in sorted(summary_db[user]):
-                row += 1
-                day_dt = datetime.strptime(day, DEFAULT_SERVER_DATE_FORMAT)
-                dow_name = dow.get(day_dt.weekday())
+            for day in header_date:
+                pos = fixed_cols + header_date[day]
+                total = summary_db[user].get(day, '')
 
-                total = summary_db[user][day]
-                if dow_name in ('Dom.', 'Sab.'):
-                    extra = total
-                else:
-                    extra = max(0.0, total - 8.0)
+                extra = ''
+                extra_total = 0
+                # if dow_name in ('Dom.', 'Sab.'):
+                #    extra = total
+                # else:
+                #    extra = max(0.0, total - 8.0)
 
-                master_total[0] += total
-                master_total[1] += extra
+                # master_total[0] += total
+                # master_total[1] += extra
                 excel_pool.write_xls_line(
                     ws_name, row, [
-                        day,
-                        dow_name,
                         (total, f_number),
-                        (extra or '', f_number),
-                    ], default_format=f_text)
+                        # (extra or '', f_number),
+                    ], default_format=f_text, col=pos)
 
             # Total:
             row += 1
+            '''
             excel_pool.write_xls_line(
                 ws_name, row, [
                     '',
@@ -245,6 +248,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     (master_total[0], f_number),
                     (master_total[1], f_number),
                 ], default_format=f_text)
+            '''
         return excel_pool.return_attachment(cr, uid, 'user_activity')
 
     def material_update(self, cr, uid, material_rows, move, context=None):
