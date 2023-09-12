@@ -215,9 +215,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
             width = [
                 12,
                 5,
-                7,
-                7,
-                7,
+                9,
+                9,
+                9,
             ]
             excel_pool.column_width(ws_name, width)
             row = 0
@@ -264,9 +264,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                 # Total:
                 row += 1
+                excel_pool.merge_cell(ws_name, [row, 0, row, 1])
                 excel_pool.write_xls_line(
                     ws_name, row, [
-                        '',
+                        'TOTALE:',
                         '',
                         (master_total[0], f_number),
                         (master_total[1], f_number),
