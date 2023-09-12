@@ -69,6 +69,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
     def extract_user_activity(self, cr, uid, wiz_browse, context=None):
         """ Report for user activity
         """
+        report_mode = wiz_browse.mode
+
         dow = {
             0: 'Lun.',
             1: 'Mar.',
@@ -198,64 +200,130 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         #                        Summary page:
         # ---------------------------------------------------------------------
-        ws_name = u'Riepilogo'
-        excel_pool.create_worksheet(ws_name)
-
-        row = 0
-        header = [
-            'Operatore',
-        ]
-        fixed_cols = len(header)
-        header.extend(header_date_text)
-
-        width = [
-            25,
+        if report_mode == 'user':
+            ws_name = u'Riepilogo'
+            excel_pool.create_worksheet(ws_name)
+            header = [
+                'Data', 'Giorno', 'H. Utente', 'H. ordinarie', 'H. extra',
             ]
-        width.extend([9 for i in range(len(header_date))])
-        excel_pool.column_width(ws_name, width)
-        excel_pool.row_height(ws_name, [row], height=30)
-        excel_pool.write_xls_line(
-            ws_name, row, header, default_format=f_header)
-        # excel_pool.autofilter(ws_name, row, 0, row, len(header))
-        excel_pool.freeze_panes(ws_name, 1, 1)
+            width = [
+                12,
+                5,
+                7,
+                7,
+                7,
+            ]
+            excel_pool.column_width(ws_name, width)
+            row = 0
 
-        for user in sorted(summary_db, key=lambda u: u.name):
-            row += 1
-            excel_pool.write_xls_line(
-                ws_name, row, [
-                    user.name or '',
-                ], default_format=f_text)
-            master_total = [0.0, 0.0]
-            for day in header_date:
-                pos = fixed_cols + header_date[day] - 1
-                total = summary_db[user].get(day, '')
-
-                extra = ''
-                extra_total = 0
-                # if dow_name in ('Dom.', 'Sab.'):
-                #    extra = total
-                # else:
-                #    extra = max(0.0, total - 8.0)
-
-                # master_total[0] += total
-                # master_total[1] += extra
+            for user in summary_db:
+                if row:  # Jump first line
+                    row += 1
                 excel_pool.write_xls_line(
                     ws_name, row, [
-                        (total, f_number),
-                        # (extra or '', f_number),
-                    ], default_format=f_text, col=pos)
+                        user.name or '',
+                    ], default_format=f_title)
+                row += 1
+                excel_pool.write_xls_line(
+                    ws_name, row, header, default_format=f_header)
+                master_total = [0.0, 0.0]
+                for day in sorted(summary_db[user]):
+                    row += 1
+                    day_dt = datetime.strptime(day, DEFAULT_SERVER_DATE_FORMAT)
+                    dow_name = dow.get(day_dt.weekday())
 
-            # Total:
-            '''
-            row += 1
+                    total = summary_db[user][day]
+                    if dow_name in ('Dom.', 'Sab.'):
+                        extra = total
+                    else:
+                        extra = max(0.0, total - 8.0)
+                    ordinary = total - extra
+
+                    master_total[0] += total
+                    master_total[1] += ordinary
+                    master_total[2] += extra
+                    excel_pool.write_xls_line(
+                        ws_name, row, [
+                            day,
+                            dow_name,
+                            (total, f_number),
+                            (ordinary, f_number),
+                            (extra or '', f_number),
+                        ], default_format=f_text)
+
+                # Total:
+                row += 1
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        '',
+                        '',
+                        (master_total[0], f_number),
+                        (master_total[1], f_number),
+                        (master_total[2], f_number),
+                    ], default_format=f_text)
+
+        # ---------------------------------------------------------------------
+        #                        Foglio presenze:
+        # ---------------------------------------------------------------------
+        elif report_mode == 'timesheet':
+            ws_name = u'Foglio presenze'
+            excel_pool.create_worksheet(ws_name)
+
+            row = 0
+            header = [
+                'Operatore',
+            ]
+            fixed_cols = len(header)
+            header.extend(header_date_text)
+
+            width = [
+                25,
+                ]
+            width.extend([9 for i in range(len(header_date))])
+            excel_pool.column_width(ws_name, width)
+            excel_pool.row_height(ws_name, [row], height=30)
             excel_pool.write_xls_line(
-                ws_name, row, [
-                    '',
-                    '',
-                    (master_total[0], f_number),
-                    (master_total[1], f_number),
-                ], default_format=f_text)
-            '''
+                ws_name, row, header, default_format=f_header)
+            # excel_pool.autofilter(ws_name, row, 0, row, len(header))
+            excel_pool.freeze_panes(ws_name, 1, 1)
+
+            for user in sorted(summary_db, key=lambda u: u.name):
+                row += 1
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        user.name or '',
+                    ], default_format=f_text)
+                master_total = [0.0, 0.0]
+                for day in header_date:
+                    pos = fixed_cols + header_date[day] - 1
+                    total = summary_db[user].get(day, '')
+
+                    extra = ''
+                    extra_total = 0
+                    # if dow_name in ('Dom.', 'Sab.'):
+                    #    extra = total
+                    # else:
+                    #    extra = max(0.0, total - 8.0)
+
+                    # master_total[0] += total
+                    # master_total[1] += extra
+                    excel_pool.write_xls_line(
+                        ws_name, row, [
+                            (total, f_number),
+                            # (extra or '', f_number),
+                        ], default_format=f_text, col=pos)
+
+                # Total:
+                '''
+                row += 1
+                excel_pool.write_xls_line(
+                    ws_name, row, [
+                        '',
+                        '',
+                        (master_total[0], f_number),
+                        (master_total[1], f_number),
+                    ], default_format=f_text)
+                '''
         return excel_pool.return_attachment(cr, uid, 'user_activity')
 
     def material_update(self, cr, uid, material_rows, move, context=None):
@@ -713,7 +781,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         #                    Setup depend on report mode:
         # ---------------------------------------------------------------------
         # A. Customer report different setup:
-        if report_mode == 'user':
+        if report_mode in ('user', 'timesheet'):
             return self.extract_user_activity(
                 cr, uid, wiz_browse, context=context)
 
@@ -2658,6 +2726,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             ('private', 'Stampa cliente'),
             ('user', u'Attività Tecnici'),
+            ('timesheet', u'Foglio presenze'),
             ], 'Mode', required=True),
 
         'partner_id': fields.many2one(
