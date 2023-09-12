@@ -98,6 +98,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         # A. User activity:
         # ---------------------------------------------------------------------
+        row_date = []  # For user report
         header_date = {}
         header_date_text = []
         this_date = datetime.strptime(
@@ -112,7 +113,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
             header_date_text.append('%s\n%s' % (
                 this_date_text,
                 dow_text,
-            ))
+                ))
+            row_date.append((
+                this_date_text,
+                dow_text,
+                ))
+
             this_date += timedelta(days=1)
             counter += 1
         domain = [
@@ -227,21 +233,26 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 excel_pool.write_xls_line(
                     ws_name, row, header, default_format=f_header)
                 master_total = [0.0, 0.0, 0.0]
-                for day in sorted(summary_db[user]):
+                # for day in sorted(summary_db[user]):
+                for record in row_date:
+                    day, dow_name = record
                     row += 1
-                    day_dt = datetime.strptime(day, DEFAULT_SERVER_DATE_FORMAT)
-                    dow_name = dow.get(day_dt.weekday())
+                    # day_dt = datetime.strptime(day, DEFAULT_SERVER_DATE_FORMAT)
+                    # dow_name = dow.get(day_dt.weekday())
 
-                    total = summary_db[user][day]
-                    if dow_name in ('Dom.', 'Sab.'):
-                        extra = total
-                    else:
-                        extra = max(0.0, total - 8.0)
-                    ordinary = total - extra
+                    total = summary_db[user].get(day)
+                    if total:
+                        if dow_name in ('Dom.', 'Sab.'):
+                            extra = total
+                        else:
+                            extra = max(0.0, total - 8.0)
+                        ordinary = total - extra
 
-                    master_total[0] += total
-                    master_total[1] += ordinary
-                    master_total[2] += extra
+                        master_total[0] += total
+                        master_total[1] += ordinary
+                        master_total[2] += extra
+                    else:  # Day without data
+                        total = ordinary = extra = ''
                     excel_pool.write_xls_line(
                         ws_name, row, [
                             day,
