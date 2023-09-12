@@ -123,7 +123,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 this_date_text,
                 dow_text,
                 ))
-
             this_date += timedelta(days=1)
             counter += 1
 
@@ -131,7 +130,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('date_start', '>=', '%s 00:00:00' % from_date),
             ('date_start', '<=', '%s 23:59:59' % to_date),
         ]
-        if user_id:
+        if user_id and report_mode == 'user':
             domain.append(
                 ('user_id', '=', user_id),
                 )
