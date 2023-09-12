@@ -158,12 +158,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'number': excel_pool.get_format('number'),
                 },
             'grey': {
-                'text': excel_pool.get_format('text'),
-                'number': excel_pool.get_format('number'),
+                'text': excel_pool.get_format('bg_grey'),
+                'number': excel_pool.get_format('bg_grey_number'),
                 },
             'blue': {
-                'text': excel_pool.get_format('text'),
-                'number': excel_pool.get_format('number'),
+                'text': excel_pool.get_format('bg_blue'),
+                'number': excel_pool.get_format('bg_blue_number'),
                 },
             'yellow': {
                 'text': excel_pool.get_format('text'),
@@ -237,18 +237,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ws_name = u'Riepilogo'
             excel_pool.create_worksheet(ws_name)
             header = [
-                'Data', 'Giorno', 'H. totali', 'H. ordinarie', 'H. extra',
-            ]
+                'Data', 'Giorno',
+                'H. totali', 'H. ordinarie', 'H. extra',
+                ]
             width = [
-                12,
-                5,
-                10,
-                10,
-                10,
-            ]
+                12, 5,
+                10, 10, 10,
+                ]
             excel_pool.column_width(ws_name, width)
-            row = 0
 
+            row = 0
             for user in summary_db:
                 if row:  # Jump first line
                     row += 1
@@ -278,16 +276,23 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         master_total[0] += total
                         master_total[1] += ordinary
                         master_total[2] += extra
+                        if extra > 0:
+                            excel_color = excel_format['blue']
+                        else:
+                            excel_color = excel_format['white']
+
                     else:  # Day without data
                         total = ordinary = extra = ''
+                        excel_color = excel_format['grey']
+
                     excel_pool.write_xls_line(
                         ws_name, row, [
                             day,
                             dow_name,
-                            (total, excel_format['white']['number']),
-                            (ordinary, excel_format['white']['number']),
-                            (extra or '', excel_format['white']['number']),
-                        ], default_format=excel_format['white']['text'])
+                            (total, excel_color['number']),
+                            (ordinary, excel_color['number']),
+                            (extra or '', excel_color['number']),
+                        ], default_format=excel_color['text'])
 
                 # Total:
                 row += 1
