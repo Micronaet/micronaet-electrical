@@ -354,17 +354,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         user.name or '',
                     ], default_format=excel_format['white']['text'])
 
-                for key in header_date:
-                    day, dow_name = key
-                    pos = fixed_cols + header_date[key] - 1
+                for day in header_date:
+                    counter, dow_name = header_date[day]
+                    pos = fixed_cols + counter - 1
                     total = summary_db[user].get(day, '')
 
                     total, ordinary, extra, excel_color = \
                         parse_hours(total, dow_name, excel_format)
                     excel_pool.write_xls_line(
-                        ws_name, row, [
-                            (total, excel_format['white']['number']),
-                        ], default_format=excel_format['white']['text'],
+                        ws_name, row, [total],
+                        default_format=excel_color['number'],
                         col=pos)
         return excel_pool.return_attachment(cr, uid, 'user_activity')
 
