@@ -28,7 +28,7 @@
                    <group colspan="4" col="4">
                         <separator string="Mode:" colspan="4"/>
                         <field name="mode" />
-                        <field name="user_id" attrs="{'invisible': [('mode','!=','user')]}"/>   <!--, 'required': [('mode','=','user')] -->
+                        <field name="user_id" attrs="{'invisible': [('mode','!=','user')], 'required': [('mode','=','user')]}"/>
 
                         <separator string="Period:" colspan="4"/>
                         <field name="from_date" />

@@ -210,14 +210,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ws_name = u'Riepilogo'
             excel_pool.create_worksheet(ws_name)
             header = [
-                'Data', 'Giorno', 'H. Utente', 'H. ordinarie', 'H. extra',
+                'Data', 'Giorno', 'H. totali', 'H. ordinarie', 'H. extra',
             ]
             width = [
                 12,
                 5,
-                9,
-                9,
-                9,
+                10,
+                10,
+                10,
             ]
             excel_pool.column_width(ws_name, width)
             row = 0
@@ -229,6 +229,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     ws_name, row, [
                         user.name or '',
                     ], default_format=f_title)
+                excel_pool.merge_cell(ws_name, [row, 0, row, 4])
+
                 row += 1
                 excel_pool.write_xls_line(
                     ws_name, row, header, default_format=f_header)
