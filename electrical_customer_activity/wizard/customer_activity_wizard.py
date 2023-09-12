@@ -108,7 +108,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             header_date[this_date_text] = counter
             dow_text = dow.get(this_date.weekday())
             header_date_text.append('%s\n%s' % (
-                this_date_text[4:],
+                this_date_text[5:],
                 dow_text,
             ))
             this_date += timedelta(days=1)
