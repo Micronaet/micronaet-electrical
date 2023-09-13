@@ -93,7 +93,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 excel_color = excel_format[none_color]
             return total, ordinary, extra, excel_color
 
-
         report_mode = wiz_browse.mode
 
         dow = {
@@ -337,11 +336,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ]
             fixed_cols = len(header)
             header.extend(header_date_text)
+            header.extend(['Tot. H', 'Ord. H', 'Extra H'])
 
             width = [
                 25,
                 ]
             width.extend([9 for i in range(len(header_date))])
+            width.extend([10, 10, 10])  # Master total
+
             excel_pool.column_width(ws_name, width)
             excel_pool.row_height(ws_name, [row], height=30)
             excel_pool.write_xls_line(
@@ -356,6 +358,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         user.name or '',
                     ], default_format=excel_format['white']['text'])
 
+                master_total = [0.0, 0.0, 0.0]
                 for day in header_date:
                     counter, dow_name = header_date[day]
                     pos = fixed_cols + counter - 1
@@ -364,10 +367,20 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     total, ordinary, extra, excel_color = \
                         parse_hours(total, dow_name, excel_format,
                                     none_color='white')
+                    master_total[0] += total or 0.0
+                    master_total[1] += ordinary or 0.0
+                    master_total[2] += extra or 0.0
+
                     excel_pool.write_xls_line(
                         ws_name, row, [total],
                         default_format=excel_color['number'],
                         col=pos)
+                # Master total:
+                pos += 1
+                excel_pool.write_xls_line(
+                    ws_name, row, [total],
+                    default_format=excel_color['number'],
+                    col=pos)
         return excel_pool.return_attachment(cr, uid, 'user_activity')
 
     def material_update(self, cr, uid, material_rows, move, context=None):
