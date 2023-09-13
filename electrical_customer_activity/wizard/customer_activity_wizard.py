@@ -270,7 +270,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ]
             width = [
                 12, 5,
-                6, 6, 6,
+                10, 10, 10,
                 ]
             excel_pool.column_width(ws_name, width)
 
@@ -339,7 +339,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             header.extend(header_date_text)
 
             width = [
-                25, 10, 10, 10,
+                25, 6, 6, 6,
                 ]
             width.extend([9 for i in range(len(header_date))])
 
