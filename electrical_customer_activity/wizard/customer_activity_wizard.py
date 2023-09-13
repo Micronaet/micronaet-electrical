@@ -270,7 +270,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ]
             width = [
                 12, 5,
-                10, 10, 10,
+                6, 6, 6,
                 ]
             excel_pool.column_width(ws_name, width)
 
@@ -333,16 +333,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
             row = 0
             header = [
                 'Operatore',
+                'Tot. H', 'Ord. H', 'Extra H'
                 ]
             fixed_cols = len(header)
             header.extend(header_date_text)
-            header.extend(['Tot. H', 'Ord. H', 'Extra H'])
 
             width = [
-                25,
+                25, 10, 10, 10,
                 ]
             width.extend([9 for i in range(len(header_date))])
-            width.extend([10, 10, 10])  # Master total
 
             excel_pool.column_width(ws_name, width)
             excel_pool.row_height(ws_name, [row], height=30)
@@ -375,10 +374,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         ws_name, row, [total],
                         default_format=excel_color['number'],
                         col=pos)
+
                 # Master total:
-                pos += 1
+                pos = 1  # 2-4 column position
                 excel_pool.write_xls_line(
-                    ws_name, row, [total],
+                    ws_name, row, master_total,
                     default_format=excel_color['number'],
                     col=pos)
         return excel_pool.return_attachment(cr, uid, 'user_activity')
