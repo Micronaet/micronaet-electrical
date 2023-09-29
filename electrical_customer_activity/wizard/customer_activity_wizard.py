@@ -235,7 +235,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Collect summary:
             user = intervent.user_id
             date = str(intervent.date_start)[:10]
-            total_h = intervent.intervent_duration
+            total_h = intervent.intervent_total  # Manual total used
 
             if user not in summary_db:
                 summary_db[user] = {}
