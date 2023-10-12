@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 ###############################################################################
 #
-# ODOO (ex OpenERP) 
+# ODOO (ex OpenERP)
 # Open Source Management Solution
 # Copyright (C) 2001-2015 Micronaet S.r.l. (<https://micronaet.com>)
 # Developer: Nicola Riolini @thebrush (<https://it.linkedin.com/in/thebrush>)
@@ -13,7 +13,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
@@ -34,37 +34,39 @@ from openerp import SUPERUSER_ID, api
 from openerp import tools
 from openerp.tools.translate import _
 from openerp.tools.float_utils import float_round as round
-from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT, 
-    DEFAULT_SERVER_DATETIME_FORMAT, 
-    DATETIME_FORMATS_MAP, 
+from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
+    DEFAULT_SERVER_DATETIME_FORMAT,
+    DATETIME_FORMATS_MAP,
     float_compare)
 
 
 _logger = logging.getLogger(__name__)
 
+
 class AccountAnaliticExpenceCategory(orm.Model):
     """ Model name: AccountAnaliticExpence
     """
-    
+
     _name = 'account.analytic.expence.category'
     _description = 'Analytic expence category'
     _rec_name = 'name'
     _order = 'name'
-    
+
     _columns = {
         'name': fields.char('Description', size=64, required=True),
         'note': fields.text('Note'),
         }
-        
+
+
 class AccountAnaliticExpence(orm.Model):
     """ Model name: Account Analitic Expence
     """
-    
+
     _name = 'account.analytic.expence'
     _description = 'Analytic expence'
     _rec_name = 'name'
     _order = 'date'
-    
+
     _columns = {
         'account_id': fields.many2one('account.analytic.account', 'Account'),
         'date': fields.date('Date', required=True),
@@ -72,7 +74,7 @@ class AccountAnaliticExpence(orm.Model):
             'account.analytic.expence.category', 'Category', required=True),
         'name': fields.char('Description', size=64, required=True),
         'total': fields.float('Total', digits=(16, 2), required=True),
-        'total_forced': fields.float('Total forced', digits=(16, 2), 
+        'total_forced': fields.float('Total forced', digits=(16, 2),
             help='If present is used instead of total value (as a revenue)'),
         'printable': fields.selection([
             ('always', 'Always'),
@@ -80,21 +82,22 @@ class AccountAnaliticExpence(orm.Model):
             ('never', 'Never'),
             ], 'Printable', required=True),
         }
-    
+
     _defaults = {
         'date': lambda *x: datetime.now().strftime(DEFAULT_SERVER_DATE_FORMAT),
         'printable': lambda *x: 'always',
-        }     
-    
+        }
+
+
 class AccountAnaliticAccount(orm.Model):
-    """ Model name: AccountAnalitic Account
+    """ Model name: Account Analitic Account
     """
-    
+
     _inherit = 'account.analytic.account'
-    
+
     def open_expences_list(self, cr, uid, ids, context=None):
-        ''' Return list of expences:
-        '''
+        """ Return list of expences:
+        """
         return {
             'type': 'ir.actions.act_window',
             'name': _('Expence list'),
@@ -105,7 +108,7 @@ class AccountAnaliticAccount(orm.Model):
             'views': [(False, 'tree')],
             'domain': [('account_id', '=', ids[0])],
             'context': context,
-            'target': 'current', 
+            'target': 'current',
             'nodestroy': False,
             }
 
@@ -113,5 +116,3 @@ class AccountAnaliticAccount(orm.Model):
         'expence_ids': fields.one2many(
             'account.analytic.expence', 'account_id', 'Expence'),
         }
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

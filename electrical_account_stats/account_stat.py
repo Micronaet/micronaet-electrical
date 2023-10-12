@@ -67,15 +67,16 @@ class AccountAnalyticAccount(orm.Model):
             'view_mode': 'form',
             'res_id': ids[0],
             'res_model': 'account.analytic.account',
-            'view_id': view_id, # False
-            'views': [(view_id, 'form'),(False, 'tree')],
+            'view_id': view_id,  # False
+            'views': [(view_id, 'form'), (False, 'tree')],
             'domain': [('id', '=', ids[0])],
             'context': context,
             'target': 'current',  # 'new'
             'nodestroy': False,
             }
 
-    def _get_statinfo_intervent(self, cr, uid, ids, fields, args, context=None):
+    def _get_statinfo_intervent(
+            self, cr, uid, ids, fields, args, context=None):
         """ Fields function for calculate intervent
         """
         res = {}
@@ -613,7 +614,7 @@ class AccountAnalyticAccount(orm.Model):
             # Update single record:
             self.write(cr, uid, [account.id], {
                 'history_hour_done': account.statinfo_hour_done,
-                'history_hour_remain' : account.statinfo_hour_remain,
+                'history_hour_remain': account.statinfo_hour_remain,
                 'history_invoiced': account.statinfo_invoiced,
                 'history_remain_invoiced': account.statinfo_remain_invoiced,
                 'history_total_cost': account.statinfo_total_cost,
