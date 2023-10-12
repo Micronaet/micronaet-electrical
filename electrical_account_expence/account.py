@@ -113,6 +113,7 @@ class AccountAnaliticAccount(orm.Model):
             }
 
     _columns = {
+        'account_note': fields.text('Annotazioni'),
         'expence_ids': fields.one2many(
             'account.analytic.expence', 'account_id', 'Expence'),
         }
