@@ -134,6 +134,7 @@ class ProductProduct(orm.Model):
             ),
         }
 
+
 class ProductProduct(orm.Model):
     """ Model name: ProductProduct
     """
@@ -143,6 +144,13 @@ class ProductProduct(orm.Model):
     # -------------------------------------------------------------------------
     # Utility:
     # -------------------------------------------------------------------------
+    def extract_product_data_erppeek(self, cr, uid, move_id, context=None):
+        """ Called from ERPEEK
+        """
+        move_pool = self.pool.get('stock.move')
+        move = move_pool.browse(cr, uid, move_id, context=context)
+        return self.extract_product_data(cr, uid, move, context=context)
+
     def extract_product_data(self, cr, uid, move, context=None):
         """ Used for extract data from move of from product
             depend if generic product
