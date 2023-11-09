@@ -52,67 +52,39 @@ odoo = erppeek.Client(
     password=pwd,
     )
 
+pdb.set_trace()
+
 # -----------------------------------------------------------------------------
 # Extract package:
 # -----------------------------------------------------------------------------
-product_pool = odoo.model('product.product')
+report_ids = []
 ddt_pool = odoo.model('stock.ddt')
 ddt_ids = ddt_pool.search([
     ('account_id.code', '=', account_code),
     ])
-pdb.set_trace()
-total = {
-    'cost': 0.0,
-    'discount': 0.0,
-    'revenue': 0.0,
-}
-csv_f = codecs.open('./ddt.csv', 'w', 'utf-8')
-
 for ddt in ddt_pool.browse(ddt_ids):
     for picking in ddt.picking_ids:
-        picking_account = picking.account_id.code
-        if picking_account != account_code:
-            print('[ERROR] Picking %s Account %s' % (
-                picking.name,
-                picking_account,
-            ))
-        else:
-            print('[INFO] Picking %s Account %s' % (
-                picking.name,
-                picking_account,
-            ))
         for move in picking.move_lines:
-            product = move.product_id
-            (product_name, list_price, standard_price,
-             discount_price, discount_vat) = \
-                product_pool.extract_product_data_erppeek(move.id)
+            report_ids.append(move.id)
 
-            subtotal1 = \
-                standard_price * move.product_qty
-            subtotal2 = \
-                discount_price * move.product_qty
-            subtotal3 = \
-                list_price * move.product_qty
+stat_ids = []
+picking_pool = odoo.model('stock.picking')
+picking_ids = picking_pool.search([
+    ('account_id.code', '=', account_code),  # This account code
+    ('pick_move', '=', 'out'),  # Only out movement
+    ('ddt_id', '!=', False),  # Linked in DDT
+    ('ddt_id.is_invoiced', '=', False),  # Not invoiced
+])
+for picking in picking_pool.browse(picking_ids):
+    for move in picking.move_lines:
+        stat_ids.append(move.id)
 
-            csv_f.write(u'%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s\n' % (
-                move.id,
-                ddt.name,
-                picking.name,
-                ddt.account_id.name,
-                (ddt.delivery_date or ddt.date)[:10],
-                product.default_code,
-                product_name,
-                move.product_uom.name,
-                standard_price,
-                discount_price,
-                list_price,
-                ))
-            csv_f.flush()
+# Set operations:
+pdb.set_trace()
+report_set = set(report_ids)
+stat_set = set(stat_ids)
 
-            # A. Total per account:
-            total['cost'] += subtotal1
-            total['discount'] += subtotal2
-            total['revenue'] += subtotal3
+print('Report %s - Stat %s' % (len(report_set), len(stat_set)))
+print(report_set.symmetric_difference(stat_set))
+print(stat_set.symmetric_difference(report_set))
 
-print('Cost {cost:.2f} - Discount {discount:.2f} Revenue {revenue:.2f}'.format(
-    **total))
