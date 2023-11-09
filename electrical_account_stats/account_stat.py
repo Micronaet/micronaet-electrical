@@ -474,14 +474,16 @@ class AccountAnalyticAccount(orm.Model):
             res[account_id]['statinfo_invoiced'] = total['account_invoice'][1]
             res[account_id]['statinfo_remain_invoiced'] = \
                 account.total_amount - total['account_invoice'][1]
-            res[account_id]['statinfo_total_cost'] = -sum(
-                total_summary.values())
+            total_cost = sum(
+                [total_summary[k] for k in total_summary if k != 'hours'])
+            # Ex. total_summary.values())
+
+            res[account_id]['statinfo_total_cost'] = - total_cost
+
             res[account_id]['statinfo_margin_nominal'] = \
-                account.total_amount - sum(
-                total_summary.values())
+                account.total_amount - total_cost
             res[account_id]['statinfo_margin_invoice'] = \
-                total['account_invoice'][1] - sum(
-                total_summary.values())
+                total['account_invoice'][1] - total_cost
 
             res[account_id]['statinfo_summary'] += '''
                 <table class='table_bf'>
