@@ -302,16 +302,19 @@ class AccountAnalyticAccount(orm.Model):
                         else: # metel_sale
                             price = discount_price
                         '''
-                        # cost = qty * product.standard_price
-                        # XXX Not as in report:
-                        # revenue = qty * product.lst_price
-                        # or move.price_unit
-                        # ex.: price # move.price_unit
-
-                        (product_name, cost, revenue,
+                        (product_name, list_price, standard_price,
                             discount_price, discount_vat) = \
                             product_pool.extract_product_data(
                                 cr, uid, move, context=context)
+
+                        # cost = qty * product.standard_price
+                        # XXX Not as in report:
+                        # revenue = qty * product.lst_price
+
+                        cost = qty * standard_price
+                        revenue = qty * list_price
+                        # or move.price_unit
+                        # ex.: price # move.price_unit
 
                         if not cost or not revenue:
                             total[mode][3] += 1  # error
