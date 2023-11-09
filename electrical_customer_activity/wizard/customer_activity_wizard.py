@@ -736,6 +736,20 @@ class ResPartnerActivityWizard(orm.TransientModel):
     def action_print(self, cr, uid, ids, context=None):
         """ Event for button done
         """
+        '''
+        def log_on_file(f, message, verbose=False):
+            """ Log on file if present
+            """
+            if f:
+                f.write(message)
+                f.write('\n')
+            if verbose:
+                _logger.warning(message)
+
+        log_f = open('/tmp/report_customer_%s.csv' % uid, 'w')
+        # Log_file = False  # No log
+        '''
+
         if context is None:
             context = {}
 
