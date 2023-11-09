@@ -127,19 +127,19 @@ class AccountAnalyticAccount(orm.Model):
             """
             value = value or 0.0
             if bold:
-               bold_on = '<b>'
-               bold_off = '</b>'
+                bold_on = '<b>'
+                bold_off = '</b>'
             else:
-               bold_on = bold_off = ''
+                bold_on = bold_off = ''
 
             currency = ''
             for c in locale.currency(value, grouping=True):
                 if ord(c) < 127:
                     currency += c
 
-            if positive and value > 0.0: # #fcfc92
+            if positive and value > 0.0:  # #fcfc92
                 number_class = 'td_number_green'
-            elif negative == 'empty' and value <= 0.0: # #fcfc92
+            elif negative == 'empty' and value <= 0.0:  # #fcfc92
                 number_class = 'td_number_red'
             elif negative == 'negative' and value < 0.0:
                 number_class = 'td_number_red'
@@ -253,7 +253,7 @@ class AccountAnalyticAccount(orm.Model):
             # -----------------------------------------------------------------
             picking_ids = picking_pool.search(cr, uid, [
                 ('account_id', '=', account_id),
-                ('pick_move', '=', 'out'), # Only out movement
+                ('pick_move', '=', 'out'),  # Only out movement
                 ], context=context)
             if picking_ids:
                 # TODO manage also state of picking:
@@ -264,7 +264,9 @@ class AccountAnalyticAccount(orm.Model):
 
                 # Header:
                 res[account_id]['statinfo_complete'] += '''
-                    <p><b>Consegne materiali (Ricavo usa: %s)</b>: [Tot.: %s]</p>
+                    <p>
+                    <b>Consegne materiali (Ricavo usa: %s)</b>: [Tot.: %s]
+                    </p>
                     <table class='table_bf'>
                     <tr class='table_bf'>
                         <th>Descrizione</th>
@@ -288,7 +290,7 @@ class AccountAnalyticAccount(orm.Model):
                         product = move.product_id
                         if not product:
                             continue
-                        qty = move.product_qty #_uom
+                        qty = move.product_qty  # _uom
 
                         # reply = product_pool.extract_product_data(
                         #    cr, uid, move, context=context)
@@ -305,12 +307,13 @@ class AccountAnalyticAccount(orm.Model):
                         # ex.: price # move.price_unit
 
                         if not cost or not revenue:
-                            total[mode][3] += 1 # error
+                            total[mode][3] += 1  # error
 
                         total[mode][0] += cost
                         total[mode][1] += revenue
 
-                for mode, name in (('picking', 'Consegne'),
+                for mode, name in (
+                        ('picking', 'Consegne'),
                         ('ddt', 'DDT'),
                         ('invoice', 'Fatture'),
                         ('account_invoice', 'Gestionale')):
@@ -352,7 +355,7 @@ class AccountAnalyticAccount(orm.Model):
                         <th>H.</th>
                     </tr>''' % len(timesheet_ids)
 
-                # TODO manage also state of picking:
+                # todo manage also state of picking:
                 for ts in timesheet_pool.browse(
                         cr, uid, timesheet_ids, context=context):
                     if ts.is_invoiced:
@@ -362,9 +365,9 @@ class AccountAnalyticAccount(orm.Model):
 
                     # Read revenue:
                     user_mode_id = ts.user_mode_id.id
-                    if user_mode_id in partner_forced: # partner forced
+                    if user_mode_id in partner_forced:  # partner forced
                         unit_revenue = partner_forced[user_mode_id]
-                    else: # read for default list:
+                    else:  # read for default list:
                         unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
 
                     total[mode][0] -= ts.amount  # Always negative
@@ -391,7 +394,7 @@ class AccountAnalyticAccount(orm.Model):
                     <p><b>Interventi</b>:<br/>Non presenti!</p>'''
 
             # -----------------------------------------------------------------
-            # Expences:
+            #                           Expences:
             # -----------------------------------------------------------------
             expence_ids = expence_pool.search(cr, uid, [
                 ('account_id', '=', account_id),

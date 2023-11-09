@@ -1043,8 +1043,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             ('date', '<=', '%s 23:59:59' % to_date),
             ], context=context))
         ddt_ids = tuple(ddt_delivery_ids | ddt_date_ids)
-        if partner_id == 6112 and uid == 1:
-            pdb.set_trace()
+        # if partner_id == 6112 and uid == 1:
+        #     pdb.set_trace()
         _logger.warning('Delivery: %s, Date: %s, Total: %s' % (
             len(ddt_delivery_ids),
             len(ddt_date_ids),
@@ -1675,7 +1675,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     #                    TOTALS:
                                     # -----------------------------------------
                                     # A. Total per account:
-                                    total[account_id] += subtotal3 # XXX
+                                    total[account_id] += subtotal3  # XXX
 
                                     # B. Line total in same sheet:
                                     summary[ws_name][
