@@ -1,8 +1,21 @@
 <?xml version="1.0"?>
 <openerp>
     <data>
+        <record model="ir.ui.view" id="view_account_analytic_account_wkf_tree">
+            <field name="name">account.analytic.account.new.wf.tree</field>
+            <field name="model">account.analytic.account</field>
+            <field name="inherit_id" ref="account.view_account_analytic_account_tree"/>
+            <field name="arch" type="xml">
+                <tree string="Analytic account" position="attributes">
+                    <attribute name="colors">blue: state=='open'; grey: state=='pending'; red: state=='cancelled'; green: state=='invoicing'; black: state=='close'</attribute>
+                </tree>
+                <field name="template_id" position="after">
+                    <field name="state" />
+                </field>
+            </field>
+        </record>
         <record model="ir.ui.view" id="view_account_analytic_account_wkf_search">
-            <field name="name">account.analytic.account.new.wf.searc</field>
+            <field name="name">account.analytic.account.new.wf.search</field>
             <field name="model">account.analytic.account</field>
             <field name="inherit_id" ref="account.view_account_analytic_account_search"/>
             <field name="arch" type="xml">
