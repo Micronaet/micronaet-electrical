@@ -89,6 +89,11 @@
             <field name="model">account.analytic.account</field>
             <field name="inherit_id" ref="analytic.view_account_analytic_account_form"/>
             <field name="arch" type="xml">
+                <button name="set_close" position="after">
+                    <button name="set_invoicing" string="Da fatturare" type="object" states="close,archived" />
+                    <button name="set_done" string="Archivia" type="object" states="invoicing" /> <!--modifiers="{'invisible': [['state', 'not in', ['pending', 'close', 'cancelled', 'draft']]]}"-->
+                </button>
+
                 <xpath expr="//page[1]" position="after">
                     <page string="Spese extra">
                         <group col="4" colspan="4">
