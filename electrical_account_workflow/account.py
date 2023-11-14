@@ -73,7 +73,7 @@ class AccountAnaliticAccount(orm.Model):
             ('draft', 'Bozza'),  # Not used
             ('open', 'In Corso'),  # First state
             ('pending', 'Sospeso'),
-            ('close', 'Chiusp'),
+            ('close', 'Chiuso'),
 
             ('invoicing', 'Da fatturare'),
             ('done', 'Archiviato'),  # Last state

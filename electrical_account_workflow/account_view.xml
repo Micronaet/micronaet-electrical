@@ -6,19 +6,29 @@
             <field name="model">account.analytic.account</field>
             <field name="inherit_id" ref="hr_timesheet_invoice.account_analytic_account_form_form"/>
             <field name="arch" type="xml">
+                <!-- New button -->
                 <button name="set_open" position="after">
-                    <button name="set_invoicing" string="Da fatturare" type="object" states="close,done" />
-                    <button name="set_done" string="Archivia" type="object" states="invoicing" />
+                    <button name="set_invoicing" string="Da fatturare" type="object" states="close,done" icon="terp-dolar" />
+                    <button name="set_done" string="Archivia" type="object" states="invoicing" icon="terp-folder-green" />
                 </button>
+
+                <!-- Correct previous -->
                 <button name="set_pending" position="attributes">
                     <attribute name="string">Sospeso/Da rinnovare</attribute>
+                    <attribute name="icon">gtk-media-pause</attribute>
+                </button>
+                <button name="set_open" position="attributes">
+                    <attribute name="icon">gtk-media-play</attribute>
                 </button>
                 <button name="set_close" position="attributes">
                     <attribute name="states">open,pending,invoicing</attribute>
+                    <attribute name="icon">gtk-media-stop</attribute>
                 </button>
                 <button name="set_cancel" position="attributes">
-                    <attribute name="states">open,pending,close,invoicing,archived</attribute>
+                    <attribute name="states">open,pending,close,invoicing,done</attribute>
+                    <attribute name="icon">terp-gtk-stop</attribute>
                 </button>
+
                 <field name="state" position="attributes">
                     <attribute name="statusbar_visible">open,pending,close,invoicing,done,cancelled</attribute>
                 </field>
