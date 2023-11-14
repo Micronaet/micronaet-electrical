@@ -1,6 +1,20 @@
 <?xml version="1.0"?>
 <openerp>
     <data>
+        <record model="ir.ui.view" id="view_account_analytic_account_wkf_search">
+            <field name="name">account.analytic.account.new.wf.searc</field>
+            <field name="model">account.analytic.account</field>
+            <field name="inherit_id" ref="account.view_account_analytic_account_search"/>
+            <field name="arch" type="xml">
+                <filter string="Pending" position="after">
+                    <filter string="Chiusi" domain="[('state','=','close')]" />
+                    <filter string="Da fatturare" domain="[('state','=','invoicing')]" />
+                    <filter string="Archiviati" domain="[('state','=','done')]" />
+                    <filter string="Annullati" domain="[('state','=','cancel')]" />
+                </filter>
+            </field>
+        </record>
+
         <record model="ir.ui.view" id="view_account_analytic_new_workflow_form">
             <field name="name">account.analytic.account.new.wf.form</field>
             <field name="model">account.analytic.account</field>
