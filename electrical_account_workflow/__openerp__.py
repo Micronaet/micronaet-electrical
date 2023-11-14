@@ -34,7 +34,7 @@
     'depends': [
         'base',
         'analytic',
-
+        'hr_timesheet_invoice',
         ],
     'init_xml': [],
     'demo': [],
