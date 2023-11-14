@@ -18,6 +18,7 @@
                     <attribute name="icon">gtk-media-pause</attribute>
                 </button>
                 <button name="set_open" position="attributes">
+                    <attribute name="string">In Corso</attribute>
                     <attribute name="icon">gtk-media-play</attribute>
                 </button>
                 <button name="set_close" position="attributes">
