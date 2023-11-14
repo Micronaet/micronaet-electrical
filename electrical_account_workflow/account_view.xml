@@ -20,7 +20,7 @@
                     <attribute name="states">open,pending,close,invoicing,archived</attribute>
                 </button>
                 <field name="state" position="attributes">
-                    <attribute name="statusbar_visible">open,pending,close,invoicing,archived,cancelled</attribute>
+                    <attribute name="statusbar_visible">open,pending,close,invoicing,done,cancelled</attribute>
                 </field>
             </field>
         </record>

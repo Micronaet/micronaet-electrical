@@ -69,16 +69,16 @@ class AccountAnaliticAccount(orm.Model):
     _columns = {
         # Override state:
         'state': fields.selection([
-            ('template', 'Template'),
+            ('template', 'Modello'),
             ('draft', 'Bozza'),  # Not used
             ('open', 'In Corso'),  # First state
             ('pending', 'Sospeso'),
-            ('close', 'Chiusa'),
+            ('close', 'Chiusp'),
 
             ('invoicing', 'Da fatturare'),
-            ('done', 'Archiviata'),  # Last state
+            ('done', 'Archiviato'),  # Last state
 
-            ('cancelled', 'Cancellata')
+            ('cancelled', 'Cancellato')
         ], 'Stato', required=True, track_visibility='onchange', copy=False),
     }
 
