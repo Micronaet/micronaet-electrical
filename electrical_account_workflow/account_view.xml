@@ -10,6 +10,18 @@
                     <button name="set_invoicing" string="Da fatturare" type="object" states="close,done" />
                     <button name="set_done" string="Archivia" type="object" states="invoicing" />
                 </button>
+                <button name="set_pending" position="attributes">
+                    <attribute name="string">Sospeso/Da rinnovare</attribute>
+                </button>
+                <button name="set_close" position="attributes">
+                    <attribute name="states">open,pending,invoicing</attribute>
+                </button>
+                <button name="set_cancel" position="attributes">
+                    <attribute name="states">open,pending,close,invoicing,archived</attribute>
+                </button>
+                <field name="state" position="attributes">
+                    <attribute name="statusbar_visible">open,pending,close,invoicing,archived,cancelled</attribute>
+                </field>
             </field>
         </record>
     </data>
