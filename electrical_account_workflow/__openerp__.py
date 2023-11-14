@@ -22,11 +22,11 @@
 ###############################################################################
 
 {
-    'name': 'Account extra expences',
+    'name': 'Account Workflow',
     'version': '0.1',
     'category': 'Account',
     'description': '''  
-        Account extra expences      
+        Manage new Account workflow (2 extra states)
         ''',
     'author': 'Micronaet S.r.l. - Nicola Riolini',
     'website': 'http://www.micronaet.it',
@@ -34,11 +34,11 @@
     'depends': [
         'base',
         'analytic',
+
         ],
     'init_xml': [],
     'demo': [],
     'data': [
-        'security/ir.model.access.csv',
         'account_view.xml',
         ],
     'active': False,

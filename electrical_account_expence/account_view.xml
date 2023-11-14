@@ -87,25 +87,6 @@
         <record model="ir.ui.view" id="view_account_analytic_expence_form">
             <field name="name">account.analytic.account.form</field>
             <field name="model">account.analytic.account</field>
-            <field name="inherit_id" ref="hr_timesheet_invoice.account_analytic_account_form_form"/>
-            <field name="arch" type="xml">
-                <button name="set_close" position="after">
-                    <button name="set_invoicing" string="Da fatturare" type="object" states="close,archived" />
-                    <button name="set_done" string="Archivia" type="object" states="invoicing" /> modifiers="{'invisible': [['state', 'not in', ['pending', 'close', 'cancelled', 'draft']]]}"
-                </button>
-                <!--
-                    <button name="set_pending" string="Da Rinnovare" type="object" states="open" modifiers="{'invisible': [['state', 'not in', ['open']]]}"/>
-                    <button name="set_close" string="Chiudi Contratto" type="object" states="open,pending" modifiers="{'invisible': [['state', 'not in', ['open', 'pending']]]}"/>
-                    <button name="set_open" string="Imposta a 'In Corso'" type="object" states="pending,close,cancelled,draft" modifiers="{'invisible': [['state', 'not in', ['pending', 'close', 'cancelled', 'draft']]]}"/>
-                    <button name="set_cancel" string="Annulla Contratto" type="object" states="open,pending" modifiers="{'invisible': [['state', 'not in', ['open', 'pending']]]}"/>
-                    <field name="state" readonly="1" widget="statusbar" statusbar_visible="open,pending,close" statusbar_colors="{'pending':'red', 'template':'blue'}" modifiers="{'readonly': true, 'required': true}"/>
-	                -->
-            </field>
-        </record>
-
-        <record model="ir.ui.view" id="view_account_analytic_expence_form">
-            <field name="name">account.analytic.account.form</field>
-            <field name="model">account.analytic.account</field>
             <field name="inherit_id" ref="analytic.view_account_analytic_account_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//page[1]" position="after">

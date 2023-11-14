@@ -95,23 +95,6 @@ class AccountAnaliticAccount(orm.Model):
 
     _inherit = 'account.analytic.account'
 
-    # -------------------------------------------------------------------------
-    # Workflow new actions:
-    # -------------------------------------------------------------------------
-    def set_invoicing(self, cr, uid, ids, context=None):
-        """ Workflow invoicing
-        """
-        return self.write(cr, uid, ids, {
-            'state': 'invoicing',
-            }, context=context)
-
-    def set_done(self, cr, uid, ids, context=None):
-        """ Workflow done
-        """
-        return self.write(cr, uid, ids, {
-            'state': 'done',
-            }, context=context)
-
     def open_expences_list(self, cr, uid, ids, context=None):
         """ Return list of expences:
         """
@@ -133,22 +116,4 @@ class AccountAnaliticAccount(orm.Model):
         'account_note': fields.text('Annotazioni'),
         'expence_ids': fields.one2many(
             'account.analytic.expence', 'account_id', 'Expence'),
-
-        # Override state:
-        'state': fields.selection([
-            ('template', 'Template'),
-            ('draft', 'Bozza'),  # Not used
-            ('open', 'In Corso'),  # First state
-            ('pending', 'Sospeso'),
-            ('close', 'Chiusa'),
-
-            ('invoicing', 'Da fatturare'),
-            ('done', 'Archiviata'),  # Last state
-
-            ('cancelled', 'Cancellata')
-        ], 'Stato', required=True, track_visibility='onchange', copy=False),
-    }
-
-    _defaults = {
-        'state': 'open',
     }

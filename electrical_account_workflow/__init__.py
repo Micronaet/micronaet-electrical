@@ -21,27 +21,4 @@
 #
 ###############################################################################
 
-{
-    'name': 'Account extra expences',
-    'version': '0.1',
-    'category': 'Account',
-    'description': '''  
-        Account extra expences      
-        ''',
-    'author': 'Micronaet S.r.l. - Nicola Riolini',
-    'website': 'http://www.micronaet.it',
-    'license': 'AGPL-3',
-    'depends': [
-        'base',
-        'analytic',
-        ],
-    'init_xml': [],
-    'demo': [],
-    'data': [
-        'security/ir.model.access.csv',
-        'account_view.xml',
-        ],
-    'active': False,
-    'installable': True,
-    'auto_install': False,
-    }
+from . import account
