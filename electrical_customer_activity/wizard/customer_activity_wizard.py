@@ -41,13 +41,13 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
-
 report_page_name = {
-    'private': '1',
-    'report': '4',
-    'detail': '3',
-    'summary': '2',
+    'private': 'Interna',
+    'report': 'Dettaglio',
+    'detail': 'Riassuntiva',
+    'summary': 'Cliente',
 }
+
 
 # Utility:
 def formatLang(date):
@@ -1080,6 +1080,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Commesse',
             'Materiali',
         ]
+        load_format = True  # For load only first loop
+
         for report_mode in report_mode_loop:
             # -----------------------------------------------------------------
             # Setup dictionary (reset every loop!):
@@ -1141,6 +1143,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             if report_mode == 'private':
                 ws_name = 'Ridotta'  # Only this page in private
                 ws_name_ref = get_ws_name(ws_name, report_mode, multi)
+
                 excel_pool.create_worksheet(ws_name_ref)
                 excel_pool.set_margins(ws_name_ref, 0.3, 0.3)
                 excel_pool.set_paper(ws_name_ref)  # Set A4
@@ -1316,11 +1319,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'Spese': {
                     'row': 0,
                     'header': [
-                        'Data', 'Comessa', 'Categoria', 'Descrizione',
+                        'Data', 'Commessa', 'Categoria', 'Descrizione',
                         'Costo ultimo', 'Scontato', 'Totale',
                         ],
                     'width': [
-                        12, 20, 20, 30, 10,
+                        12, 30, 20, 30, 10,
                         ],
                     'total': {},
                     'data': expence_db,
@@ -1418,26 +1421,27 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             #                 Excel setup format for list:
             # -----------------------------------------------------------------
-            load_format = True  # For load only first loop
             for ws_name in sheet_order:
                 ws_name_ref = get_ws_name(ws_name, report_mode, multi)
 
                 # Check if sheet must be created:
+                # Note: every report loop reset to original value!
                 if ws_name in mask and not mask[ws_name][0]:
                     continue
 
                 #  Sheet setup for this report (row, header, summary...)
+                # Note: every report loop reset to original value!
                 sheet = sheets[ws_name]
 
                 # if not sheet['data']:
                 #    continue # No sheet creation
 
                 # Create sheet:
-                excel_pool.create_worksheet(ws_name)
-                excel_pool.set_margins(ws_name)
-                excel_pool.set_paper(ws_name)  # Set A4
-                # excel_pool.set_print_scale(ws_name, 90)
-                excel_pool.fit_to_pages(ws_name, 1, 0)
+                excel_pool.create_worksheet(ws_name_ref)
+                excel_pool.set_margins(ws_name_ref)
+                excel_pool.set_paper(ws_name_ref)  # Set A4
+                # excel_pool.set_print_scale(ws_name_ref, 90)
+                excel_pool.fit_to_pages(ws_name_ref, 1, 0)
 
                 # Load formats:
                 if load_format:  # Only first loop!
@@ -1456,19 +1460,19 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     load_format = False  # once!
 
                 # Setup columns
-                excel_pool.column_width(ws_name, sheet['width'])
+                excel_pool.column_width(ws_name_ref, sheet['width'])
 
                 # Add title:
                 if ws_name in ('Materiali', 'Riepilogo'):
                     # Filter text:
-                    excel_pool.write_xls_line(ws_name, 0, [
+                    excel_pool.write_xls_line(ws_name_ref, 0, [
                         filter_text,
                         ], default_format=f_title)
                     sheet['row'] += 2
 
                 # Print header
                 excel_pool.write_xls_line(
-                    ws_name, sheet['row'], sheet['header'],
+                    ws_name_ref, sheet['row'], sheet['header'],
                     default_format=f_header
                     )
                 sheet['row'] += 1
@@ -1478,6 +1482,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             if mask['Consegne'][0]:
                 ws_name = 'Consegne'
+                ws_name_ref = get_ws_name(ws_name, report_mode, multi)
+
                 sheet = sheets[ws_name]
                 summary_data = summary[ws_name]['data']
 
@@ -1553,7 +1559,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                         ], mask['Consegne'][1])
 
                                     excel_pool.write_xls_line(
-                                        ws_name, sheet['row'], data,
+                                        ws_name_ref, sheet['row'], data,
                                         default_format=f_text_color
                                         )
                                     sheet['row'] += 1
@@ -1598,7 +1604,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     ], mask['Consegne'][1])
 
                                 excel_pool.write_xls_line(
-                                    ws_name, sheet['row'], data,
+                                    ws_name_ref, sheet['row'], data,
                                     default_format=f_text
                                     )
                                 sheet['row'] += 1
@@ -1629,7 +1635,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     # Total line at the end of the block:
                     # ---------------------------------------------------------
                     excel_pool.write_xls_line(
-                        ws_name,
+                        ws_name_ref,
                         sheet['row'],
                         self.data_mask_filter([
                             (summary[ws_name]['total_cost'], f_number),
@@ -1644,6 +1650,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             if mask['DDT'][0]:
                 ws_name = 'DDT'
+                ws_name_ref = get_ws_name(ws_name, report_mode, multi)
+
                 sheet = sheets[ws_name]
                 summary_data = summary[ws_name]['data']
 
@@ -1718,7 +1726,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                             ], mask['DDT'][1])
 
                                         excel_pool.write_xls_line(
-                                            ws_name, sheet['row'], data,
+                                            ws_name_ref, sheet['row'], data,
                                             default_format=f_text_color,
                                             )
                                         sheet['row'] += 1
@@ -1756,7 +1764,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                         ], mask['DDT'][1])
 
                                     excel_pool.write_xls_line(
-                                        ws_name, sheet['row'], data,
+                                        ws_name_ref, sheet['row'], data,
                                         default_format=f_text
                                         )
                                     sheet['row'] += 1
@@ -1778,7 +1786,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 ], mask['DDT'][1])
 
                             excel_pool.write_xls_line(
-                                ws_name, sheet['row'], data,
+                                ws_name_ref, sheet['row'], data,
                                 default_format=f_text
                                 )
                             sheet['row'] += 1
@@ -1809,7 +1817,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # Total line at the end of the block:
                 # -------------------------------------------------------------
                 excel_pool.write_xls_line(
-                    ws_name,
+                    ws_name_ref,
                     sheet['row'],
                     self.data_mask_filter([
                         (summary[ws_name]['total_cost'], f_number),
@@ -1823,6 +1831,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             if mask['Fatture'][0]:
                 ws_name = 'Fatture'
+                ws_name_ref = get_ws_name(ws_name, report_mode, multi)
+
                 sheet = sheets[ws_name]
                 summary_data = summary[ws_name]['data']
 
@@ -1857,7 +1867,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             ], mask['Fatture'][1])
 
                         excel_pool.write_xls_line(
-                            ws_name, sheet['row'], data,
+                            ws_name_ref, sheet['row'], data,
                             default_format=f_text,
                             )
                         sheet['row'] += 1
@@ -1891,7 +1901,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # Total line at the end of the block:
                 # -------------------------------------------------------------
                 excel_pool.write_xls_line(
-                    ws_name,
+                    ws_name_ref,
                     sheet['row'],
                     self.data_mask_filter([
                         (summary[ws_name]['total_cost'], f_number),
@@ -1905,6 +1915,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             if mask['Spese'][0]:
                 ws_name = 'Spese'
+                ws_name_ref = get_ws_name(ws_name, report_mode, multi)
+
                 sheet = sheets[ws_name]
                 summary_data = summary[ws_name]['data']
                 total = sheet['total']
@@ -1920,8 +1932,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             total[category.id] = 0.0
 
                         data = self.data_mask_filter([
-                            account.name or '',
                             formatLang(expence.date),
+                            account.name or '',
                             category.name or '',
                             expence.name or '',
                             (subtotal1, f_number),
@@ -1930,7 +1942,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             ], mask['Spese'][1])
 
                         excel_pool.write_xls_line(
-                            ws_name, sheet['row'], data,
+                            ws_name_ref, sheet['row'], data,
                             default_format=f_text,
                             )
                         sheet['row'] += 1
@@ -1965,7 +1977,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # Total line at the end of the block:
                 # -------------------------------------------------------------
                 excel_pool.write_xls_line(
-                    ws_name,
+                    ws_name_ref,
                     sheet['row'],
                     self.data_mask_filter([
                         (summary[ws_name]['total_cost'], f_number),
@@ -1980,6 +1992,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             if mask['Materiali'][0]:
                 ws_name = 'Materiali'
+                ws_name_ref = get_ws_name(ws_name, report_mode, multi)
+
                 sheet = sheets[ws_name]
                 material_rows = {}
 
@@ -2042,7 +2056,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     sub3 += record[6]
 
                     excel_pool.write_xls_line(
-                        ws_name, sheet['row'], data,
+                        ws_name_ref, sheet['row'], data,
                         default_format=f_text,
                         )
                     sheet['row'] += 1
@@ -2053,10 +2067,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     sub1, sub2, sub3,
                     ], mask['Materiali'][1])
                 excel_pool.write_xls_line(
-                    ws_name, sheet['row'], data,
+                    ws_name_ref, sheet['row'], data,
                     default_format=f_number,
                     )
-                excel_pool.merge_cell(ws_name, [
+                excel_pool.merge_cell(ws_name_ref, [
                     # todo parametrize on header:
                     sheet['row'], 0, sheet['row'], 4,
                     ])
@@ -2069,7 +2083,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     # Print header
                     sheet['row'] += 2
                     excel_pool.write_xls_line(
-                        ws_name, sheet['row'], [
+                        ws_name_ref, sheet['row'], [
                             'Descrizione', 'Costo', 'H.',
                             ], default_format=f_header)
 
@@ -2099,7 +2113,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         # Total line at the end of the block:
                         # -----------------------------------------------------
                         excel_pool.write_xls_line(
-                            ws_name, sheet['row'], [
+                            ws_name_ref, sheet['row'], [
                                 'Interventi del periodo',
                                 (sub_amount, f_number),
                                 (sub_h, f_number),
@@ -2114,7 +2128,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     sheet['row'] += 2
 
                     excel_pool.write_xls_line(
-                        ws_name, sheet['row'], [
+                        ws_name_ref, sheet['row'], [
                             'Descrizione', 'Costo',
                             # 'Costo esposto',
                             ], default_format=f_header)
@@ -2126,7 +2140,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                     # Total:
                     excel_pool.write_xls_line(
-                        ws_name, sheet['row'], [
+                        ws_name_ref, sheet['row'], [
                             'Spese extra',
                             (subtotal1, f_number),
                             ], default_format=f_text,
@@ -2135,7 +2149,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # Total cost:
                 sheet['row'] += 2
                 excel_pool.write_xls_line(
-                    ws_name, sheet['row'], [
+                    ws_name_ref, sheet['row'], [
                         'Tot. costi materiali, interventi e spese extra: '
                         'EUR %s' % sum(
                             (sub1, subtotal1, sub_amount)),
@@ -2146,6 +2160,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             if mask['Interventi'][0]:  # Show / Hide page:
                 ws_name = 'Interventi'
+                ws_name_ref = get_ws_name(ws_name, report_mode, multi)
+
                 sheet = sheets[ws_name]
                 summary_data = summary[ws_name]['data']
 
@@ -2181,7 +2197,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         if user_mode_id in partner_forced:  # partner forced
                             unit_revenue = partner_forced[user_mode_id]
                         else: # read for default list:
-                            unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
+                            unit_revenue = mode_pricelist.get(
+                                user_mode_id, 0.0)
 
                         if account and account not in account_used:
                             account_used.append(account)
@@ -2240,7 +2257,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             ], mask['Interventi'][1])
 
                         excel_pool.write_xls_line(
-                            ws_name, sheet['row'], data,
+                            ws_name_ref, sheet['row'], data,
                             default_format=f_text_color
                             )
                         sheet['row'] += 1
@@ -2273,7 +2290,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     # Total line at the end of the block:
                     # ---------------------------------------------------------
                     excel_pool.write_xls_line(
-                        ws_name,
+                        ws_name_ref,
                         sheet['row'],
                         self.data_mask_filter([
                             (summary[ws_name]['total_cost'], f_number),
@@ -2287,6 +2304,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             if mask['Commesse'][0]:
                 ws_name = 'Commesse'
+                ws_name_ref = get_ws_name(ws_name, report_mode, multi)
+
                 sheet = sheets[ws_name]
                 summary_data = summary[ws_name]['data']
 
@@ -2306,7 +2325,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             ], mask['Commesse'][1])
 
                         excel_pool.write_xls_line(
-                            ws_name, sheet['row'], data,
+                            ws_name_ref, sheet['row'], data,
                             default_format=f_text
                             )
                         sheet['row'] += 1
@@ -2314,14 +2333,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # Block account used:
                 sheet['row'] += 2
                 excel_pool.write_xls_line(
-                    ws_name, sheet['row'],
+                    ws_name_ref, sheet['row'],
                     [u'Commesse toccate nel periodo:', ],
                     default_format=f_title
                     )
 
                 sheet['row'] += 1
                 excel_pool.write_xls_line(
-                    ws_name, sheet['row'], sheet['header'],
+                    ws_name_ref, sheet['row'], sheet['header'],
                     default_format=f_header
                     )
 
@@ -2341,16 +2360,18 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         ], mask['Commesse'][1])
 
                     excel_pool.write_xls_line(
-                        ws_name, sheet['row'], data,
+                        ws_name_ref, sheet['row'], data,
                         default_format=f_text
                         )
                     sheet['row'] += 1
 
             # -----------------------------------------------------------------
-            # SUMMARY:
+            #                           SUMMARY:
             # -----------------------------------------------------------------
             if mask['Riepilogo'][0]:
                 ws_name = 'Riepilogo'
+                ws_name_ref = get_ws_name(ws_name, report_mode, multi)
+
                 sheet = sheets[ws_name]
 
                 for block in sheet_order[1:-2]:  # Jump todo commesse?!?
@@ -2365,13 +2386,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         continue
 
                     excel_pool.write_xls_line(
-                        ws_name, sheet['row'], ['Blocco: %s' % block],
+                        ws_name_ref, sheet['row'], ['Blocco: %s' % block],
                         default_format=f_title
                         )
                     sheet['row'] += 1
 
                     excel_pool.write_xls_line(
-                        ws_name,
+                        ws_name_ref,
                         sheet['row'],
                         self.data_mask_filter(
                             block_record['header'], mask[block][4]),
@@ -2383,7 +2404,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         if report_mode != 'summary':
                             for record in block_record['data'][key]:
                                 excel_pool.write_xls_line(
-                                    ws_name,
+                                    ws_name_ref,
                                     sheet['row'],
                                     self.data_mask_filter(
                                         record, mask[block][4]),
@@ -2407,7 +2428,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             ], mask[block][5])
 
                     excel_pool.write_xls_line(
-                        ws_name, sheet['row'], data, default_format=f_text,
+                        ws_name_ref, sheet['row'], data, default_format=f_text,
                         col=mask[block][6])
 
                     sheet['row'] += 1
@@ -2418,7 +2439,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # Header:
                 sheet['row'] += 1
                 excel_pool.write_xls_line(
-                    ws_name, sheet['row'], self.data_mask_filter([
+                    ws_name_ref, sheet['row'], self.data_mask_filter([
                         'Blocco',
                         'Costo',
                         'Scontato',
@@ -2443,7 +2464,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                     sheet['row'] += 1
                     excel_pool.write_xls_line(
-                        ws_name, sheet['row'],
+                        ws_name_ref, sheet['row'],
                         self.data_mask_filter([
                             block,
                             (total_cost, f_number),
@@ -2461,7 +2482,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # Final total of the table:
                 sheet['row'] += 1
                 excel_pool.write_xls_line(
-                    ws_name, sheet['row'], self.data_mask_filter([
+                    ws_name_ref, sheet['row'], self.data_mask_filter([
                         ('Totale:', f_title),
                         (total.get('total_cost', 0.0), f_number),
                         (total.get('total_discount', 0.0), f_number),
@@ -2474,8 +2495,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # Custom setup (not as previous)
             if report_mode == 'private':
                 ws_name = 'Ridotta'
-                row = 0
+                ws_name_ref = get_ws_name(ws_name, report_mode, multi)
 
+                row = 0
                 partner = wiz_browse.partner_id  # For information
                 company = partner.company_id
 
@@ -2487,16 +2509,17 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 f_text_red = excel_pool.get_format('bg_red')
 
                 # Setup columns
-                excel_pool.column_width(ws_name, [14, 30, 5, 14, 12, 12])
+                excel_pool.column_width(
+                    ws_name_ref, [14, 30, 5, 14, 12, 12])
 
                 # -------------------------------------------------------------
                 # Insert Logo:
                 logo_field = company.logo or company.partner_id.image
                 data_image = excel_pool.clean_odoo_binary(logo_field)
 
-                excel_pool.row_height(ws_name, (row, ), height=65)
+                excel_pool.row_height(ws_name_ref, (row, ), height=65)
                 excel_pool.write_image(
-                    ws_name, row, 0,
+                    ws_name_ref, row, 0,
                     x_offset=0, y_offset=0,
                     x_scale=0.25, y_scale=0.25,
                     positioning=2,
@@ -2505,7 +2528,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     tip='Logo',
                     # url=False,
                 )
-                excel_pool.write_xls_line(ws_name, row, [
+                excel_pool.write_xls_line(ws_name_ref, row, [
                     '',
                     '%s\nIndirizzo: %s %s %s\nE-mail: %s\nTelefono: %s' % (
                         company.name,
@@ -2519,12 +2542,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                 row += 2
                 # Partner information:
-                excel_pool.write_xls_line(ws_name, row, [
+                excel_pool.write_xls_line(ws_name_ref, row, [
                     ('Cliente', f_title),
                     u'%s' % partner.name,
                     ], default_format=f_title)
                 row += 1
-                excel_pool.write_xls_line(ws_name, row, [
+                excel_pool.write_xls_line(ws_name_ref, row, [
                     ('Indirizzo', f_title),
                     'Via %s - %s %s' % (
                         partner.street or '',
@@ -2535,8 +2558,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                 row += 2
                 # Filter text (merge cell):
-                excel_pool.merge_cell(ws_name, [row, 0, row, 5])
-                excel_pool.write_xls_line(ws_name, row, [
+                excel_pool.merge_cell(ws_name_ref, [row, 0, row, 5])
+                excel_pool.write_xls_line(ws_name_ref, row, [
                     filter_text,
                     ], default_format=f_title)
 
@@ -2549,13 +2572,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     # Print header
                     row += 2
                     excel_pool.write_xls_line(
-                        ws_name, row, [
+                        ws_name_ref, row, [
                             'MATERIALI', '', '', '', '', '',
                             ], default_format=f_header)
 
                     row += 1
                     excel_pool.write_xls_line(
-                        ws_name, row, [
+                        ws_name_ref, row, [
                             'Codice', 'Descrizione', 'UM', 'Q.',
                             'Prezzo unitario', 'Totale',
                             ], default_format=f_header)
@@ -2598,7 +2621,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                         ]
                                     row += 1
                                     excel_pool.write_xls_line(
-                                        ws_name, row, data,
+                                        ws_name_ref, row, data,
                                         default_format=f_text_color
                                         )
                                     # -----------------------------------------
@@ -2611,7 +2634,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     # ---------------------------------------------------------
                     row += 1
                     excel_pool.write_xls_line(
-                        ws_name, row, [(total, f_number)],
+                        ws_name_ref, row, [(total, f_number)],
                         default_format=f_text, col=5)
 
                     # Discount if present:
@@ -2620,7 +2643,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         discount = total * (
                             100.0 - activity_material_discount) / 100.0
                         excel_pool.write_xls_line(
-                            ws_name, row, [
+                            ws_name_ref, row, [
                                 '- %s%% Sconto' % activity_material_discount,
                                 (discount, f_number),
                                 ], default_format=f_text,
@@ -2636,13 +2659,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     # Print header
                     row += 2
                     excel_pool.write_xls_line(
-                        ws_name, row, [
+                        ws_name_ref, row, [
                             'MATERIALI DDT', '', '', '', '', '',
                             ], default_format=f_header)
 
                     row += 1
                     excel_pool.write_xls_line(
-                        ws_name, row, [
+                        ws_name_ref, row, [
                             'Codice', 'Descrizione', 'UM', 'Q.',
                             'Prezzo unitario', 'Totale',
                             ], default_format=f_header)
@@ -2690,7 +2713,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                                         row += 1
                                         excel_pool.write_xls_line(
-                                            ws_name, row, data,
+                                            ws_name_ref, row, data,
                                             default_format=f_text_color,
                                             )
 
@@ -2704,7 +2727,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     # ---------------------------------------------------------
                     row += 1
                     excel_pool.write_xls_line(
-                        ws_name, row, [(total, f_number)],
+                        ws_name_ref, row, [(total, f_number)],
                         default_format=f_text, col=5)
 
                     # Discount if present:
@@ -2713,7 +2736,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         discount = total * (
                             100.0 - activity_material_discount) / 100.0
                         excel_pool.write_xls_line(
-                            ws_name, row, [
+                            ws_name_ref, row, [
                                 '- %s%% Sconto' % activity_material_discount,
                                 (discount, f_number),
                                 ], default_format=f_text,
@@ -2732,13 +2755,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     # Print header
                     row += 2
                     excel_pool.write_xls_line(
-                        ws_name, row, [
+                        ws_name_ref, row, [
                             'MANODOPERA', '', '', '', '',
                             ], default_format=f_header)
 
                     row += 1
                     excel_pool.write_xls_line(
-                        ws_name, row, [
+                        ws_name_ref, row, [
                             # 'Codice', 'Descrizione', 'UM', 'Q.',
                             # 'Prezzo unitario', 'Totale',
                             'Data', 'Intervento', 'H.', 'Utente',
@@ -2793,7 +2816,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                             row += 1
                             excel_pool.write_xls_line(
-                                ws_name, row, data,
+                                ws_name_ref, row, data,
                                 default_format=f_text_color
                                 )
                             total += this_revenue
@@ -2803,7 +2826,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     # ---------------------------------------------------------
                     row += 1
                     excel_pool.write_xls_line(
-                        ws_name, row, [
+                        ws_name_ref, row, [
                             (total, f_number),
                             ],
                         default_format=f_text, col=4)
@@ -2817,7 +2840,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # Print header
                 row += 2
                 excel_pool.write_xls_line(
-                    ws_name, row, [
+                    ws_name_ref, row, [
                         'Blocco', 'Totale',
                         ], default_format=f_header)
 
@@ -2825,13 +2848,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     row += 1
                     total += subtotal
                     excel_pool.write_xls_line(
-                        ws_name, row, [
+                        ws_name_ref, row, [
                             block,
                             (subtotal, f_number),
                             ], default_format=f_text)
                 row += 1
                 excel_pool.write_xls_line(
-                    ws_name, row, [
+                    ws_name_ref, row, [
                         total,
                         ], default_format=f_number, col=1)
 
