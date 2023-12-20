@@ -41,6 +41,14 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
+
+report_page_name = {
+    'private': '1',
+    'report': '4',
+    'detail': '3',
+    'summary': '2',
+}
+
 # Utility:
 def formatLang(date):
     """ format date
@@ -736,6 +744,18 @@ class ResPartnerActivityWizard(orm.TransientModel):
     def action_print(self, cr, uid, ids, context=None):
         """ Event for button done
         """
+        def get_ws_name(ws_name, report_mode, multi):
+            """ return ws_name for multi
+            """
+            if not multi:
+                return ws_name
+
+            # todo move away:
+            return '%s-%s' % (
+                report_page_name.get(report_mode, '0'),
+                ws_name,
+            )
+
         if context is None:
             context = {}
 
@@ -815,8 +835,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # Report complete (only for 4 report here!):
         if report_mode == 'complete':
             report_mode_loop = ['report', 'detail', 'summary', 'private']
+            multi = True
         else:
             report_mode_loop = [report_mode]
+            multi = False
 
         # =====================================================================
         #                            Startup:
@@ -1117,11 +1139,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             # Create first page only for private mode:
             if report_mode == 'private':
-                ws_name = 'Ridotta'
-                excel_pool.create_worksheet(ws_name)
-                excel_pool.set_margins(ws_name, 0.3, 0.3)
-                excel_pool.set_paper(ws_name)  # Set A4
-                excel_pool.fit_to_pages(ws_name, 1, 0)
+                ws_name = 'Ridotta'  # Only this page in private
+                ws_name_ref = get_ws_name(ws_name, report_mode, multi)
+                excel_pool.create_worksheet(ws_name_ref)
+                excel_pool.set_margins(ws_name_ref, 0.3, 0.3)
+                excel_pool.set_paper(ws_name_ref)  # Set A4
+                excel_pool.fit_to_pages(ws_name_ref, 1, 0)
                 excel_pool.set_format(
                     title_font='Arial', header_font='Arial', text_font='Arial')
 
@@ -1397,10 +1420,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # -----------------------------------------------------------------
             load_format = True  # For load only first loop
             for ws_name in sheet_order:
+                ws_name_ref = get_ws_name(ws_name, report_mode, multi)
+
                 # Check if sheet must be created:
                 if ws_name in mask and not mask[ws_name][0]:
                     continue
 
+                #  Sheet setup for this report (row, header, summary...)
                 sheet = sheets[ws_name]
 
                 # if not sheet['data']:
