@@ -27,14 +27,11 @@ import pdb
 import sys
 import logging
 import openerp
-import openerp.addons.decimal_precision as dp
 from openerp.osv import fields, osv, expression, orm
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
-from openerp import SUPERUSER_ID
-from openerp import tools
 from openerp.tools.translate import _
-from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
+from openerp.tools import (
+    DEFAULT_SERVER_DATE_FORMAT,
     DEFAULT_SERVER_DATETIME_FORMAT,
     DATETIME_FORMATS_MAP,
     float_compare)
@@ -54,7 +51,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
         # from_date = wiz_browse.from_date
         # to_date = wiz_browse.to_date
         mode = wiz_browse.mode
-        filter = wiz_browse.filter
+        filter_mode = wiz_browse.filter
 
         # ---------------------------------------------------------------------
         # Pool used:
@@ -71,9 +68,9 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             # ('min_date', '>=', '%s 00:00:00' % from_date),
             # ('min_date', '<=', '%s 23:59:59' % to_date),
             ]
-        if filter == 'positive':
+        if filter_mode == 'positive':
             domain.append(('qty_available', '>', 0))
-        elif filter == 'negative':
+        elif filter_mode == 'negative':
             domain.append(('qty_available', '<', 0))
         else:
             domain.append(('qty_available', '=', 0))
@@ -145,6 +142,6 @@ class ProductProductStockStatusWizard(orm.TransientModel):
 
     _defaults = {
         'mode': lambda *x: 'stock',
-        'positive': lambda *x: 'positive',
+        'filter': lambda *x: 'positive',
         'float_time': lambda *x: True,
         }
