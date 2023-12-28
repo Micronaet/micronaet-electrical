@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+       <!-- product.product.stock.status.wizard -->
+       <record id="product_product_stock_status_wizard_view" model="ir.ui.view">
+            <field name="name">Stock status</field>
+            <field name="model">product.product.stock.status.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Stats report" version="7.0">
+                   <header>
+                       <button name="action_print" string="Estrai report" type="object" icon="gtk-print" class="oe_highlight" />
+                       <button string="Cancel" class="oe_link" special="cancel" />
+                   </header>
+                   <group colspan="4" col="4">
+                        <separator string="Setup:" colspan="4"/>
+                        <field name="mode" />
+                       <newline/>
+                        <field name="filter" />
+                        <field name="float_time" />
+
+                        <!--<separator string="Period:" colspan="4"/>
+                        <field name="from_date" />
+                        <field name="to_date" />-->
+                   </group>
+                </form>
+            </field>
+      </record>
+      <record model="ir.actions.act_window" id="action_product_product_stock_status_wizard_view">
+          <field name="name">Stato magazzino prodotti</field>
+          <field name="res_model">product.product.stock.status.wizard</field>
+          <field name="view_type">form</field>
+          <field name="view_mode">form</field>
+          <field name="target">new</field>
+          <field name="view_id" ref="product_product_stock_status_wizard_view"/>
+      </record>
+
+      <!--Sales:-->
+      <menuitem
+           parent="product.menu_products"
+           id="menu_product_product_stock_status_wizard"
+           action="action_product_product_stock_status_wizard_view"
+           sequence="10"
+           />
+
+      <!--Stock:-->
+      <menuitem
+           parent="stock.menu_product_variant_config_stock"
+           id="menu_stock_product_stock_status_wizard"
+           action="action_product_product_stock_status_wizard_view"
+           sequence="10"
+           />
+    </data>
+</openerp>
+

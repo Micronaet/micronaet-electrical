@@ -21,31 +21,4 @@
 #
 ###############################################################################
 
-{
-    'name': 'Stock level management',
-    'version': '0.1',
-    'category': 'Stock',
-    'description': '''
-        Stock level management        
-        Report stock status
-        ''',
-    'author': 'Micronaet S.r.l. - Nicola Riolini',
-    'website': 'http://www.micronaet.it',
-    'license': 'AGPL-3',
-    'depends': [
-        'base',
-        'stock',
-        'product',
-        ],
-    'init_xml': [],
-    'demo': [],
-    'data': [
-        # 'security/ir.model.access.csv',
-        'product_view.xml',
-
-        'wizard/stock_status_wizard_view.xml',
-        ],
-    'active': False,
-    'installable': True,
-    'auto_install': False,
-    }
+from . import stock_status_wizard
