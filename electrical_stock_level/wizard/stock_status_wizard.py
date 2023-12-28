@@ -171,8 +171,8 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             12, 12,
             13, 13,
         ]
-
         excel_pool.create_worksheet(ws_name)
+        excel_pool.freeze_panes(ws_name, row, 2)
 
         # Load formats:
         excel_format = {
@@ -228,8 +228,11 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             else:
                 medium_price = 0.0
 
-            stock_value = qty_available * stock_qty
-            stock_value_medium = qty_available * medium_price
+            if qty_available > 0:
+                stock_value = qty_available * last_price
+                stock_value_medium = qty_available * medium_price
+            else:  # If not q. no total
+                stock_value = stock_value_medium = 0.0
 
             data = [
                 product.default_code,
