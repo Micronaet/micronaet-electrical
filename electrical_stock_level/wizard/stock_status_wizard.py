@@ -44,7 +44,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
     """
     _name = 'product.product.stock.status.wizard'
 
-    def print_report(self, cr, uid, ids, context=None):
+    def action_print(self, cr, uid, ids, context=None):
         """ Print report event
         """
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
@@ -137,6 +137,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
         # 'from_date': fields.date('From date >= ', required=True),
         # 'to_date': fields.date('To date <=', required=True),
         'filter': fields.selection([
+            ('all', 'Tutti'),
             ('positive', 'Con magazzino'),
             ('zero', 'Senza esistenza'),
             ('negative', 'Negativi'),
