@@ -93,9 +93,23 @@ class ProductProductStockStatusWizard(orm.TransientModel):
         ws_name = 'Stato magazzino'
         row = 0
         header = [
-            'Codice', 'Prorodotto', 'Stato',
+            'Codice', 'Nome',
+
+            'Produttore', 'Marchio', 'Ultima var.',
+            'Q. x pack', 'Stato',
+            # 'Electrocod',
+            'Categoria',
+
+            'UM', 'Stato',
             ]
-        width = [10, 40, 10]
+        width = [
+            10, 40,
+            15, 15, 12,
+            5, 10,
+            # 10,
+            15,
+            5, 10,
+        ]
 
         excel_pool.create_worksheet(ws_name)
 
@@ -117,6 +131,16 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             data = [
                 product.default_code,
                 product.name,
+
+                product.metel_producer_id.name or '',
+                product.metel_brand_id.name or '',
+                product.metel_last_variation or '',
+                product.metel_q_x_pack or '',
+                product.metel_state or '',
+                # product.metel_electrocod or '',
+                product.categ_id.name or '',
+
+                product.uom_id.name,
                 (product.qty_available, f_number),
                 ]
 
