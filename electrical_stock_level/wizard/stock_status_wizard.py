@@ -81,7 +81,8 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             ('active', '=', True),
             ('usage', '!=', 'view'),
         ], context=context)
-        for location in location_pool.browse(location_ids):
+        for location in location_pool.browse(
+                cr, uid, location_ids, context=context):
             location_used[location.name.lower()] = location.id
 
         # ---------------------------------------------------------------------
@@ -98,7 +99,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             move_proxy = move_pool.browse(cr, uid, move_ids, context=context)
             for move in move_proxy:
                 product_id = move.product_id.id
-                if not moved_qty:
+                if product_id not in moved_qty:
                     moved_qty[product_id] = 0.0
 
                 if move.location_dest_id.id == location_used['stock']:  # IN
@@ -106,7 +107,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
                 else:  # OUT
                     moved_qty[product_id] -= move.product_qty
 
-            domain.append(('id', 'in', moved_qty))
+            domain.append(('id', 'in', moved_qty.keys()))
 
             # product_uom_qty (product_qty), product_id, price_unit
             # date (date_expected)
@@ -196,9 +197,9 @@ class ProductProductStockStatusWizard(orm.TransientModel):
 
         for product in product_proxy:
             product_id = product.id
-            available_qty = product.qty_available
+            qty_available = product.qty_available
 
-            if available_qty < 0.0:
+            if qty_available < 0.0:
                 color_format = excel_format['red']
             else:
                 color_format = excel_format['white']
