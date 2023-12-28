@@ -100,7 +100,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             for move in move_proxy:
                 product_id = move.product_id.id
                 date = str(move.date)[:10]  # Only date
-                price = move.price_list
+                price = move.price_unit
 
                 if product_id not in moved_qty:
                     # Q., last price, last date
@@ -118,10 +118,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
 
             domain.append(('id', 'in', moved_qty.keys()))
 
-            # product_uom_qty (product_qty), product_id, price_unit
-            # date (date_expected)
-            # location_id, location_dest_id
-            # state = done
+            # date_expected
             # (warehouse_id, inventory_id, invoice_state)
 
         if start_code:
