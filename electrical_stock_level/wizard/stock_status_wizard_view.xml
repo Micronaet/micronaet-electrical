@@ -14,10 +14,13 @@
                    <group colspan="4" col="4">
                         <separator string="Setup:" colspan="4"/>
                         <field name="mode" />
-                        <field name="start_code" />
-
                         <field name="filter" />
                         <field name="float_time" />
+
+                        <separator string="Filtri:" colspan="4"/>
+                        <field name="start_code" />
+                        <field name="moved_date" />
+
 
                         <!--<separator string="Period:" colspan="4"/>
                         <field name="from_date" />

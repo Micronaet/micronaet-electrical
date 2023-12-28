@@ -63,6 +63,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
         mode = wiz_browse.mode
         filter_mode = wiz_browse.filter
         start_code = wiz_browse.start_code
+        moved_date = wiz_browse.moved_date
         # from_date = wiz_browse.from_date
         # to_date = wiz_browse.to_date
 
@@ -81,6 +82,14 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             # ('min_date', '>=', '%s 00:00:00' % from_date),
             # ('min_date', '<=', '%s 23:59:59' % to_date),
             ]
+
+        if moved_date:
+            move_ids = move_pool.search(cr, uid, [
+                ('date', '>=', '%s 00:00:00' % moved_date),
+            ], context=context)
+            move_proxy = move_pool.browse(cr, uid, move_ids, context=context)
+            product_ids = set([m.product_id.id for m in move_proxy])
+            domain.append(('id', 'in', tuple(product_ids)))
 
         if start_code:
             domain.append(('default_code', '=ilike', '%s%%' % start_code))
@@ -170,6 +179,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             ], 'Modalità', required=True),
 
         'start_code': fields.char('Inizio codice', size=20),
+        'moved_date': fields.date('Movimentato da'),
         # 'from_date': fields.date('From date >= ', required=True),
         # 'to_date': fields.date('To date <=', required=True),
         'filter': fields.selection([
@@ -186,6 +196,6 @@ class ProductProductStockStatusWizard(orm.TransientModel):
 
     _defaults = {
         'mode': lambda *x: 'stock',
-        'filter': lambda *x: 'positive',
+        'filter': lambda *x: 'all',
         'float_time': lambda *x: True,
         }
