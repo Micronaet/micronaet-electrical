@@ -107,7 +107,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             'Codice', 'Nome',
 
             'Produttore', 'Marchio', 'Ultima var.',
-            'Q. x pack', 'Stato',
+            'Q.x pack', 'Stato',
             # 'Electrocod',
             'Categoria',
 
@@ -116,7 +116,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
         width = [
             10, 40,
             15, 15, 12,
-            5, 10,
+            6, 15,
             # 10,
             15,
             5, 10,
