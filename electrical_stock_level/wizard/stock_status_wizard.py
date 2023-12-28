@@ -64,32 +64,55 @@ class ProductProductStockStatusWizard(orm.TransientModel):
         filter_mode = wiz_browse.filter
         start_code = wiz_browse.start_code
         moved_date = wiz_browse.moved_date
-        # from_date = wiz_browse.from_date
-        # to_date = wiz_browse.to_date
 
         # ---------------------------------------------------------------------
         # Pool used:
         # ---------------------------------------------------------------------
         excel_pool = self.pool.get('excel.writer')
-
         move_pool = self.pool.get('stock.move')
+        location_pool = self.pool.get('stock.location')
         product_pool = self.pool.get('product.product')
 
         # ---------------------------------------------------------------------
-        # A. Picking partner:
+        # Load stock location:
         # ---------------------------------------------------------------------
-        domain = [
-            # ('min_date', '>=', '%s 00:00:00' % from_date),
-            # ('min_date', '<=', '%s 23:59:59' % to_date),
-            ]
+        location_used = {}
+        location_ids = location_pool.search(cr, uid, [
+            ('active', '=', True),
+            ('usage', '!=', 'view'),
+        ], context=context)
+        for location in location_pool.browse(location_ids):
+            location_used[location.name.lower()] = location.id
 
+        # ---------------------------------------------------------------------
+        # Product filter:
+        # ---------------------------------------------------------------------
+        domain = []
+
+        moved_qty = {}
         if moved_date:
             move_ids = move_pool.search(cr, uid, [
                 ('date', '>=', '%s 00:00:00' % moved_date),
+                ('state', '=', 'done'),
             ], context=context)
             move_proxy = move_pool.browse(cr, uid, move_ids, context=context)
-            product_ids = set([m.product_id.id for m in move_proxy])
-            domain.append(('id', 'in', tuple(product_ids)))
+            for move in move_proxy:
+                product_id = move.product_id.id
+                if not moved_qty:
+                    moved_qty[product_id] = 0.0
+
+                if move.location_dest_id.id == location_used['stock']:  # IN
+                    moved_qty[product_id] += move.product_qty
+                else:  # OUT
+                    moved_qty[product_id] -= move.product_qty
+
+            domain.append(('id', 'in', moved_qty))
+
+            # product_uom_qty (product_qty), product_id, price_unit
+            # date (date_expected)
+            # location_id, location_dest_id
+            # state = done
+            # (warehouse_id, inventory_id, invoice_state)
 
         if start_code:
             domain.append(('default_code', '=ilike', '%s%%' % start_code))
@@ -120,7 +143,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             # 'Electrocod',
             'Categoria',
 
-            'UM', 'Magazzino',
+            'UM', 'Da movim.', 'Magazzino',
             ]
         width = [
             10, 40,
@@ -128,26 +151,57 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             6, 15,
             # 10,
             15,
-            5, 10,
+            5, 10, 10,
         ]
 
         excel_pool.create_worksheet(ws_name)
 
         # Load formats:
-        f_title = excel_pool.get_format('title')
-        f_header = excel_pool.get_format('header')
-        f_text = excel_pool.get_format('text')
-        f_number = excel_pool.get_format('number')
+        excel_format = {
+            'title': excel_pool.get_format('title'),
+            'header': excel_pool.get_format('header'),
+            'white': {
+                'text': excel_pool.get_format('text'),
+                'number': excel_pool.get_format('number'),
+                },
+            'red': {
+                'text': excel_pool.get_format('bg_red'),
+                'number': excel_pool.get_format('bg_red_number'),
+                },
+            'green': {
+                'text': excel_pool.get_format('bg_green'),
+                'number': excel_pool.get_format('bg_green_number'),
+                },
+            'grey': {
+                'text': excel_pool.get_format('bg_grey'),
+                'number': excel_pool.get_format('bg_grey_number'),
+                },
+            'blue': {
+                'text': excel_pool.get_format('bg_blue'),
+                'number': excel_pool.get_format('bg_blue_number'),
+                },
+            'yellow': {
+                'text': excel_pool.get_format('bg_yellow'),
+                'number': excel_pool.get_format('bg_yellow_number'),
+                },
+        }
 
         # Setup columns
         excel_pool.column_width(ws_name, width)
 
         # Print header
         excel_pool.write_xls_line(
-            ws_name, row, header, default_format=f_header)
+            ws_name, row, header, default_format=excel_format['header'])
         row += 1
 
         for product in product_proxy:
+            product_id = product.id
+            available_qty = product.qty_available
+
+            if available_qty < 0.0:
+                color_format = excel_format['red']
+            else:
+                color_format = excel_format['white']
             data = [
                 product.default_code,
                 product.name,
@@ -161,12 +215,13 @@ class ProductProductStockStatusWizard(orm.TransientModel):
                 product.categ_id.name or '',
 
                 product.uom_id.name,
-                (product.qty_available, f_number),
+                (moved_qty.get(product_id), color_format['number']),
+                (qty_available, color_format['number']),
                 ]
 
             excel_pool.write_xls_line(
                 ws_name, row, data,
-                default_format=f_text
+                default_format=color_format['text']
                 )
             row += 1
 
