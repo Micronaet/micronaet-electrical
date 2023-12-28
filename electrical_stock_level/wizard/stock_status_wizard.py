@@ -151,7 +151,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             'Produttore', 'Marchio', 'Ultima var.',
             'Q.x pack', 'Stato',
             # 'Electrocod',
-            'Categoria',
+            # 'Categoria',
 
             'UM', 'Da movim.', 'Magazzino',
             'Ultimo prezzo', 'Prezzo medio',
@@ -160,8 +160,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             12, 40,
             15, 15, 12,
             6, 15,
-            # 10,
-            15,
+            # 10, 15,
             5, 10, 10,
             12, 12,
         ]
@@ -227,7 +226,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
                 product.metel_q_x_pack or '',
                 metel_state.get(product.metel_state, ''),
                 # product.metel_electrocod or '',
-                product.categ_id.name or '',
+                # product.categ_id.name or '',
 
                 product.uom_id.name,
                 (stock_qty, color_format['number']),
