@@ -47,6 +47,17 @@ class ProductProductStockStatusWizard(orm.TransientModel):
     def action_print(self, cr, uid, ids, context=None):
         """ Print report event
         """
+        metel_state = {
+            '1': 'Nuovo prodotto',
+            '2': 'Finito o cancellato',
+            '3': 'Gestito a magazzino',
+            '4': 'Nuovo servizio',
+            '5': 'Servizio cancellato',
+            '6': 'Prodotto su ordinato',
+            '7': 'Prodotto su ordinato (da cancellare)',
+            '8': 'Servizio (no materiale)',
+            '9': 'Cancellato',
+        }
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
 
         mode = wiz_browse.mode
@@ -100,7 +111,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             # 'Electrocod',
             'Categoria',
 
-            'UM', 'Stato',
+            'UM', 'Magazzino',
             ]
         width = [
             10, 40,
@@ -136,7 +147,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
                 product.metel_brand_id.name or '',
                 product.metel_last_variation or '',
                 product.metel_q_x_pack or '',
-                product.metel_state or '',
+                metel_state.get(product.metel_state, ''),
                 # product.metel_electrocod or '',
                 product.categ_id.name or '',
 
