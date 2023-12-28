@@ -150,8 +150,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
 
             'Produttore', 'Marchio', 'Ultima var.',
             'Q.x pack', 'Stato',
-            # 'Electrocod',
-            # 'Categoria',
+            # 'Electrocod', 'Categoria',
 
             'UM', 'Da movim.', 'Magazzino',
             'Ultimo prezzo', 'Prezzo medio',
