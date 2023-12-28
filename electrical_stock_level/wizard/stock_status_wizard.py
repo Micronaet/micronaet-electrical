@@ -115,12 +115,15 @@ class ProductProductStockStatusWizard(orm.TransientModel):
 
                 if move.location_dest_id.id == location_used['stock']:  # IN
                     moved_qty[product_id][0] += quantity
+
                     # Manage last price:
                     if date > moved_qty[product_id][2] and price:
                         moved_qty[product_id][1] = price
                         moved_qty[product_id][2] = date
-                        moved_qty[product_id][3] = quantity
-                        moved_qty[product_id][4] = quantity * price
+
+                    # Total data:
+                    moved_qty[product_id][3] += quantity
+                    moved_qty[product_id][4] += quantity * price
 
                 else:  # OUT
                     moved_qty[product_id][0] -= move.product_qty
