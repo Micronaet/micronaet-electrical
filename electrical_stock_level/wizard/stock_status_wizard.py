@@ -48,10 +48,12 @@ class ProductProductStockStatusWizard(orm.TransientModel):
         """ Print report event
         """
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
-        # from_date = wiz_browse.from_date
-        # to_date = wiz_browse.to_date
+
         mode = wiz_browse.mode
         filter_mode = wiz_browse.filter
+        start_code = wiz_browse.start_code
+        # from_date = wiz_browse.from_date
+        # to_date = wiz_browse.to_date
 
         # ---------------------------------------------------------------------
         # Pool used:
@@ -68,6 +70,10 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             # ('min_date', '>=', '%s 00:00:00' % from_date),
             # ('min_date', '<=', '%s 23:59:59' % to_date),
             ]
+
+        if start_code:
+            domain.append(('default_code', '=ilike', '%s%%' % start_code))
+
         if filter_mode == 'positive':
             domain.append(('qty_available', '>', 0))
         elif filter_mode == 'negative':
@@ -127,6 +133,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             ('stock', 'Stato magazzino'),
             ], 'Modalità', required=True),
 
+        'start_code': fields.char('Inizio codice', size=20),
         # 'from_date': fields.date('From date >= ', required=True),
         # 'to_date': fields.date('To date <=', required=True),
         'filter': fields.selection([
