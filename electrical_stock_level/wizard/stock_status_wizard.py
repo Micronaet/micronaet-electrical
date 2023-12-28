@@ -99,13 +99,22 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             move_proxy = move_pool.browse(cr, uid, move_ids, context=context)
             for move in move_proxy:
                 product_id = move.product_id.id
+                date = str(move.date)[:10]  # Only date
+                price = move.price_list
+
                 if product_id not in moved_qty:
-                    moved_qty[product_id] = 0.0
+                    # Q., last price, last date
+                    moved_qty[product_id] = [0.0, 0.0, '']
 
                 if move.location_dest_id.id == location_used['stock']:  # IN
-                    moved_qty[product_id] += move.product_qty
+                    moved_qty[product_id][0] += move.product_qty
+                    # Manage last price:
+                    if date > moved_qty[product_id][2]:
+                        moved_qty[product_id][2] = date
+                        moved_qty[product_id][1] = price
+
                 else:  # OUT
-                    moved_qty[product_id] -= move.product_qty
+                    moved_qty[product_id][0] -= move.product_qty
 
             domain.append(('id', 'in', moved_qty.keys()))
 
@@ -145,14 +154,16 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             'Categoria',
 
             'UM', 'Da movim.', 'Magazzino',
+            'Ultimo prezzo', 'Prezzo medio',
             ]
         width = [
-            10, 40,
+            12, 40,
             15, 15, 12,
             6, 15,
             # 10,
             15,
             5, 10, 10,
+            12, 12,
         ]
 
         excel_pool.create_worksheet(ws_name)
@@ -203,6 +214,9 @@ class ProductProductStockStatusWizard(orm.TransientModel):
                 color_format = excel_format['red']
             else:
                 color_format = excel_format['white']
+
+            stock_qty, last_price, last_date = moved_qty[product_id]
+
             data = [
                 product.default_code,
                 product.name,
@@ -216,8 +230,11 @@ class ProductProductStockStatusWizard(orm.TransientModel):
                 product.categ_id.name or '',
 
                 product.uom_id.name,
-                (moved_qty.get(product_id), color_format['number']),
+                (stock_qty, color_format['number']),
                 (qty_available, color_format['number']),
+
+                (last_price, color_format['number']),
+                ('', color_format['number']),
                 ]
 
             excel_pool.write_xls_line(
