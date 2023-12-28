@@ -78,12 +78,13 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             domain.append(('qty_available', '>', 0))
         elif filter_mode == 'negative':
             domain.append(('qty_available', '<', 0))
-        else:
+        elif filter_mode == 'zero':
             domain.append(('qty_available', '=', 0))
 
         product_ids = product_pool.search(cr, uid, domain, context=context)
         product_proxy = product_pool.browse(
             cr, uid, product_ids, context=context)
+        _logger.info('Selected products # %s for report' % len(product_ids))
 
         # ---------------------------------------------------------------------
         #                         Excel report:
