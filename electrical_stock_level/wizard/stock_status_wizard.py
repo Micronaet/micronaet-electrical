@@ -101,17 +101,26 @@ class ProductProductStockStatusWizard(orm.TransientModel):
                 product_id = move.product_id.id
                 date = str(move.date)[:10]  # Only date
                 price = move.price_unit
+                quantity = move.product_qty
 
                 if product_id not in moved_qty:
                     # Q., last price, last date
-                    moved_qty[product_id] = [0.0, 0.0, '']
+                    moved_qty[product_id] = [
+                        0.0,  # Q. (in and out)
+                        0.0,  # Last price
+                        '',  # Last date
+                        0.0,  # Q. out
+                        0.0,  # Value out
+                    ]
 
                 if move.location_dest_id.id == location_used['stock']:  # IN
-                    moved_qty[product_id][0] += move.product_qty
+                    moved_qty[product_id][0] += quantity
                     # Manage last price:
-                    if date > moved_qty[product_id][2]:
-                        moved_qty[product_id][2] = date
+                    if date > moved_qty[product_id][2] and price:
                         moved_qty[product_id][1] = price
+                        moved_qty[product_id][2] = date
+                        moved_qty[product_id][3] = quantity
+                        moved_qty[product_id][4] = quantity * price
 
                 else:  # OUT
                     moved_qty[product_id][0] -= move.product_qty
@@ -151,6 +160,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
 
             'UM', 'Da movim.', 'Magazzino',
             'Ultimo prezzo', 'Prezzo medio',
+            'Valore all\'ultimo', 'Valore al medio',
             ]
         width = [
             12, 40,
@@ -159,6 +169,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             # 10, 15,
             5, 10, 10,
             12, 12,
+            13, 13,
         ]
 
         excel_pool.create_worksheet(ws_name)
@@ -210,7 +221,15 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             else:
                 color_format = excel_format['white']
 
-            stock_qty, last_price, last_date = moved_qty[product_id]
+            stock_qty, last_price, last_date, q_out, value_out = \
+                moved_qty[product_id]
+            if q_out:
+                medium_price = value_out / q_out
+            else:
+                medium_price = 0.0
+
+            stock_value = qty_available * stock_qty
+            stock_value_medium = qty_available * medium_price
 
             data = [
                 product.default_code,
@@ -229,7 +248,11 @@ class ProductProductStockStatusWizard(orm.TransientModel):
                 (qty_available, color_format['number']),
 
                 (last_price, color_format['number']),
-                ('', color_format['number']),
+                (medium_price, color_format['number']),
+
+                (stock_value, color_format['number']),
+                (stock_value_medium, color_format['number']),
+
                 ]
 
             excel_pool.write_xls_line(
