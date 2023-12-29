@@ -91,7 +91,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
         domain = []
 
         moved_qty = {}
-        log_f = open('/tmp/move.log.csv')
+        # log_f = open('/tmp/move.log.csv')
         if moved_date:
             move_ids = move_pool.search(cr, uid, [
                 ('date', '>=', '%s 00:00:00' % moved_date),
