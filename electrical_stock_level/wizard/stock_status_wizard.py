@@ -91,6 +91,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
         domain = []
 
         moved_qty = {}
+        log_f = open('/tmp/move.log.csv')
         if moved_date:
             move_ids = move_pool.search(cr, uid, [
                 ('date', '>=', '%s 00:00:00' % moved_date),
@@ -175,7 +176,7 @@ class ProductProductStockStatusWizard(orm.TransientModel):
             13, 13,
         ]
         excel_pool.create_worksheet(ws_name)
-        excel_pool.freeze_panes(ws_name, row, 2)
+        excel_pool.freeze_panes(ws_name, 1, 2)
 
         # Load formats:
         excel_format = {
