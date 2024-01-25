@@ -717,6 +717,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # 2 Mode report:
             # -----------------------------------------------------------------
             if collect_mode:
+                data.append(partner)
                 collected_data['partner'].append(data)
             else:
                 excel_pool.write_xls_line(
@@ -726,28 +727,29 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 row += 1
 
         # Partner:
-        ws_name = 'Commesse'
-        row = 0
-        header = [
-            'Partner', 'Commessa', 'Consegne', 'DDT', 'Interventi',
-            # 'Fatture',
-            ]
-        width = [45, 40, 10, 10, 10]
-        excel_pool.create_worksheet(ws_name)
+        if not collect_mode:
+            ws_name = 'Commesse'
+            row = 0
+            header = [
+                'Partner', 'Commessa', 'Consegne', 'DDT', 'Interventi',
+                # 'Fatture',
+                ]
+            width = [45, 40, 10, 10, 10]
+            excel_pool.create_worksheet(ws_name)
 
-        # Load formats:
-        f_title = excel_pool.get_format('title')
-        f_header = excel_pool.get_format('header')
-        f_text = excel_pool.get_format('text')
-        f_number = excel_pool.get_format('number')
+            # Load formats:
+            f_title = excel_pool.get_format('title')
+            f_header = excel_pool.get_format('header')
+            f_text = excel_pool.get_format('text')
+            f_number = excel_pool.get_format('number')
 
-        # Setup columns
-        excel_pool.column_width(ws_name, width)
+            # Setup columns
+            excel_pool.column_width(ws_name, width)
 
-        # Print header
-        excel_pool.write_xls_line(
-            ws_name, row, header, default_format=f_header)
-        row += 1
+            # Print header
+            excel_pool.write_xls_line(
+                ws_name, row, header, default_format=f_header)
+            row += 1
 
         account_ids = tuple(account_set)
         for account in sorted(account_pool.browse(
@@ -773,6 +775,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # 2 Mode report:
             # -----------------------------------------------------------------
             if collect_mode:
+                data.extend([partner, account])
                 collected_data['account'].append(data)
             else:
                 excel_pool.write_xls_line(
@@ -781,23 +784,24 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     )
                 row += 1
 
-        ws_name = 'Contatti'
-        row = 0
-        header = [
-            'Contatti', 'Consegne', 'DDT',
-            # 'Fatture',
-            'Interventi',
-            ]
-        width = [45, 10, 10, 10]
-        excel_pool.create_worksheet(ws_name)
+        if not collect_mode:
+            ws_name = 'Contatti'
+            row = 0
+            header = [
+                'Contatti', 'Consegne', 'DDT',
+                # 'Fatture',
+                'Interventi',
+                ]
+            width = [45, 10, 10, 10]
+            excel_pool.create_worksheet(ws_name)
 
-        # Setup columns
-        excel_pool.column_width(ws_name, width)
+            # Setup columns
+            excel_pool.column_width(ws_name, width)
 
-        # Print header
-        excel_pool.write_xls_line(
-            ws_name, row, header, default_format=f_header)
-        row += 1
+            # Print header
+            excel_pool.write_xls_line(
+                ws_name, row, header, default_format=f_header)
+            row += 1
 
         contact_ids = tuple(contact_set)
         for contact in sorted(partner_pool.browse(
@@ -818,6 +822,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # 2 Mode report:
             # -----------------------------------------------------------------
             if collect_mode:
+                data.append(contact)
                 collected_data['contact'].append(data)
             else:
                 excel_pool.write_xls_line(
