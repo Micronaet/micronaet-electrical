@@ -562,7 +562,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # todo only if theres' difference?
                 store_pool.write(
                     cr, uid, [record_id], data, context=context)
-                del(store_db.get[key])
+                del(store_db[key])
             else:
                 record_id = store_pool.create(cr, uid, data, context=context)
             selected_ids.append(record_id)
