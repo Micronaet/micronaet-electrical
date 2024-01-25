@@ -75,6 +75,18 @@ class ResPartnerActivityStorage(orm.Model):
         store = self.browse(cr, uid, ids, context=context)[0]
         context.update({
             'default_mode': 'complete',
+
+            'default_from_date': store.from_date,
+            'default_to_date': store.to_date,
+
+            'default_partner_id': store.partner_id.id,
+            'default_account_id': store.account_id.id,
+            'default_contact_id': store.contact_id.id,
+
+            'default_picking_mode': 'all',
+            'default_ddt_mode': 'all',  # 'ddt',  # Not invoiced (not all!)
+            'default_intervent_mode': 'all',  # 'pending',
+            'default_activity_price': 'lst_price',
         })
 
         form_view_id = False
