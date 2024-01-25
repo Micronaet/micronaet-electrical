@@ -78,9 +78,9 @@ class ResPartnerActivityStorage(orm.Model):
         domain = [
             ('date_start', '>=', store.from_date),
             ('date_start', '<=', store.to_date),
-            ('intervent_partner_id', '<=', store.partner_id.id),
-            ('intervent_contact_id', '<=', store.contact_id.id),
-            ('account_id', '<=', store.account_id.id),
+            ('intervent_partner_id', '=', store.partner_id.id),
+            ('intervent_contact_id', '=', store.contact_id.id),
+            ('account_id', '=', store.account_id.id),
             ]
         if context.get('is_invoiced'):
             domain.append(('is_invoiced', '=', True))
@@ -90,10 +90,11 @@ class ResPartnerActivityStorage(orm.Model):
             name = 'Interventi da fatture'
 
         record_ids = intervent_pool.search(cr, uid, domain, context=context)
-        # tree_view_id = model_pool.get_object_reference(
-        #    cr, uid, 'electrical_customer_activity',
-        #    'view_res_partner_activity_storage_tree',
-        #    )[1]
+        tree_view_id = model_pool.get_object_reference(
+            cr, uid,
+            'intervention_repor',
+            'view_hr_analytic_timesheet_tree',
+            )[1]
 
         return {
             'type': 'ir.actions.act_window',
@@ -102,8 +103,8 @@ class ResPartnerActivityStorage(orm.Model):
             'view_mode': 'tree,form',
             # 'res_id': ids[0],
             'res_model': 'hr.analytic.timesheet',
-            'view_id': False,
-            'views': [(False, 'tree'), (False, 'form')],
+            'view_id': tree_view_id,
+            'views': [(tree_view_id, 'tree'), (False, 'form')],
             'domain': [('id', 'in', record_ids)],
             'context': context,
             'target': 'current',  # 'new'
