@@ -532,7 +532,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             # todo Totals (not filled for now):
             'amount_intervent': 0.0,
-            'amount_stock': 0.0,
+            'amount_picking': 0.0,
             'amount_ddt': 0.0,
             'amount_invoice': 0.0,
         }

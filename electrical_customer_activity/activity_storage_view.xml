@@ -39,7 +39,7 @@
                                     <group colspan="4" col="4">
                                         <separator string="Totali" colspan="4" />
                                         <field name="amount_intervent" string="Int tot." readonly="1"/>
-                                        <field name="amount_stock" string="Pick tot." readonly="1"/>
+                                        <field name="amount_picking" string="Pick tot." readonly="1"/>
                                         <field name="amount_ddt" string="DDT tot." readonly="1"/>
                                         <field name="amount_invoice" string="Fatt. tot." readonly="1"/>
                                     </group>
