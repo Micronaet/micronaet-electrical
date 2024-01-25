@@ -92,7 +92,7 @@ class ResPartnerActivityStorage(orm.Model):
         record_ids = intervent_pool.search(cr, uid, domain, context=context)
         tree_view_id = model_pool.get_object_reference(
             cr, uid,
-            'intervention_repor',
+            'intervention_report',
             'view_hr_analytic_timesheet_tree',
             )[1]
 
