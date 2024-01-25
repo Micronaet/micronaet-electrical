@@ -78,8 +78,8 @@ class ResPartnerActivityStorage(orm.Model):
         domain = [
             ('date_start', '>=', store.from_date),
             ('date_start', '<=', store.to_date),
-            ('intervent_partner_id', '<=', store.intervent_partner_id.id),
-            ('intervent_contact_id', '<=', store.intervent_contact_id.id),
+            ('intervent_partner_id', '<=', store.partner_id.id),
+            ('intervent_contact_id', '<=', store.contact_id.id),
             ('account_id', '<=', store.account_id.id),
             ]
         if context.get('is_invoiced'):
