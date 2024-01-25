@@ -64,6 +64,37 @@ class ResPartnerActivityStorage(orm.Model):
     _description = 'Activity storage'
     _order = 'name desc, partner_id, account_id'
 
+    # Button to open list:
+    def get_total_intervent_draft(self, cr, uid, ids, context=None):
+        """ Open Intervent not invoiced
+        """
+        return True
+
+    def get_total_intervent_invoice(self, cr, uid, ids, context=None):
+        """ Open Intervent invoiced
+        """
+        return True
+
+    def get_total_picking(self, cr, uid, ids, context=None):
+        """ Open Picking
+        """
+        return True
+
+    def get_total_ddt_draft(self, cr, uid, ids, context=None):
+        """ Open DDT not invoiced
+        """
+        return True
+
+    def get_total_ddt_invoice(self, cr, uid, ids, context=None):
+        """ Open DDT invoiced
+        """
+        return True
+
+    def get_total_invoice(self, cr, uid, ids, context=None):
+        """ Open Invoice
+        """
+        return True
+
     _columns = {
         'name': fields.char('Mese', size=8, required=True),
         'note': fields.text('Note'),
