@@ -132,7 +132,11 @@ class ResPartnerActivityStorage(orm.Model):
             ('min_date', '<=', '%s 23:59:59' % store.to_date),
             ('ddt_id', '=', False),  # Not DDT
             ('pick_move', '=', 'out'),  # Only out movement
-            ]
+
+            ('partner_id', '=', store.partner_id.id),
+            ('contact_id', '=', store.contact_id.id),
+            ('account_id', '=', store.account_id.id),
+        ]
         record_ids = picking_pool.search(cr, uid, domain, context=context)
         tree_view_id = model_pool.get_object_reference(
             cr, uid,
