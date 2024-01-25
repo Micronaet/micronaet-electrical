@@ -166,16 +166,67 @@ class ResPartnerActivityStorage(orm.Model):
         store = self.browse(cr, uid, ids, context=context)[0]
 
         ddt_pool = self.pool.get('stock.ddt')
-        return True
 
-    def get_total_ddt_invoice(self, cr, uid, ids, context=None):
+        domain = [
+            ('delivery_date', '>=', '%s 00:00:00' % store.from_date),
+            ('delivery_date', '<=', '%s 23:59:59' % store.to_date),
+
+            ('partner_id', '=', store.partner_id.id),
+            ('contact_id', '=', store.contact_id.id),
+            ('account_id', '=', store.account_id.id),
+            ]
+        if context.get('is_invoiced'):
+            domain.append(('is_invoiced', '=', True))
+        else:
+            domain.append(('is_invoiced', '=', False))
+
+        ddt_delivery_ids = set(
+            ddt_pool.search(cr, uid, domain, context=context))
+
+        domain = [
+            ('date', '>=', '%s 00:00:00' % store.from_date),
+            ('date', '<=', '%s 23:59:59' % store.to_date),
+
+            ('partner_id', '=', store.partner_id.id),
+            ('contact_id', '=', store.contact_id.id),
+            ('account_id', '=', store.account_id.id),
+            ]
+        if context.get('is_invoiced'):
+            domain.append(('is_invoiced', '=', True))
+        else:
+            domain.append(('is_invoiced', '=', False))
+
+        ddt_date_ids = set(
+            ddt_pool.search(cr, uid, domain, context=context))
+        record_ids = tuple(ddt_delivery_ids | ddt_date_ids)
+
+        tree_view_id = model_pool.get_object_reference(
+            cr, uid, 'electrical_l10n_it_ddt', 'stock_ddt_tree',
+            )[1]
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'DDT da fatturare',
+            'view_type': 'form',
+            'view_mode': 'tree,form',
+            # 'res_id': ids[0],
+            'res_model': 'stock.ddt',
+            'view_id': tree_view_id,
+            'views': [(tree_view_id, 'tree'), (False, 'form')],
+            'domain': [('id', 'in', record_ids)],
+            'context': context,
+            'target': 'current',  # 'new'
+            'nodestroy': False,
+            }
+
+    def get_total_ddt_draft(self, cr, uid, ids, context=None):
         """ Open DDT invoiced
         """
-        model_pool = self.pool.get('ir.model.data')
-        store = self.browse(cr, uid, ids, context=context)[0]
+        if context is None:
+            context = {}
 
-        ddt_pool = self.pool.get('stock.ddt')
-        return True
+        context['is_invoiced'] = True
+        return self.get_total_intervent_draft(cr, uid, ids, context=context)
 
     def get_total_invoice(self, cr, uid, ids, context=None):
         """ Open Invoice
