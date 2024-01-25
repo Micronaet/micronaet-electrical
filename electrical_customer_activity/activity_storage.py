@@ -119,7 +119,7 @@ class ResPartnerActivityStorage(orm.Model):
 
         context['is_invoiced'] = True
 
-        return self.get_total_intervent_invoice(cr, uid, ids, context=context)
+        return self.get_total_intervent_draft(cr, uid, ids, context=context)
 
     def get_total_picking(self, cr, uid, ids, context=None):
         """ Open Picking
