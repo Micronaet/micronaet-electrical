@@ -108,22 +108,22 @@
                     <field name="stage_id"/>
                     <field name="note"/>
 
-                    <field name="total_intervent_draft" string="INT" readonly="1"/>
+                    <field name="total_intervent_draft" string="INT" readonly="1" sum="num_intervent"/>
                     <button name="get_total_intervent_draft" string="Apri lista interventi da chiudere" type="object" icon="gtk-justify-fill" attrs="{'invisible': [('total_intervent_draft', '=', 0)]}"/>
 
-                    <field name="total_intervent_invoice" string="INT (ft)" readonly="1"/>
+                    <field name="total_intervent_invoice" string="INT (ft)" readonly="1"  sum="num_intervent_invoice"/>
                     <button name="get_total_intervent_invoice" string="Apri lista interventi chiusi" type="object" icon="gtk-justify-fill" attrs="{'invisible': [('total_intervent_invoice', '=', 0)]}"/>
 
-                    <field name="total_picking" string="PICK" readonly="1"/>
+                    <field name="total_picking" string="PICK" readonly="1" sum="num_picking"/>
                     <button name="get_total_picking" string="Apri lista picking da chiudere" type="object" icon="gtk-justify-fill" attrs="{'invisible': [('total_picking', '=', 0)]}"/>
 
-                    <field name="total_ddt_draft" string="DDT" readonly="1"/>
+                    <field name="total_ddt_draft" string="DDT" readonly="1"  sum="num_ddt"/>
                     <button name="get_total_ddt_draft" string="Apri lista DDT da fatturare" type="object" icon="gtk-justify-fill" attrs="{'invisible': [('total_ddt_draft', '=', 0)]}"/>
 
-                    <field name="total_ddt_invoice" string="DDT (ft)" readonly="1"/>
+                    <field name="total_ddt_invoice" string="DDT (ft)" readonly="1" sum="num_ddt_invoice"/>
                     <button name="get_total_ddt_invoice" string="Apri lista DDT fatturati" type="object" icon="gtk-justify-fill" attrs="{'invisible': [('total_ddt_invoice', '=', 0)]}"/>
 
-                    <field name="total_invoice" string="FATT" readonly="1"/>
+                    <field name="total_invoice" string="FATT" readonly="1" sum="num_invoice"/>
                     <button name="get_total_invoice" string="Apri lista fatture" type="object" icon="gtk-justify-fill" attrs="{'invisible': [('total_invoice', '=', 0)]}"/>
 
                     <field name="amount_intervent" string="Int tot." readonly="1" sum="sum_int"/>
