@@ -62,7 +62,7 @@ class ResPartnerActivityStorage(orm.Model):
 
     _name = 'res.partner.activity.storage'
     _description = 'Activity storage'
-    _order = 'name desc, partner_id'
+    _order = 'name desc, partner_id, account_id'
 
     _columns = {
         'name': fields.char('Mese', size=8, required=True),
