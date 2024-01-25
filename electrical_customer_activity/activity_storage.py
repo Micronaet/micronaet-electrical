@@ -78,16 +78,24 @@ class ResPartnerActivityStorage(orm.Model):
             'res.partner.activity.storage.stage', 'Stato'),
 
         # Check:
-        'check_intervent': fields.boolean('Interventi'),
-        'check_stock': fields.boolean('Consegne'),
-        'check_ddt': fields.boolean('DDT'),
-        'check_invoice': fields.boolean('Fatture'),
+        # 'check_intervent': fields.boolean('Interventi'),
+        # 'check_stock': fields.boolean('Consegne'),
+        # 'check_ddt': fields.boolean('DDT'),
+        # 'check_invoice': fields.boolean('Fatture'),
 
-        # Totals:
-        'total_intervent': fields.float('Tot. Interventi', digits=(16, 2)),
-        'total_stock': fields.float('Tot. Consegnato', digits=(16, 2)),
-        'total_ddt': fields.float('Tot. DDT', digits=(16, 2)),
-        'total_invoice': fields.float('Tot. Fatturato', digits=(16, 2)),
+        # Detail:
+        'total_intervent_draft': fields.integer('# Int. da fatt.'),
+        'total_intervent_invoice': fields.integer('# Int. fatt.'),
+        'total_picking': fields.integer('# Pick. da fatt.'),
+        'total_ddt_draft': fields.integer('# DDT da fatt.'),
+        'total_ddt_invoice': fields.integer('# DDT fatt.'),
+        'total_invoice': fields.integer('# Fatture'),
+
+        # Amount:
+        'amount_intervent': fields.float('Tot. Interventi', digits=(16, 2)),
+        'amount_picking': fields.float('Tot. Consegnato', digits=(16, 2)),
+        'amount_ddt': fields.float('Tot. DDT', digits=(16, 2)),
+        'amount_invoice': fields.float('Tot. Fatturato', digits=(16, 2)),
         }
 
 

@@ -469,6 +469,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         """
         store_pool = self.pool.get('res.partner.activity.storage')
         model_pool = self.pool.get('ir.model.data')
+        picking_pool = self.pool.get('stock.picking')
+        ddt_pool = self.pool.get('stock.ddt')
+        # invoice_pool = self.pool.get('account.invoice')
+        intervent_pool = self.pool.get('hr.analytic.timesheet')
 
         if context is None:
             context = {}
@@ -514,10 +518,79 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # Call original report with parameter:
         res = self.action_print_touched(cr, uid, [wizard_id], context=context)
 
-        # Selected month yet present:
+        # ---------------------------------------------------------------------
+        #                         Collect detail:
+        # ---------------------------------------------------------------------
+        keys = {}
+        empty_key = {
+            'total_intervent_draft': 0,
+            'total_intervent_invoice': 0,
+            'total_picking': 0,
+            'total_ddt_draft': 0,
+            'total_ddt_invoice': 0,
+            'total_invoice': 0,
+
+            # todo Totals (not filled for now):
+            'amount_intervent': 0.0,
+            'amount_stock': 0.0,
+            'amount_ddt': 0.0,
+            'amount_invoice': 0.0,
+        }
+
+        # Intervent:
+        intervent_ids = res.get('intervent')
+        for intervent in intervent_pool.browse(
+                cr, uid, intervent_ids, context=context):
+            key = (
+                intervent.intervent_partner_id.id or False,
+                intervent.account_id.id or False,
+                intervent.intervent_contact_id.id or False,
+            )
+            if key not in keys:
+                keys[key] = empty_key.copy()
+
+            if intervent.is_invoiced:
+                keys[key]['total_intervent_invoice'] += 1
+            else:
+                keys[key]['total_intervent_draft'] += 1
+
+        # Picking:
+        picking_ids = res.get('picking')
+        for picking in picking_pool.browse(
+                cr, uid, picking_ids, context=context):
+            key = (
+                picking.partner_id.id or False,
+                picking.account_id.id or False,
+                picking.contact_id.id or False,
+            )
+            if key not in keys:
+                keys[key] = empty_key.copy()
+
+            keys[key]['total_picking'] += 1
+
+        # DDT:
+        ddt_ids = res.get('ddt')
+        for ddt in picking_pool.browse(
+                cr, uid, ddt_ids, context=context):
+            key = (
+                ddt.partner_id.id or False,
+                ddt.account_id.id or False,
+                ddt.contact_id.id or False,
+            )
+            if key not in keys:
+                keys[key] = empty_key.copy()
+
+            if ddt.is_invoiced:
+                keys[key]['total_ddt_invoice'] += 1
+            else:
+                keys[key]['total_ddt_draft'] += 1
+
+        # ---------------------------------------------------------------------
+        # Load this month from store:
+        # ---------------------------------------------------------------------
         store_ids = store_pool.search(cr, uid, [
             ('name', '=', name),
-        ], context=context)
+         ], context=context)
         store_db = {}
         for store in store_pool.browse(cr, uid, store_ids, context=context):
             key = (
@@ -530,10 +603,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # todo for now used only Account page
         # Update data in stored items
         selected_ids = []
-        for record in res['account']:
-            (partner_name, account_name, has_picking, has_ddt, has_intervent,
-             partner_id, account_id) = record
-            key = (partner_id, account_id, False)
+        for key in keys:
+            partner_id, account_id, contact_id = key
+            record = keys[key]
 
             data = {
                 'name': name,
@@ -541,21 +613,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 'to_date': to_date,
                 'partner_id': partner_id,
                 'account_id': account_id,
-                'contact_id': False,
+                'contact_id': contact_id,
                 # 'stage_id':
 
-                # Check:
-                'check_intervent': has_intervent,
-                'check_stock': has_picking,
-                'check_ddt': has_ddt,
-                'check_invoice': False,  # todo never Invoice?
-
-                # todo Totals:
-                'total_intervent': 0.0,
-                'total_stock': 0.0,
-                'total_ddt': 0.0,
-                'total_invoice': 0.0,
+                # todo not used: Check:
+                # 'check_intervent': has_intervent,
+                # 'check_stock': has_picking,
+                # 'check_ddt': has_ddt,
+                # 'check_invoice': False,  # todo never Invoice?
             }
+            data.update(record)  # Add total fields
 
             record_id = store_db.get(key)
             if record_id:
@@ -608,11 +675,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
         if not context:
             context = {}
         collect_mode = context.get('collect_mode')
-        collected_data = {
-            'partner': [],
-            'account': [],
-            'contact': [],
-        }
 
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
         from_date = wiz_browse.from_date
@@ -632,9 +694,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
         account_pool = self.pool.get('account.analytic.account')
         intervent_pool = self.pool.get('hr.analytic.timesheet')
 
-        partner_set = set()
-        contact_set = set()
-        account_set = set()
+        if not collect_mode:
+            partner_set = set()
+            contact_set = set()
+            account_set = set()
 
         # ---------------------------------------------------------------------
         # A. Picking partner:
@@ -650,17 +713,21 @@ class ResPartnerActivityWizard(orm.TransientModel):
         picking_proxy = picking_pool.browse(
             cr, uid, picking_ids, context=context)
 
-        # Partner:
-        picking_partner_ids = [item.partner_id.id for item in picking_proxy]
-        partner_set.update(set(tuple(picking_partner_ids)))
+        if not collect_mode:
+            # Partner:
+            picking_partner_ids = [
+                item.partner_id.id for item in picking_proxy]
+            partner_set.update(set(tuple(picking_partner_ids)))
 
-        # Contact:
-        picking_contact_ids = [item.contact_id.id for item in picking_proxy]
-        contact_set.update(set(tuple(picking_contact_ids)))
+            # Contact:
+            picking_contact_ids = [
+                item.contact_id.id for item in picking_proxy]
+            contact_set.update(set(tuple(picking_contact_ids)))
 
-        # Account:
-        picking_account_ids = [item.account_id.id for item in picking_proxy]
-        account_set.update(set(tuple(picking_account_ids)))
+            # Account:
+            picking_account_ids = [
+                item.account_id.id for item in picking_proxy]
+            account_set.update(set(tuple(picking_account_ids)))
 
         # ---------------------------------------------------------------------
         # B. DDT:
@@ -690,17 +757,18 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         ddt_proxy = ddt_pool.browse(cr, uid, ddt_ids, context=context)
 
-        # Partner:
-        ddt_partner_ids = [item.partner_id.id for item in ddt_proxy]
-        partner_set.update(set(tuple(ddt_partner_ids)))
+        if not collect_mode:
+            # Partner:
+            ddt_partner_ids = [item.partner_id.id for item in ddt_proxy]
+            partner_set.update(set(tuple(ddt_partner_ids)))
 
-        # Contact:
-        ddt_contact_ids = [item.contact_id.id for item in ddt_proxy]
-        contact_set.update(set(tuple(ddt_contact_ids)))
+            # Contact:
+            ddt_contact_ids = [item.contact_id.id for item in ddt_proxy]
+            contact_set.update(set(tuple(ddt_contact_ids)))
 
-        # Account:
-        ddt_account_ids = [item.account_id.id for item in ddt_proxy]
-        account_set.update(set(tuple(ddt_account_ids)))
+            # Account:
+            ddt_account_ids = [item.account_id.id for item in ddt_proxy]
+            account_set.update(set(tuple(ddt_account_ids)))
 
         # ---------------------------------------------------------------------
         # C. Invoice:
@@ -737,50 +805,61 @@ class ResPartnerActivityWizard(orm.TransientModel):
         intervent_proxy = intervent_pool.browse(
                 cr, uid, intervent_ids, context=context)
 
-        # Partner
-        intervent_partner_ids = [item.intervent_partner_id.id for item in
-                                 intervent_proxy]
-        partner_set.update(set(tuple(intervent_partner_ids)))
+        if not collect_mode:
+            # Partner
+            intervent_partner_ids = [item.intervent_partner_id.id for item in
+                                     intervent_proxy]
+            partner_set.update(set(tuple(intervent_partner_ids)))
 
-        # Contact
-        intervent_contact_ids = [item.intervent_contact_id.id for item in
-                                 intervent_proxy]
-        contact_set.update(set(tuple(intervent_contact_ids)))
+            # Contact
+            intervent_contact_ids = [item.intervent_contact_id.id for item in
+                                     intervent_proxy]
+            contact_set.update(set(tuple(intervent_contact_ids)))
 
-        # Account:
-        intervent_account_ids = [item.account_id.id for item in
-                                 intervent_proxy]
-        account_set.update(set(tuple(intervent_account_ids)))
+            # Account:
+            intervent_account_ids = [item.account_id.id for item in
+                                     intervent_proxy]
+            account_set.update(set(tuple(intervent_account_ids)))
+
+        # ---------------------------------------------------------------------
+        # End of collect mode procedure:
+        # ---------------------------------------------------------------------
+        if collect_mode:
+            return {
+                'intervent': intervent_proxy,
+                'picking': picking_proxy,
+                'ddt': ddt_proxy,
+                # 'invoice': intervent_proxy,
+            }
 
         # ---------------------------------------------------------------------
         #                         Excel report:
         # ---------------------------------------------------------------------
-        if not collect_mode:
-            # Partner:
-            ws_name = 'Partner'
-            row = 0
-            header = [
-                'Partner', 'Consegne', 'DDT',
-                # 'Fatture',
-                'Interventi',
-                ]
-            width = [45, 10, 10, 10]
+        # Partner:
+        ws_name = 'Partner'
+        row = 0
+        header = [
+            'Partner', 'Consegne', 'DDT',
+            # 'Fatture',
+            'Interventi',
+            ]
+        width = [45, 10, 10, 10]
 
-            excel_pool.create_worksheet(ws_name)
+        excel_pool.create_worksheet(ws_name)
 
-            # Load formats:
-            f_title = excel_pool.get_format('title')
-            f_header = excel_pool.get_format('header')
-            f_text = excel_pool.get_format('text')
-            f_number = excel_pool.get_format('number')
+        # Load formats:
+        f_title = excel_pool.get_format('title')
+        f_header = excel_pool.get_format('header')
+        f_text = excel_pool.get_format('text')
+        f_number = excel_pool.get_format('number')
 
-            # Setup columns
-            excel_pool.column_width(ws_name, width)
+        # Setup columns
+        excel_pool.column_width(ws_name, width)
 
-            # Print header
-            excel_pool.write_xls_line(
-                ws_name, row, header, default_format=f_header)
-            row += 1
+        # Print header
+        excel_pool.write_xls_line(
+            ws_name, row, header, default_format=f_header)
+        row += 1
 
         partner_ids = tuple(partner_set)
         for partner in sorted(partner_pool.browse(
@@ -789,51 +868,43 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ):
 
             partner_id = partner.id
+
             data = [
                 u'%s' % (partner.name or ''),
                 partner_id in picking_partner_ids,
                 partner_id in ddt_partner_ids,
                 # partner_id in invoice_partner_ids,
                 partner_id in intervent_partner_ids,
-                ]
-
-            # -----------------------------------------------------------------
-            # 2 Mode report:
-            # -----------------------------------------------------------------
-            if collect_mode:
-                data.append(partner.id or False)
-                collected_data['partner'].append(data)
-            else:
-                excel_pool.write_xls_line(
-                    ws_name, row, data,
-                    default_format=f_text
-                    )
-                row += 1
+            ]
+            excel_pool.write_xls_line(
+                ws_name, row, data,
+                default_format=f_text
+                )
+            row += 1
 
         # Partner:
-        if not collect_mode:
-            ws_name = 'Commesse'
-            row = 0
-            header = [
-                'Partner', 'Commessa', 'Consegne', 'DDT', 'Interventi',
-                # 'Fatture',
-                ]
-            width = [45, 40, 10, 10, 10]
-            excel_pool.create_worksheet(ws_name)
+        ws_name = 'Commesse'
+        row = 0
+        header = [
+            'Partner', 'Commessa', 'Consegne', 'DDT', 'Interventi',
+            # 'Fatture',
+            ]
+        width = [45, 40, 10, 10, 10]
+        excel_pool.create_worksheet(ws_name)
 
-            # Load formats:
-            f_title = excel_pool.get_format('title')
-            f_header = excel_pool.get_format('header')
-            f_text = excel_pool.get_format('text')
-            f_number = excel_pool.get_format('number')
+        # Load formats:
+        f_title = excel_pool.get_format('title')
+        f_header = excel_pool.get_format('header')
+        f_text = excel_pool.get_format('text')
+        f_number = excel_pool.get_format('number')
 
-            # Setup columns
-            excel_pool.column_width(ws_name, width)
+        # Setup columns
+        excel_pool.column_width(ws_name, width)
 
-            # Print header
-            excel_pool.write_xls_line(
-                ws_name, row, header, default_format=f_header)
-            row += 1
+        # Print header
+        excel_pool.write_xls_line(
+            ws_name, row, header, default_format=f_header)
+        row += 1
 
         account_ids = tuple(account_set)
         for account in sorted(account_pool.browse(
@@ -846,6 +917,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             partner = account.partner_id
             account_id = account.id
+
+            # -----------------------------------------------------------------
+            # 2 Mode report:
+            # -----------------------------------------------------------------
             data = [
                 u'%s' % (partner.name or ''),
                 u'%s' % (account.name or ''),
@@ -853,39 +928,30 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 account_id in ddt_account_ids,
                 # account_id in invoice_account_ids,
                 account_id in intervent_account_ids,
-                ]
-
-            # -----------------------------------------------------------------
-            # 2 Mode report:
-            # -----------------------------------------------------------------
-            if collect_mode:
-                data.extend([partner.id or False, account.id or False])
-                collected_data['account'].append(data)
-            else:
-                excel_pool.write_xls_line(
-                    ws_name, row, data,
-                    default_format=f_text
-                    )
-                row += 1
-
-        if not collect_mode:
-            ws_name = 'Contatti'
-            row = 0
-            header = [
-                'Contatti', 'Consegne', 'DDT',
-                # 'Fatture',
-                'Interventi',
-                ]
-            width = [45, 10, 10, 10]
-            excel_pool.create_worksheet(ws_name)
-
-            # Setup columns
-            excel_pool.column_width(ws_name, width)
-
-            # Print header
+            ]
             excel_pool.write_xls_line(
-                ws_name, row, header, default_format=f_header)
+                ws_name, row, data,
+                default_format=f_text
+                )
             row += 1
+
+        ws_name = 'Contatti'
+        row = 0
+        header = [
+            'Contatti', 'Consegne', 'DDT',
+            # 'Fatture',
+            'Interventi',
+            ]
+        width = [45, 10, 10, 10]
+        excel_pool.create_worksheet(ws_name)
+
+        # Setup columns
+        excel_pool.column_width(ws_name, width)
+
+        # Print header
+        excel_pool.write_xls_line(
+            ws_name, row, header, default_format=f_header)
+        row += 1
 
         contact_ids = tuple(contact_set)
         for contact in sorted(partner_pool.browse(
@@ -894,6 +960,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 ):
 
             contact_id = contact.id
+
             data = [
                 contact.name,
                 contact_id in picking_contact_ids,
@@ -901,25 +968,14 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 # partner_id in invoice_partner_ids,
                 contact_id in intervent_contact_ids,
                 ]
+            excel_pool.write_xls_line(
+                ws_name, row, data,
+                default_format=f_text
+                )
+            row += 1
 
-            # -----------------------------------------------------------------
-            # 2 Mode report:
-            # -----------------------------------------------------------------
-            if collect_mode:
-                data.append(contact.id or False)
-                collected_data['contact'].append(data)
-            else:
-                excel_pool.write_xls_line(
-                    ws_name, row, data,
-                    default_format=f_text
-                    )
-                row += 1
-
-        if collect_mode:
-            return collected_data
-        else:
-            return excel_pool.return_attachment(
-                cr, uid, 'partner_moved')
+        return excel_pool.return_attachment(
+            cr, uid, 'partner_moved')
 
     def action_print(self, cr, uid, ids, context=None):
         """ Event for button done
