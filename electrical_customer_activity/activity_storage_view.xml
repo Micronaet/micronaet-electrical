@@ -13,7 +13,7 @@
                 </form>
             </field>
         </record>
-        <record model="ir.ui.view" id="view_res_partner_activity_storage_tree">
+        <record model="ir.ui.view" id="view_res_partner_activity_storage_tree" editable="bottom">
             <field name="name">res.partner.activity.storage.tree</field>
             <field name="model">res.partner.activity.storage</field>
             <field name="arch" type="xml">

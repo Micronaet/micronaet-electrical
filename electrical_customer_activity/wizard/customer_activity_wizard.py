@@ -574,7 +574,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
             store_pool.unlink(cr, uid, [remove_id], context=context)
             # todo delete linked file
 
-        form_view_id = False
+        if not selected_ids:
+            return True
+
+        # form_view_id = False
         tree_view_id = model_pool.get_object_reference(
             cr, uid,
             'electrical_customer_activity',
@@ -589,16 +592,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # 'res_id': ids[0],
             'res_model': 'res.partner.activity.storage',
             'view_id': tree_view_id,  # False
-            'views': [(form_view_id, 'form'), (tree_view_id, 'tree')],
+            'views': [(tree_view_id, 'tree')],  # , (form_view_id, 'form')
             'domain': [('id', '=', selected_ids)],
             'context': context,
             'target': 'current',  # 'new'
             'nodestroy': False,
             }
-        return {
-
-        }
-
     def action_print_touched(self, cr, uid, ids, context=None):
         """ List of partner touched in that period
             context:
