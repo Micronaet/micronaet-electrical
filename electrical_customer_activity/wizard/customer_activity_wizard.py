@@ -564,7 +564,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     cr, uid, [record_id], data, context=context)
                 del(store_db.get[key])
             else:
-                record_id = store_pool.write(cr, uid, data, context=context)
+                record_id = store_pool.create(cr, uid, data, context=context)
             selected_ids.append(record_id)
             # todo generate file?
 
@@ -598,6 +598,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'target': 'current',  # 'new'
             'nodestroy': False,
             }
+
     def action_print_touched(self, cr, uid, ids, context=None):
         """ List of partner touched in that period
             context:
