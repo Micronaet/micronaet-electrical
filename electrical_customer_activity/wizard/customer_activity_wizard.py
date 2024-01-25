@@ -859,7 +859,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # 2 Mode report:
             # -----------------------------------------------------------------
             if collect_mode:
-                data.extend([partner.id or False, account.id of False])
+                data.extend([partner.id or False, account.id or False])
                 collected_data['account'].append(data)
             else:
                 excel_pool.write_xls_line(
