@@ -2,6 +2,39 @@
 <openerp>
     <data>
         <!-- res.partner.activity.storage -->
+        <record model="ir.ui.view" id="view_res_partner_activity_storage_search">
+            <field name="name">res.partner.activity.storage.search</field>
+            <field name="model">res.partner.activity.storage</field>
+            <field name="arch" type="xml">
+                <search string="Storico attività">
+                    <field name="name" />
+                    <field name="partner_id" filter_domain="[('partner_id.name','ilike',self)]"/>
+                    <field name="account_id" filter_domain="[('account_id.name','ilike',self),('account_id.code','ilike',self)]"/>
+                    <field name="contact_id" filter_domain="[('partner_id.name','ilike',self)]"/>
+
+                    <field name="stage_id"/>
+                    <field name="note"/>
+
+                    <filter name="partner_contact" string="Aziende"
+                            domain="[('partner_id.name','!=','***'),('partner_id','!=',False)]"/>
+                    <filter name="partner_contact" string="Privati"
+                            domain="['|',('partner_id.name','=','***'),('partner_id','=',False)]"/>
+
+                    <filter name="state_pending" string="Con pendenze"
+                            domain="['|', '|', ('total_intervent_draft','>',0), ('total_picking','>',0), ('total_ddt_draft','>',0)]"/>
+                    <filter name="state_done" string="Senza pendenze"
+                            domain="[('total_intervent_draft','=',0), ('total_picking','=',0), ('total_ddt_draft','=',0)]"/>
+
+                    <group expand="0" string="Group By...">
+                        <filter name="group_date" string="Periodo" context="{'group_by': 'name'}"/>
+                        <filter name="group_date" string="Stato" context="{'group_by': 'stage_id'}"/>
+                        <filter name="group_partner" string="Cliente" context="{'group_by': 'partner_id'}"/>
+                        <filter name="group_account" string="Commessa" context="{'group_by': 'account_id'}"/>
+                        <filter name="group_contact" string="Contatto" context="{'group_by': 'contact_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
         <record model="ir.ui.view" id="view_res_partner_activity_storage_form">
             <field name="name">res.partner.activity.storage.form</field>
             <field name="model">res.partner.activity.storage</field>
@@ -79,7 +112,6 @@
                     <field name="amount_picking" string="Pick tot." readonly="1" sum="sum_stock"/>
                     <field name="amount_ddt" string="DDT tot." readonly="1" sum="sum_ddt"/>
                     <field name="amount_invoice" string="Fatt. tot." readonly="1" sum="sum_invoice"/>
-
                 </tree>
             </field>
         </record>

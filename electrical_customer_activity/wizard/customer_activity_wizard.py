@@ -538,9 +538,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         }
 
         # Intervent:
-        intervent_ids = res.get('intervent')
-        for intervent in intervent_pool.browse(
-                cr, uid, intervent_ids, context=context):
+        intervents = res.get('intervent', ())
+        for intervent in intervents:
             key = (
                 intervent.intervent_partner_id.id or False,
                 intervent.account_id.id or False,
@@ -555,9 +554,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 keys[key]['total_intervent_draft'] += 1
 
         # Picking:
-        picking_ids = res.get('picking')
-        for picking in picking_pool.browse(
-                cr, uid, picking_ids, context=context):
+        pickings = res.get('picking', ())
+        for picking in pickings:
             key = (
                 picking.partner_id.id or False,
                 picking.account_id.id or False,
@@ -569,9 +567,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
             keys[key]['total_picking'] += 1
 
         # DDT:
-        ddt_ids = res.get('ddt')
-        for ddt in picking_pool.browse(
-                cr, uid, ddt_ids, context=context):
+        ddts = res.get('ddt', ())
+        for ddt in ddts:
             key = (
                 ddt.partner_id.id or False,
                 ddt.account_id.id or False,
