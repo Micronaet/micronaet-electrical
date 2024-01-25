@@ -593,7 +593,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'res_model': 'res.partner.activity.storage',
             'view_id': tree_view_id,  # False
             'views': [(tree_view_id, 'tree')],  # , (form_view_id, 'form')
-            'domain': [('id', '=', selected_ids)],
+            'domain': [('id', 'in', selected_ids)],
             'context': context,
             'target': 'current',  # 'new'
             'nodestroy': False,
