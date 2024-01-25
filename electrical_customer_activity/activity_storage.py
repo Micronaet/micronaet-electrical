@@ -66,6 +66,39 @@ class ResPartnerActivityStorage(orm.Model):
     _order = 'name desc, partner_id, account_id'
 
     # Button to open list:
+    def open_wizard(self, cr, uid, ids, context=None):
+        """ Open wizard
+        """
+        if context is None:
+            context = {}
+
+        store = self.browse(cr, uid, ids, context=context)[0]
+        context.update({
+            'defualt_mode': 'complete',
+        })
+
+        form_view_id = False
+        # tree_view_id = model_pool.get_object_reference(
+        #    cr, uid,
+        #    'intervention_report',
+        #    'view_hr_analytic_timesheet_tree',
+        #     )[1]
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Wizard per report',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_id': False,
+            'res_model': 'res.partner.activity.wizard',
+            'view_id': form_view_id,
+            'views': [(form_view_id, 'form')],
+            'domain': [],
+            'context': context,
+            'target': 'new',
+            'nodestroy': False,
+            }
+
     def get_total_intervent_draft(self, cr, uid, ids, context=None):
         """ Open Intervent not invoiced
         """

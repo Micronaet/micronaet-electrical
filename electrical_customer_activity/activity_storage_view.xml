@@ -104,6 +104,7 @@
                     <field name="partner_id" readonly="1"/>
                     <field name="account_id" readonly="1"/>
                     <field name="contact_id" readonly="1"/>
+                    <button name="open_wizard" string="Apri il wizard per generare il report" type="object" icon="gtk-execute" />
 
                     <field name="stage_id"/>
                     <field name="note"/>
