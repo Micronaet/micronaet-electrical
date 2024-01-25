@@ -468,6 +468,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
         """ Store report data
         """
         store_pool = self.pool.get('res.partner.activity.storage')
+        model_pool = self.pool.get('ir.model.data')
+
         if context is None:
             context = {}
         context['collect_mode'] = True
@@ -511,17 +513,91 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         # Call original report with parameter:
         res = self.action_print_touched(cr, uid, [wizard_id], context=context)
-        pdb.set_trace()
 
-        # Clean previous month:
+        # Selected month yet present:
         store_ids = store_pool.search(cr, uid, [
             ('name', '=', name),
         ], context=context)
-        if store_ids:
-            store_pool.unlink(cr, uid, store_ids, context=context)
+        store_db = {}
+        for store in store_pool.browse(cr, uid, store_ids, context=context):
+            key = (
+                store.partner_id.id or False,
+                store.account_id.id or False,
+                store.contact_id.id or False,
+                )
+            store_db[key] = store.id  # keep store?
 
+        # todo for now used only Account page
         # Update data in stored items
-        return True  # List of items created
+        selected_ids = []
+        for record in res['account']:
+            (partner_name, account_name, has_picking, has_ddt, has_intervent,
+             partner_id, account_id) = record
+            key = (partner_id, account_id, False)
+
+            data = {
+                'name': name,
+                'from_date': from_date,
+                'to_date': to_date,
+                'partner_id': partner_id,
+                'account_id': account_id,
+                'contact_id': False,
+                # 'stage_id':
+
+                # Check:
+                'check_intervent': has_intervent,
+                'check_stock': has_picking,
+                'check_ddt': has_ddt,
+                'check_invoice': False,  # todo never Invoice?
+
+                # todo Totals:
+                'total_intervent': 0.0,
+                'total_stock': 0.0,
+                'total_ddt': 0.0,
+                'total_invoice': 0.0,
+            }
+
+            record_id = store_db.get(key)
+            if record_id:
+                # todo only if theres' difference?
+                store_pool.write(
+                    cr, uid, [record_id], data, context=context)
+                del(store_db.get[key])
+            else:
+                record_id = store_pool.write(cr, uid, data, context=context)
+            selected_ids.append(record_id)
+            # todo generate file?
+
+        # Deleting no more records:
+        for key in store_db:
+            remove_id = store_db[key]
+            store_pool.unlink(cr, uid, [remove_id], context=context)
+            # todo delete linked file
+
+        form_view_id = False
+        tree_view_id = model_pool.get_object_reference(
+            cr, uid,
+            'electrical_customer_activity',
+            'view_res_partner_activity_storage_tree',
+            )[1]
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Record selezionati'),
+            'view_type': 'form',
+            'view_mode': 'tree,form',
+            # 'res_id': ids[0],
+            'res_model': 'res.partner.activity.storage',
+            'view_id': tree_view_id,  # False
+            'views': [(form_view_id, 'form'), (tree_view_id, 'tree')],
+            'domain': [('id', '=', selected_ids)],
+            'context': context,
+            'target': 'current',  # 'new'
+            'nodestroy': False,
+            }
+        return {
+
+        }
 
     def action_print_touched(self, cr, uid, ids, context=None):
         """ List of partner touched in that period
@@ -725,7 +801,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # 2 Mode report:
             # -----------------------------------------------------------------
             if collect_mode:
-                data.append(partner)
+                data.append(partner.id or False)
                 collected_data['partner'].append(data)
             else:
                 excel_pool.write_xls_line(
@@ -783,7 +859,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # 2 Mode report:
             # -----------------------------------------------------------------
             if collect_mode:
-                data.extend([partner, account])
+                data.extend([partner.id or False, account.id of False])
                 collected_data['account'].append(data)
             else:
                 excel_pool.write_xls_line(
@@ -830,7 +906,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             # 2 Mode report:
             # -----------------------------------------------------------------
             if collect_mode:
-                data.append(contact)
+                data.append(contact.id or False)
                 collected_data['contact'].append(data)
             else:
                 excel_pool.write_xls_line(

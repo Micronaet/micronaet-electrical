@@ -67,6 +67,8 @@ class ResPartnerActivityStorage(orm.Model):
     _columns = {
         'name': fields.char('Mese', size=8, required=True),
         'note': fields.text('Note'),
+        'from_date': fields.date('Dalla data'),
+        'to_date': fields.date('Alla data'),
 
         'partner_id': fields.many2one('res.partner', 'Cliente'),
         'contact_id': fields.many2one('res.partner', 'Contatto'),
