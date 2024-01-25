@@ -467,7 +467,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
     def action_print_touched_store(self, cr, uid, ids, context=None):
         """ Store report data
         """
-        pdb.set_trace()
         if context is None:
             context = {}
         context['collect_mode'] = True
@@ -511,6 +510,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         # Call original report with parameter:
         res = self.action_print_touched(cr, uid, [wizard_id], context=context)
+        pdb.set_trace()
 
         # Update data in stored items
         return True  # List of items created
@@ -525,7 +525,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
             context = {}
         collect_mode = context.get('collect_mode')
         collected_data = {
+            'partner': [],
             'account': [],
+            'contact': [],
         }
 
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
