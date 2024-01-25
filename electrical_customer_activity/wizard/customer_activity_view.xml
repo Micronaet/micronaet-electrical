@@ -22,6 +22,8 @@
                    <header>
                        <button name="action_print" string="Print partner activity" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('mode','=','partner')]}" />
                        <button name="action_print_touched" string="Print partner touched" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('mode','!=','partner')]}" />
+                       <button name="action_print_touched_store" string="Aggiorna clienti movimentati (archivio)" type="object" icon="gtk-execute" class="oe_highlight" attrs="{'invisible': [('mode','!=','partner')]}"
+                               help="Ricalcola per il mese attuale tutti i clienti toccati e li salva nell'archivio"/>
                        O
                        <button string="Cancel" class="oe_link" special="cancel" />
                    </header>

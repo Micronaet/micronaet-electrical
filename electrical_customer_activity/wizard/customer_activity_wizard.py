@@ -101,6 +101,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 excel_color = excel_format[none_color]
             return total, ordinary, extra, excel_color
 
+        # ---------------------------------------------------------------------
+        #                         Procedure start:
+        # ---------------------------------------------------------------------
+        if not context:
+            context = {}
+        collect_mode = context.get('collect_mode')
+
         report_mode = wiz_browse.mode
 
         dow = {
@@ -457,9 +464,70 @@ class ResPartnerActivityWizard(orm.TransientModel):
     # -------------------------------------------------------------------------
     # Wizard button event:
     # -------------------------------------------------------------------------
+    def action_print_touched_store(self, cr, uid, ids, context=None):
+        """ Store report data
+        """
+        pdb.set_trace()
+        if context is None:
+            context = {}
+        context['collect_mode'] = True
+
+        # Create a wizard for call report element
+        # This month period:
+        now = datetime.now()
+        if ids:  # Comes from wizard (selected month)
+            this_wizard = self.browse(cr, uid, ids, context=context)[0]
+            name = this_wizard.from_date[:7]
+        else:  # Updated from scheduled (current month)
+            name = now.strftime('%Y-%m')
+
+        year = now.year
+        month = now.month
+        if month == 12:
+            new_month = 1
+            new_year = year + 1
+        else:
+            new_month = month + 1
+            new_year = year
+
+        from_date = '%s-01' % name
+        to_date = '%04d-%02d-01' % (new_year, new_month)
+        to_date_dt = datetime.strptime(to_date, DEFAULT_SERVER_DATE_FORMAT)
+        to_date = (to_date_dt - timedelta(days=1)).strftime(
+            DEFAULT_SERVER_DATE_FORMAT)
+
+        _logger.info('Generating stored data from %s to %s' % (
+            from_date, to_date))
+
+        wizard_id = self.create(cr, uid, {
+            'from_date': from_date,
+            'to_date': to_date,
+            'mode': 'partner',
+
+            'picking_mode': 'all',
+            'ddt_mode': 'all',  # 'ddt',  # Not invoiced (not all!)
+            'intervent_mode': 'all',   # 'pending',
+        }, context=context)
+
+        # Call original report with parameter:
+        res = self.action_print_touched(cr, uid, [wizard_id], context=context)
+
+        # Update data in stored items
+        return True  # List of items created
+
     def action_print_touched(self, cr, uid, ids, context=None):
         """ List of partner touched in that period
+            context:
+               - collect_mode: run in collect mode, return detail not report
+
         """
+        if not context:
+            context = {}
+        collect_mode = context.get('collect_mode')
+        collected_data = {
+            'account': [],
+        }
+
         wiz_browse = self.browse(cr, uid, ids, context=context)[0]
         from_date = wiz_browse.from_date
         to_date = wiz_browse.to_date
@@ -601,31 +669,32 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         #                         Excel report:
         # ---------------------------------------------------------------------
-        # Partner:
-        ws_name = 'Partner'
-        row = 0
-        header = [
-            'Partner', 'Consegne', 'DDT',
-            # 'Fatture',
-            'Interventi',
-            ]
-        width = [45, 10, 10, 10]
+        if not collect_mode:
+            # Partner:
+            ws_name = 'Partner'
+            row = 0
+            header = [
+                'Partner', 'Consegne', 'DDT',
+                # 'Fatture',
+                'Interventi',
+                ]
+            width = [45, 10, 10, 10]
 
-        excel_pool.create_worksheet(ws_name)
+            excel_pool.create_worksheet(ws_name)
 
-        # Load formats:
-        f_title = excel_pool.get_format('title')
-        f_header = excel_pool.get_format('header')
-        f_text = excel_pool.get_format('text')
-        f_number = excel_pool.get_format('number')
+            # Load formats:
+            f_title = excel_pool.get_format('title')
+            f_header = excel_pool.get_format('header')
+            f_text = excel_pool.get_format('text')
+            f_number = excel_pool.get_format('number')
 
-        # Setup columns
-        excel_pool.column_width(ws_name, width)
+            # Setup columns
+            excel_pool.column_width(ws_name, width)
 
-        # Print header
-        excel_pool.write_xls_line(
-            ws_name, row, header, default_format=f_header)
-        row += 1
+            # Print header
+            excel_pool.write_xls_line(
+                ws_name, row, header, default_format=f_header)
+            row += 1
 
         partner_ids = tuple(partner_set)
         for partner in sorted(partner_pool.browse(
@@ -642,11 +711,17 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 partner_id in intervent_partner_ids,
                 ]
 
-            excel_pool.write_xls_line(
-                ws_name, row, data,
-                default_format=f_text
-                )
-            row += 1
+            # -----------------------------------------------------------------
+            # 2 Mode report:
+            # -----------------------------------------------------------------
+            if collect_mode:
+                collected_data['partner'].append(data)
+            else:
+                excel_pool.write_xls_line(
+                    ws_name, row, data,
+                    default_format=f_text
+                    )
+                row += 1
 
         # Partner:
         ws_name = 'Commesse'
@@ -692,11 +767,17 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 account_id in intervent_account_ids,
                 ]
 
-            excel_pool.write_xls_line(
-                ws_name, row, data,
-                default_format=f_text
-                )
-            row += 1
+            # -----------------------------------------------------------------
+            # 2 Mode report:
+            # -----------------------------------------------------------------
+            if collect_mode:
+                collected_data['account'].append(data)
+            else:
+                excel_pool.write_xls_line(
+                    ws_name, row, data,
+                    default_format=f_text
+                    )
+                row += 1
 
         ws_name = 'Contatti'
         row = 0
@@ -706,7 +787,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
             'Interventi',
             ]
         width = [45, 10, 10, 10]
-
         excel_pool.create_worksheet(ws_name)
 
         # Setup columns
@@ -732,14 +812,23 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 contact_id in intervent_contact_ids,
                 ]
 
-            excel_pool.write_xls_line(
-                ws_name, row, data,
-                default_format=f_text
-                )
-            row += 1
+            # -----------------------------------------------------------------
+            # 2 Mode report:
+            # -----------------------------------------------------------------
+            if collect_mode:
+                collected_data['contact'].append(data)
+            else:
+                excel_pool.write_xls_line(
+                    ws_name, row, data,
+                    default_format=f_text
+                    )
+                row += 1
 
-        return excel_pool.return_attachment(
-            cr, uid, 'partner_moved')
+        if collect_mode:
+            return collected_data
+        else:
+            return excel_pool.return_attachment(
+                cr, uid, 'partner_moved')
 
     def action_print(self, cr, uid, ids, context=None):
         """ Event for button done
