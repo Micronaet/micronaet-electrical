@@ -74,7 +74,7 @@ class ResPartnerActivityStorage(orm.Model):
 
         store = self.browse(cr, uid, ids, context=context)[0]
         context.update({
-            'defualt_mode': 'complete',
+            'default_mode': 'complete',
         })
 
         form_view_id = False
