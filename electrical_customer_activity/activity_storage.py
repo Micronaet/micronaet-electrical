@@ -163,7 +163,6 @@ class ResPartnerActivityStorage(orm.Model):
     def get_total_ddt_draft(self, cr, uid, ids, context=None):
         """ Open DDT not invoiced
         """
-        pdb.set_trace()
         model_pool = self.pool.get('ir.model.data')
         store = self.browse(cr, uid, ids, context=context)[0]
 
