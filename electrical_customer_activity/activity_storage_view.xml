@@ -63,10 +63,10 @@
                     <field name="check_ddt" string="DDT" readonly="1"/>
                     <field name="check_invoice" string="FATT" readonly="1"/>
 
-                    <field name="total_intervent" string="Int tot." readonly="1"/>
-                    <field name="total_stock" string="Pick tot." readonly="1"/>
-                    <field name="total_ddt" string="DDT tot." readonly="1"/>
-                    <field name="total_invoice" string="Fatt. tot." readonly="1"/>
+                    <field name="total_intervent" string="Int tot." readonly="1" sum="sum_int"/>
+                    <field name="total_stock" string="Pick tot." readonly="1" sum="sum_stock"/>
+                    <field name="total_ddt" string="DDT tot." readonly="1" sum="sum_ddt"/>
+                    <field name="total_invoice" string="Fatt. tot." readonly="1" sum="sum_invoice"/>
 
                     <field name="stage_id"/>
                     <field name="note"/>
