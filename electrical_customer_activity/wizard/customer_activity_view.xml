@@ -45,10 +45,9 @@
                                     <field name="account_id" domain="[('type','in',['normal','contract']),'|',('partner_id','=',False),('partner_id','=',partner_id)]" attrs="{'invisible': [('mode','=','partner')]}" colspan="2"/><!--('state', '&lt;&gt;', 'close')/>-->
                                     <field name="no_account" attrs="{'invisible': [('mode','=','partner')]}"/>
 
-                                    <separator string="Private parameters:" colspan="4" attrs="{'invisible': [('mode', '!=', 'private')]}"/>
-                                    <field name="activity_material_discount" attrs="{'invisible': [('mode', '!=', 'private')]}"/>
-                                    <field name="activity_price" attrs="{'required': [('mode', '=', 'private')], 'invisible': [('mode', '!=', 'private')]}"/>
-
+                                    <separator string="Private parameters:" colspan="4" attrs="{'invisible': [('mode', 'not in', ('private', 'complete'))]}"/>
+                                    <field name="activity_material_discount" attrs="{'invisible': [('mode', 'not in', ('private', 'complete'))]}"/>
+                                    <field name="activity_price" attrs="{'required': [('mode', 'in', ('private', 'complete'))], 'invisible': [('mode', 'not in', ('private', 'complete'))]}"/>
                                </group>
                             </page>
                             <page string="Contabilità">

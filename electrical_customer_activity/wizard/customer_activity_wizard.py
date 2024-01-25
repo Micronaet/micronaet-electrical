@@ -467,6 +467,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
     def action_print_touched_store(self, cr, uid, ids, context=None):
         """ Store report data
         """
+        store_pool = self.pool.get('res.partner.activity.storage')
         if context is None:
             context = {}
         context['collect_mode'] = True
@@ -511,6 +512,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # Call original report with parameter:
         res = self.action_print_touched(cr, uid, [wizard_id], context=context)
         pdb.set_trace()
+
+        # Clean previous month:
+        store_ids = store_pool.search(cr, uid, [
+            ('name', '=', name),
+        ], context=context)
+        if store_ids:
+            store_pool.unlink(cr, uid, store_ids, context=context)
 
         # Update data in stored items
         return True  # List of items created
