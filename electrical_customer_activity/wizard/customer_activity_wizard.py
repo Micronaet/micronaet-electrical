@@ -727,18 +727,24 @@ class ResPartnerActivityWizard(orm.TransientModel):
         # ---------------------------------------------------------------------
         # 2 search for different date value
         domain = [
-            ('is_invoiced', '=', False),
             ('delivery_date', '>=', '%s 00:00:00' % from_date),
             ('delivery_date', '<=', '%s 23:59:59' % to_date),
             ]
+        if not collect_mode:
+            # Collect mode read all DDT (split after)
+            domain.append(('is_invoiced', '=', False))
+
         ddt_delivery_ids = set(
             ddt_pool.search(cr, uid, domain, context=context))
 
         domain = [
-            ('is_invoiced', '=', False),
             ('date', '>=', '%s 00:00:00' % from_date),
             ('date', '<=', '%s 23:59:59' % to_date),
             ]
+        if not collect_mode:
+            # Collect mode read all DDT (split after)
+            domain.append(('is_invoiced', '=', False))
+
         ddt_date_ids = set(
             ddt_pool.search(cr, uid, domain, context=context))
         ddt_ids = tuple(ddt_delivery_ids | ddt_date_ids)
