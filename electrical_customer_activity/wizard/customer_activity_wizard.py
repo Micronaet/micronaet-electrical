@@ -469,10 +469,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
         """
         store_pool = self.pool.get('res.partner.activity.storage')
         model_pool = self.pool.get('ir.model.data')
-        picking_pool = self.pool.get('stock.picking')
-        ddt_pool = self.pool.get('stock.ddt')
-        # invoice_pool = self.pool.get('account.invoice')
-        intervent_pool = self.pool.get('hr.analytic.timesheet')
 
         if context is None:
             context = {}

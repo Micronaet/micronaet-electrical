@@ -68,31 +68,88 @@ class ResPartnerActivityStorage(orm.Model):
     def get_total_intervent_draft(self, cr, uid, ids, context=None):
         """ Open Intervent not invoiced
         """
-        return True
+        if context is None:
+            context = {}
+
+        model_pool = self.pool.get('ir.model.data')
+        intervent_pool = self.pool.get('hr.analytic.timesheet')
+
+        store = self.browse(cr, uid, ids, context=context)[0]
+        domain = [
+            ('date_start', '>=', store.from_date),
+            ('date_start', '<=', store.to_date),
+            ('intervent_partner_id', '<=', store.intervent_partner_id.id),
+            ('intervent_contact_id', '<=', store.intervent_contact_id.id),
+            ('account_id', '<=', store.account_id.id),
+            ]
+        if context.get('is_invoiced'):
+            domain.append(('is_invoiced', '=', True))
+            name = 'Interventi fatturati'
+        else:
+            domain.append(('is_invoiced', '=', False))
+            name = 'Interventi da fatture'
+
+        record_ids = intervent_pool.search(cr, uid, domain, context=context)
+        # tree_view_id = model_pool.get_object_reference(
+        #    cr, uid, 'electrical_customer_activity',
+        #    'view_res_partner_activity_storage_tree',
+        #    )[1]
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': name,
+            'view_type': 'form',
+            'view_mode': 'tree,form',
+            # 'res_id': ids[0],
+            'res_model': 'hr.analytic.timesheet',
+            'view_id': False,
+            'views': [(False, 'tree'), (False, 'form')],
+            'domain': [('id', 'in', record_ids)],
+            'context': context,
+            'target': 'current',  # 'new'
+            'nodestroy': False,
+            }
 
     def get_total_intervent_invoice(self, cr, uid, ids, context=None):
         """ Open Intervent invoiced
         """
-        return True
+        if context is None:
+            context = {}
+
+        context['is_invoiced'] = True
+
+        return self.get_total_intervent_invoice(cr, uid, ids, context=context)
 
     def get_total_picking(self, cr, uid, ids, context=None):
         """ Open Picking
         """
+        store = self.browse(cr, uid, ids, context=context)[0]
+
+        picking_pool = self.pool.get('stock.picking')
         return True
 
     def get_total_ddt_draft(self, cr, uid, ids, context=None):
         """ Open DDT not invoiced
         """
+        store = self.browse(cr, uid, ids, context=context)[0]
+
+        ddt_pool = self.pool.get('stock.ddt')
         return True
 
     def get_total_ddt_invoice(self, cr, uid, ids, context=None):
         """ Open DDT invoiced
         """
+        store = self.browse(cr, uid, ids, context=context)[0]
+
+        ddt_pool = self.pool.get('stock.ddt')
         return True
 
     def get_total_invoice(self, cr, uid, ids, context=None):
         """ Open Invoice
         """
+        store = self.browse(cr, uid, ids, context=context)[0]
+
+        invoice_pool = self.pool.get('account.invoice')
         return True
 
     _columns = {

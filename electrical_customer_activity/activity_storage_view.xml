@@ -26,10 +26,10 @@
                             domain="[('total_intervent_draft','=',0), ('total_picking','=',0), ('total_ddt_draft','=',0)]"/>
 
                     <filter name="total_intervent_draft_on" string="INT" domain="[('total_intervent_draft','>',0)]"/>
-                    <filter name="total_intervent_invoice_on" string="INT fatt." domain="[('total_intervent_invoice','>',0)]"/>
+                    <filter name="total_intervent_invoice_on" string="INT (ft)" domain="[('total_intervent_invoice','>',0)]"/>
                     <filter name="total_picking_on" string="PICK" domain="[('total_picking','>',0)]"/>
                     <filter name="total_ddt_draft_on" string="DDT" domain="[('total_ddt_draft','>',0)]"/>
-                    <filter name="total_ddt_invoice_on" string="DDT fatt." domain="[('total_ddt_invoice','>',0)]"/>
+                    <filter name="total_ddt_invoice_on" string="DDT (ft)" domain="[('total_ddt_invoice','>',0)]"/>
                     <filter name="total_invoice_on" string="FATT" domain="[('total_invoice','>',0)]"/>
 
                     <group expand="0" string="Group By...">
