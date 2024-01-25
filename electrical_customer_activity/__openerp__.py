@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 ###############################################################################
 #
-# ODOO (ex OpenERP) 
+# ODOO (ex OpenERP)
 # Open Source Management Solution
 # Copyright (C) 2001-2015 Micronaet S.r.l. (<https://micronaet.com>)
 # Developer: Nicola Riolini @thebrush (<https://it.linkedin.com/in/thebrush>)
@@ -13,7 +13,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
@@ -41,10 +41,10 @@
         'product',
         'metel_pricelist',
         'electrical_account_expence',
-        
+
         # Stock operation:
         'electrical_l10n_it_ddt',
-        
+
         # Intervent data:
         'intervention_report',
         'intervention_report_analysis',
@@ -52,8 +52,11 @@
     'init_xml': [],
     'demo': [],
     'data': [
+        'security/ir.model.access.csv',
+
         'wizard/customer_activity_view.xml',
         'product_view.xml',
+        'activity_storage_view.xml',
         ],
     'active': False,
     'installable': True,

@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <!-- res.partner.activity.storage -->
+        <record model="ir.ui.view" id="view_res_partner_activity_storage_form">
+            <field name="name">res.partner.activity.storage.form</field>
+            <field name="model">res.partner.activity.storage</field>
+            <field name="arch" type="xml">
+                <form string="Attività clienti" version="7.0">
+                    <sheet>
+                        <field name="partner_id"/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="view_res_partner_activity_storage_tree">
+            <field name="name">res.partner.activity.storage.tree</field>
+            <field name="model">res.partner.activity.storage</field>
+            <field name="arch" type="xml">
+                <tree string="Attività clienti">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="account_id"/>
+                    <field name="contact_id"/>
+
+                    <field name="check_intervent"/>
+                    <field name="check_stock"/>
+                    <field name="check_ddt"/>
+                    <field name="check_invoice"/>
+
+                    <field name="total_intervent"/>
+                    <field name="total_stock"/>
+                    <field name="total_ddt"/>
+                    <field name="total_invoice"/>
+
+                    <field name="stage_id"/>
+                    <field name="note"/>
+                </tree>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_res_partner_activity_storage">
+            <field name="name">Attività cliente</field>
+            <field name="res_model">res.partner.activity.storage</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_res_partner_activity_storage_tree"/>
+      </record>
+
+      <menuitem
+           parent="base.menu_partner_form"
+           id="menu_res_partner_activity_storage"
+           action="action_res_partner_activity_storage"
+           sequence="20"
+           />
+    </data>
+</openerp>
+
