@@ -22,6 +22,7 @@
 ###############################################################################
 
 import os
+import pdb
 import sys
 import logging
 import openerp
@@ -162,6 +163,7 @@ class ResPartnerActivityStorage(orm.Model):
     def get_total_ddt_draft(self, cr, uid, ids, context=None):
         """ Open DDT not invoiced
         """
+        pdb.set_trace()
         model_pool = self.pool.get('ir.model.data')
         store = self.browse(cr, uid, ids, context=context)[0]
 
@@ -226,7 +228,7 @@ class ResPartnerActivityStorage(orm.Model):
             context = {}
 
         context['is_invoiced'] = True
-        return self.get_total_intervent_draft(cr, uid, ids, context=context)
+        return self.get_total_ddt_draft(cr, uid, ids, context=context)
 
     def get_total_invoice(self, cr, uid, ids, context=None):
         """ Open Invoice
