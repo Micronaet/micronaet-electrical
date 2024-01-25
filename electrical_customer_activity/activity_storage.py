@@ -220,7 +220,7 @@ class ResPartnerActivityStorage(orm.Model):
             'nodestroy': False,
             }
 
-    def get_total_ddt_invoiced(self, cr, uid, ids, context=None):
+    def get_total_ddt_invoice(self, cr, uid, ids, context=None):
         """ Open DDT invoiced
         """
         if context is None:
