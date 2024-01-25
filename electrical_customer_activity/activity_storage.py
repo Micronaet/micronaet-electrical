@@ -112,26 +112,53 @@ class ResPartnerActivityStorage(orm.Model):
             }
 
     def get_total_intervent_invoice(self, cr, uid, ids, context=None):
-        """ Open Intervent invoiced
+        """ Open Intervent invoiced (call original button)
         """
         if context is None:
             context = {}
 
         context['is_invoiced'] = True
-
         return self.get_total_intervent_draft(cr, uid, ids, context=context)
 
     def get_total_picking(self, cr, uid, ids, context=None):
         """ Open Picking
         """
+        model_pool = self.pool.get('ir.model.data')
         store = self.browse(cr, uid, ids, context=context)[0]
 
         picking_pool = self.pool.get('stock.picking')
-        return True
+        domain = [
+            ('min_date', '>=', '%s 00:00:00' % store.from_date),
+            ('min_date', '<=', '%s 23:59:59' % store.to_date),
+            ('ddt_id', '=', False),  # Not DDT
+            ('pick_move', '=', 'out'),  # Only out movement
+            ]
+        record_ids = picking_pool.search(cr, uid, domain, context=context)
+        tree_view_id = model_pool.get_object_reference(
+            cr, uid,
+            'fast_stock_move',
+            'view_stock_picking_inline_moves_tree_fast',
+            )[1]
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Picking aperti',
+            'view_type': 'form',
+            'view_mode': 'tree,form',
+            # 'res_id': ids[0],
+            'res_model': 'stock.picking',
+            'view_id': tree_view_id,
+            'views': [(tree_view_id, 'tree'), (False, 'form')],
+            'domain': [('id', 'in', record_ids)],
+            'context': context,
+            'target': 'current',  # 'new'
+            'nodestroy': False,
+            }
 
     def get_total_ddt_draft(self, cr, uid, ids, context=None):
         """ Open DDT not invoiced
         """
+        model_pool = self.pool.get('ir.model.data')
         store = self.browse(cr, uid, ids, context=context)[0]
 
         ddt_pool = self.pool.get('stock.ddt')
@@ -140,6 +167,7 @@ class ResPartnerActivityStorage(orm.Model):
     def get_total_ddt_invoice(self, cr, uid, ids, context=None):
         """ Open DDT invoiced
         """
+        model_pool = self.pool.get('ir.model.data')
         store = self.browse(cr, uid, ids, context=context)[0]
 
         ddt_pool = self.pool.get('stock.ddt')
@@ -148,6 +176,7 @@ class ResPartnerActivityStorage(orm.Model):
     def get_total_invoice(self, cr, uid, ids, context=None):
         """ Open Invoice
         """
+        model_pool = self.pool.get('ir.model.data')
         store = self.browse(cr, uid, ids, context=context)[0]
 
         invoice_pool = self.pool.get('account.invoice')
