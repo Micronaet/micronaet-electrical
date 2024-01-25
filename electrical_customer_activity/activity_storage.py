@@ -52,7 +52,7 @@ class ResPartnerActivityStorageStage(orm.Model):
 
     _columns = {
         'name': fields.char('Nome'),
-        'note': fields.note('Note'),
+        'note': fields.text('Note'),
         }
 
 

@@ -39,7 +39,7 @@
             </field>
         </record>
         <record model="ir.actions.act_window" id="action_res_partner_activity_storage">
-            <field name="name">Attività cliente</field>
+            <field name="name">Archivio attività</field>
             <field name="res_model">res.partner.activity.storage</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
