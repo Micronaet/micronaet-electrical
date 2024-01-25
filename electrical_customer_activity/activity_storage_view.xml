@@ -58,6 +58,9 @@
                     <field name="account_id" readonly="1"/>
                     <field name="contact_id" readonly="1"/>
 
+                    <field name="stage_id"/>
+                    <field name="note"/>
+
                     <field name="check_intervent" string="INT" readonly="1"/>
                     <field name="check_stock" string="PICK" readonly="1"/>
                     <field name="check_ddt" string="DDT" readonly="1"/>
@@ -68,8 +71,6 @@
                     <field name="total_ddt" string="DDT tot." readonly="1" sum="sum_ddt"/>
                     <field name="total_invoice" string="Fatt. tot." readonly="1" sum="sum_invoice"/>
 
-                    <field name="stage_id"/>
-                    <field name="note"/>
                 </tree>
             </field>
         </record>
