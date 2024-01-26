@@ -176,6 +176,11 @@ class ResPartnerActivityStorage(orm.Model):
             ctx = context.copy()
             ctx['save_fullname'] = fullname
             wizard_pool.action_print(cr, uid, [wizard_id], context=ctx)
+
+            # Store filename for delete operation:
+            self.write(cr, uid, ids, {
+                'fullname': fullname,
+            }, context=context)
         return True
 
     def get_wizard_setup_data(self, store, mode='default'):
