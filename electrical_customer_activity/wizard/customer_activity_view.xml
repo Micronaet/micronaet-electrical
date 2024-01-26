@@ -84,12 +84,6 @@
           <field name="target">new</field>
           <field name="view_id" ref="res_partner_activity_wizard_view"/>
       </record>
-      <menuitem
-           parent="base.menu_partner_form"
-           id="menu_res_partner_activity_wizard_view"
-           action="action_res_partner_activity_wizard_view"
-           sequence="10"
-           />
     </data>
 </openerp>
 

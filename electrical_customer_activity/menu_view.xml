@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <menuitem
+            parent="base.menu_partner_form"
+            id="menu_res_partner_activity_root"
+            name="Attività cliente"
+            sequence="20"
+            />
+            <menuitem
+                parent="menu_res_partner_activity_root"
+                id="menu_res_partner_activity_storage"
+                action="action_res_partner_activity_storage"
+                sequence="10"
+                />
+            <menuitem
+                parent="menu_res_partner_activity_root"
+                id="menu_res_partner_activity_wizard_view"
+                action="action_res_partner_activity_wizard_view"
+                sequence="20"
+                />
+            <menuitem
+                parent="menu_res_partner_activity_root"
+                id="menu_res_partner_activity_configuration"
+                sequence="90"
+                />
+                <menuitem
+                    parent="menu_res_partner_activity_configuration"
+                    id="menu_res_partner_activity_configuration_stage"
+                    action="action_res_partner_activity_storage_stage"
+                    sequence="10"
+                    />
+
+    </data>
+</openerp>
+
