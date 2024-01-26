@@ -57,6 +57,7 @@
         'wizard/customer_activity_view.xml',
         'product_view.xml',
         'activity_storage_view.xml',
+        'menu_view.xml',
         ],
     'active': False,
     'installable': True,

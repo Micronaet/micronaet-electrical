@@ -1,4 +1,6 @@
 "id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
 access_res_partner_activity_storage_stage_user,res.partner.activity.storage.stage,model_res_partner_activity_storage_stage,base.group_user,1,1,1,1
 access_res_partner_activity_storage_user,res.partner.activity.storage,model_res_partner_activity_storage,base.group_user,1,1,1,1
+access_res_partner_activity_folder_user,res.partner.activity.folder,model_res_partner_activity_folder,base.group_user,1,1,1,1
+access_res_partner_activity_filename_user,res.partner.activity.filename,model_res_partner_activity_filename,base.group_user,1,1,1,1
 

@@ -43,6 +43,50 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 _logger = logging.getLogger(__name__)
 
 
+class ResPartnerActivityFolder(orm.Model):
+    """ Model name: Res Partner Folder
+    """
+
+    _name = 'res.partner.activity.folder'
+    _description = 'Activity folder'
+    _order = 'name'
+
+    _columns = {
+        'name': fields.char('Nome'),
+        'path': fields.char(
+            'Percorso',
+            help='Utilizzare path formato Linux File system, es.'
+                 '/home/odoo/filestore oppure'
+                 '~/filestore'),
+        }
+
+
+class ResPartnerActivityFilename(orm.Model):
+    """ Model name: Res Partner File
+    """
+
+    _name = 'res.partner.activity.filename'
+    _description = 'Activity template filename'
+    _order = 'name'
+
+    _columns = {
+        'code': fields.char('Codice', required=True),
+        'name': fields.char('Nome', required=True),
+        'folder_id': fields.many2one(
+            'res.partner.activity.folder', 'Cartella base', required=True),
+        'filename': fields.char(
+            'Nome file', required=True,
+            help='Utilizzare path formato Linux File system unito ad alcuni'
+                 'parametri disponibili, il percoro parte dalla cartella '
+                 'di base, es.'
+                 '{year}/{month}/{customer}_complete_report.xlsx '
+                 'il programma sostituirà le parti e il nome file diventerà:'
+                 '/home/odoo/filestore/2024/01/ROSSI_complete_report.xlsx'
+                 ),
+        'note': fields.text('Note'),
+        }
+
+
 class ResPartnerActivityStorageStage(orm.Model):
     """ Model name: Res Partner Activity Storage
     """

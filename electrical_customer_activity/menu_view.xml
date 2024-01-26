@@ -2,10 +2,10 @@
 <openerp>
     <data>
         <menuitem
-            parent="base.menu_partner_form"
+            parent="base.menu_sales"
             id="menu_res_partner_activity_root"
             name="Attività cliente"
-            sequence="20"
+            sequence="0"
             />
             <menuitem
                 parent="menu_res_partner_activity_root"
@@ -22,6 +22,7 @@
             <menuitem
                 parent="menu_res_partner_activity_root"
                 id="menu_res_partner_activity_configuration"
+                name="Configurazione"
                 sequence="90"
                 />
                 <menuitem
