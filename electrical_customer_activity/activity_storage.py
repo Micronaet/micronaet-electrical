@@ -165,7 +165,38 @@ class ResPartnerActivityStorage(orm.Model):
                     _('Impossibile creare il percorso %s!'
                       'Probabilmente vanno puliti dei caratteri.' % fullname),
                 )
+
+            # Generate Wizard for print report:
+            data = self.get_wizard_setup_data(store, mode='')
+            wizard_id = self.create(cr, uid, data, context=context)
+            # todo force name here
+            ctx = context.copy()
+            ctx['save_fullname'] = fullname
+            self.action_print(cr, uid, [wizard_id], context=ctx)
         return True
+
+    def get_wizard_setup_data(self, store, mode='default'):
+        """ Generate wizard data for open or generate report
+            mode = '' or 'default'
+        """
+        if mode:
+            mode = '%s_' % mode
+
+        return {
+            '%smode' % mode: 'complete',
+
+            '%sfrom_date' % mode: store.from_date,
+            '%sto_date' % mode: store.to_date,
+
+            '%spartner_id' % mode: store.partner_id.id,
+            '%saccount_id' % mode: store.account_id.id,
+            '%scontact_id' % mode: store.contact_id.id,
+
+            '%spicking_mode' % mode: 'all',
+            '%sddt_mode' % mode: 'all',  # 'ddt',  # Not invoiced (not all!)
+            '%sintervent_mode' % mode: 'all',  # 'pending',
+            '%sactivity_price' % mode: 'lst_price',
+        }
 
     def open_wizard(self, cr, uid, ids, context=None):
         """ Open wizard
@@ -174,21 +205,7 @@ class ResPartnerActivityStorage(orm.Model):
             context = {}
 
         store = self.browse(cr, uid, ids, context=context)[0]
-        context.update({
-            'default_mode': 'complete',
-
-            'default_from_date': store.from_date,
-            'default_to_date': store.to_date,
-
-            'default_partner_id': store.partner_id.id,
-            'default_account_id': store.account_id.id,
-            'default_contact_id': store.contact_id.id,
-
-            'default_picking_mode': 'all',
-            'default_ddt_mode': 'all',  # 'ddt',  # Not invoiced (not all!)
-            'default_intervent_mode': 'all',  # 'pending',
-            'default_activity_price': 'lst_price',
-        })
+        context.update(self.get_wizard_setup_data(store))
 
         form_view_id = False
         # tree_view_id = model_pool.get_object_reference(

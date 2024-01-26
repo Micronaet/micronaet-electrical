@@ -134,6 +134,12 @@
                             domain="[('partner_id.name','!=','***'),('partner_id','!=',False)]"/>
                     <filter name="partner_contact" string="Privati"
                             domain="['|',('partner_id.name','=','***'),('partner_id','=',False)]"/>
+                    <filter name="account_M" string="Manutenzioni"
+                            domain="[('account_id.code','=ilike','M%')]"/>
+                    <filter name="account_A" string="Amministrazione"
+                            domain="[('account_id.code','=ilike','A%')]"/>
+                    <filter name="account_no" string="Commesse"
+                            domain="[('account_id','!=',False),('account_id.code','=ilike','A%'),('account_id.code','=ilike','M%')]"/>
 
                     <filter name="state_pending" string="Con pendenze"
                             domain="['|', '|', ('total_intervent_draft','>',0), ('total_picking','>',0), ('total_ddt_draft','>',0)]"/>
