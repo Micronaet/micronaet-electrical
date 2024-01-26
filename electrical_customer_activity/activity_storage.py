@@ -203,12 +203,11 @@ class ResPartnerActivityStorage(orm.Model):
         # Partner or contact used:
         partner = store.partner_id or store.contact_id
         if partner:
-            activity_material_discount = partner.activity_material_discount \
-                                         or 'lst_price'
-            activity_price = partner.activity_price
+            activity_material_discount = partner.activity_material_discount
+            activity_price = partner.activity_price or 'lst_price'
         else:
-            activity_material_discount = 'lst_price'
-            activity_price = 0.0
+            activity_material_discount = 0.0
+            activity_price = 'lst_price'
 
         return {
             '%smode' % mode: 'complete',
