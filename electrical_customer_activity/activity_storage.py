@@ -188,9 +188,8 @@ class ResPartnerActivityStorage(orm.Model):
             summary_data = wizard_pool.action_print(
                 cr, uid, [wizard_id], context=ctx)
 
-            pdb.set_trace()
-            for ws_name in summary_data:
-                summary_data = summary_data[ws_name]['data']
+            # for ws_name in summary_data:
+            #     summary_data = summary_data[ws_name]['data']
 
             # Store filename for delete operation:
             self.write(cr, uid, ids, {

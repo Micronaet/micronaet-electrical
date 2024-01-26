@@ -2030,7 +2030,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                         default_format=f_text
                                         )
                                     sheet['row'] += 1
-                        else: # no
+                        else:  # no
                             data = self.data_mask_filter([
                                 # Header
                                 ddt.account_id.name or 'NON ASSEGNATA',
@@ -3123,6 +3123,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         if save_fullname:
             _logger.info('Save as file: %s' % save_fullname)
             excel_pool.save_file_as(save_fullname)
+            pdb.set_trace()
             return summary
         else:
             _logger.info('Return as report')
