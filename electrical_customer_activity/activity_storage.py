@@ -262,14 +262,26 @@ class ResPartnerActivityStorage(orm.Model):
             ('intervent_contact_id', '=', store.contact_id.id),
             ('account_id', '=', store.account_id.id),
             ]
+
+        # Mode A: Intervent invoiced
         if context.get('is_invoiced'):
             domain.append(('is_invoiced', '=', True))
             name = 'Interventi fatturati'
         else:
+        # Mode B: Intervent not invoiced:
             domain.append(('is_invoiced', '=', False))
             name = 'Interventi da fatture'
 
         record_ids = intervent_pool.search(cr, uid, domain, context=context)
+        # Mode C: Mark as invoiced all draft intervent
+        if context.get('mark_invoiced') and record_ids:
+            intervent_pool.write(cr, uid, record_ids, {
+                'is_invoiced': True,
+                }, context=context)
+            _logger.warning('Update as invoices %s intervent' % len(
+                record_ids))
+            return len(record_ids)
+
         tree_view_id = model_pool.get_object_reference(
             cr, uid,
             'intervention_report',
@@ -299,6 +311,23 @@ class ResPartnerActivityStorage(orm.Model):
 
         context['is_invoiced'] = True
         return self.get_total_intervent_draft(cr, uid, ids, context=context)
+
+    def mark_invoiced_intervent_draft(self, cr, uid, ids, context=None):
+        """ Set as invoiced seleted draft intervent
+        """
+        if context is None:
+            context = {}
+
+        context['mark_invoiced'] = True
+        updated = self.get_total_intervent_draft(cr, uid, ids, context=context)
+        if updated:
+            store = self.browse(cr, uid, ids, context=context)[0]
+            total_intervent_invoice = store.total_intervent_invoice + updated
+            self.write(cr, uid, ids, {
+                'total_intervent_draft': 0,
+                'total_intervent_invoice': total_intervent_invoice,
+            }, context=context)
+        return True
 
     def get_total_picking(self, cr, uid, ids, context=None):
         """ Open Picking
