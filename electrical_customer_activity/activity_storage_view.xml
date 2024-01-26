@@ -261,10 +261,19 @@
             </field>
         </record>
         <record model="ir.actions.act_window" id="action_res_partner_activity_storage">
-            <field name="name">Archivio attività</field>
+            <field name="name">Archivio attività azienda</field>
             <field name="res_model">res.partner.activity.storage</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
+            <field name="domain">[('partner_id.name','!=','***'),('partner_id','!=',False)]</field>
+            <field name="view_id" ref="view_res_partner_activity_storage_tree"/>
+        </record>
+        <record model="ir.actions.act_window" id="action_res_partner_activity_storage_private">
+            <field name="name">Archivio attività privato</field>
+            <field name="res_model">res.partner.activity.storage</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">['|',('partner_id.name','=','***'),('partner_id','=',False)]</field>
             <field name="view_id" ref="view_res_partner_activity_storage_tree"/>
         </record>
     </data>

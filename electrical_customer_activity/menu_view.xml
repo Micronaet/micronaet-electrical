@@ -15,10 +15,16 @@
                 />
             <menuitem
                 parent="menu_res_partner_activity_root"
+                id="menu_res_partner_activity_storage_private"
+                action="action_res_partner_activity_storage_private"
+                sequence="20"
+                />
+
+            <menuitem
+                parent="menu_res_partner_activity_root"
                 id="menu_res_partner_activity_wizard_view"
                 action="action_res_partner_activity_wizard_view"
-                name="Wizard di stampa"
-                sequence="20"
+                sequence="30"
                 />
             <menuitem
                 parent="menu_res_partner_activity_root"

@@ -77,7 +77,7 @@
             </field>
       </record>
       <record model="ir.actions.act_window" id="action_res_partner_activity_wizard_view">
-          <field name="name">Customer activity</field>
+          <field name="name">Wizard stampa attività</field>
           <field name="res_model">res.partner.activity.wizard</field>
           <field name="view_type">form</field>
           <field name="view_mode">form</field>
