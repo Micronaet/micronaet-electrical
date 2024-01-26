@@ -55,7 +55,7 @@ class ResPartnerActivityFolder(orm.Model):
         'name': fields.char('Nome'),
         'note': fields.text('Note'),
         'path': fields.char(
-            'Percorso',
+            'Percorso', size=60,
             help='Utilizzare path formato Linux File system, es.'
                  '/home/odoo/filestore oppure'
                  '~/filestore'),
@@ -76,7 +76,7 @@ class ResPartnerActivityFilename(orm.Model):
         'folder_id': fields.many2one(
             'res.partner.activity.folder', 'Cartella base', required=True),
         'filename': fields.char(
-            'Nome file', required=True,
+            'Nome file', required=True, size=200,
             help='Utilizzare path formato Linux File system unito ad alcuni'
                  'parametri disponibili, il percoro parte dalla cartella '
                  'di base, es.'
@@ -129,26 +129,25 @@ class ResPartnerActivityStorage(orm.Model):
             os.path.expanduser(file.folder_id.path),
             file.filename,
         )
-        pdb.set_trace()
         for store in self.browse(cr, uid, ids, context=context):
             name = store.name
-            partner = store.partner_id.name or ''
-            account = store.account_id.name or ''
-            contact = store.contact_id.name or ''
+            customer = (store.partner_id.name or '').strip()
+            account = (store.account_id.name or '').strip()
+            contact = (store.contact_id.name or '').strip()
             year = store.name[:4]
             month = store.name[-2:]
-            template_name.format(
+            fullname = template_name.format(
                 name=name,
-                partner=partner,
+                customer=customer,
                 account=account,
                 contact=contact,
                 year=year,
                 month=month)
-            _logger.info('Creating report: %s' % template_name)
-            folder = os.path.dirname(template_name)
-            filename = os.path.basename(template_name)
+            folder = os.path.dirname(fullname)
+            filename = os.path.basename(fullname)
+            _logger.info('Creating report: %s' % fullname)
             os.system('mkdir -p %s' % folder)
-
+            os.system('touch %s' % fullname)
         return True
 
     def open_wizard(self, cr, uid, ids, context=None):
