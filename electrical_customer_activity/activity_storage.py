@@ -200,6 +200,16 @@ class ResPartnerActivityStorage(orm.Model):
         if mode:
             mode = '%s_' % mode
 
+        # Partner or contact used:
+        partner = store.partner_id or store.contact_id
+        if partner:
+            activity_material_discount = partner.activity_material_discount \
+                                         or 'lst_price'
+            activity_price = partner.activity_price
+        else:
+            activity_material_discount = 'lst_price'
+            activity_price = 0.0
+
         return {
             '%smode' % mode: 'complete',
 
@@ -213,7 +223,9 @@ class ResPartnerActivityStorage(orm.Model):
             '%spicking_mode' % mode: 'all',
             '%sddt_mode' % mode: 'all',  # 'ddt',  # Not invoiced (not all!)
             '%sintervent_mode' % mode: 'all',  # 'pending',
-            '%sactivity_price' % mode: 'lst_price',
+
+            '%sactivity_price' % mode: activity_price,
+            '%activity_material_discount' % mode: activity_material_discount,
         }
 
     def open_wizard(self, cr, uid, ids, context=None):
