@@ -500,9 +500,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
             names = [now.strftime('%Y-%m')]
 
         _logger.info('Generating this months: %s' % (names, ))
-        pdb.set_trace()
         selected_ids = []  # List of touched:
         for name in names:
+            _logger.info('Generating this month: %s' % name)
             name_part = name.split('-')
             year = int(name_part[0])
             month = int(name_part[1])
