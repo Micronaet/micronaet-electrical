@@ -188,8 +188,8 @@ class ResPartnerActivityStorage(orm.Model):
             summary_data = wizard_pool.action_print(
                 cr, uid, [wizard_id], context=ctx)
 
-            # for ws_name in summary_data:
-            #     summary_data = summary_data[ws_name]['data']
+            for block in summary_data:
+                _logger.info(summary_data[block])
 
             # Store filename for delete operation:
             self.write(cr, uid, ids, {

@@ -3128,8 +3128,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
         if save_fullname:
             _logger.info('Save as file: %s' % save_fullname)
             excel_pool.save_file_as(save_fullname)
-            pdb.set_trace()
-            return summary
+            return save_summary
         else:
             _logger.info('Return as report')
             return excel_pool.return_attachment(cr, uid, 'partner_activity')
