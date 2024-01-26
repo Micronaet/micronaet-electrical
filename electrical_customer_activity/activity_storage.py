@@ -122,6 +122,8 @@ class ResPartnerActivityStorage(orm.Model):
             return name
 
         file_pool = self.pool.get('res.partner.activity.filename')
+        wizard_pool = self.pool.get('res.partner.activity.wizard')
+
         file_ids = file_pool.search(cr, uid, [
             ('code', '=', 'ACTIVITY'),
         ], context=context)
@@ -168,11 +170,12 @@ class ResPartnerActivityStorage(orm.Model):
 
             # Generate Wizard for print report:
             data = self.get_wizard_setup_data(store, mode='')
-            wizard_id = self.create(cr, uid, data, context=context)
-            # todo force name here
+            wizard_id = wizard_pool.create(cr, uid, data, context=context)
+
+            # Run Print button in wizard force save as filename:
             ctx = context.copy()
             ctx['save_fullname'] = fullname
-            self.action_print(cr, uid, [wizard_id], context=ctx)
+            wizard_pool.action_print(cr, uid, [wizard_id], context=ctx)
         return True
 
     def get_wizard_setup_data(self, store, mode='default'):
