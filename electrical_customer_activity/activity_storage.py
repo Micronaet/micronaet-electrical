@@ -450,7 +450,7 @@ class ResPartnerActivityStorage(orm.Model):
 
     _columns = {
         'name': fields.char('Mese', size=8, required=True),
-        'fullname': fields.text('Fullname'),
+        'fullname': fields.char('Fullname', size=200),
         'note': fields.text('Note'),
         'from_date': fields.date('Dalla data'),
         'to_date': fields.date('Alla data'),
