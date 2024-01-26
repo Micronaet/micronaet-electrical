@@ -111,6 +111,12 @@ class ResPartnerActivityStorage(orm.Model):
     _order = 'name desc, partner_id, account_id'
 
     # Button to open list:
+    def generate_report_complete(self, cr, uid, ids, context=None):
+        """ Generate report complete
+        """
+
+        return True
+
     def open_wizard(self, cr, uid, ids, context=None):
         """ Open wizard
         """

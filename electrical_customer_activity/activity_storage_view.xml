@@ -246,6 +246,8 @@
                     <field name="amount_picking" string="Pick tot." readonly="1" sum="sum_stock"/>
                     <field name="amount_ddt" string="DDT tot." readonly="1" sum="sum_ddt"/>
                     <field name="amount_invoice" string="Fatt. tot." readonly="1" sum="sum_invoice"/>
+
+                    <button name="generate_report_complete" string="Salva report completo" type="object" icon="gtk-print" />
                 </tree>
             </field>
         </record>
