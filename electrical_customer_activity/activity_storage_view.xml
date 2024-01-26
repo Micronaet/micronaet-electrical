@@ -1,6 +1,83 @@
 <?xml version="1.0"?>
 <openerp>
     <data>
+        <!-- res.partner.activity.folder -->
+        <record model="ir.ui.view" id="view_res_partner_activity_folder_form">
+            <field name="name">res.partner.activity.folder.form</field>
+            <field name="model">res.partner.activity.folder</field>
+            <field name="arch" type="xml">
+                <form string="Cartelle base" version="7.0">
+                    <sheet>
+                        <group colspan="4" col="4">
+                            <field name="name"/>
+                            <newline />
+                            <field name="path" colspan="4"/>
+                            <separator string="Note" colspan="4"/>
+                            <field name="note" colspan="4" nolabel="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="view_res_partner_activity_folder_tree">
+            <field name="name">res.partner.activity.folder.tree</field>
+            <field name="model">res.partner.activity.folder</field>
+            <field name="arch" type="xml">
+                <tree string="Stato attività clienti">
+                    <field name="name" readonly="1"/>
+                    <field name="path" readonly="1"/>
+                    <field name="note"/>
+                </tree>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_res_partner_activity_folder">
+            <field name="name">Cartelle base</field>
+            <field name="res_model">res.partner.activity.folder</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_res_partner_activity_folder_tree"/>
+        </record>
+
+        <!-- res.partner.activity.filename -->
+        <record model="ir.ui.view" id="view_res_partner_activity_filename_form">
+            <field name="name">res.partner.activity.filename.form</field>
+            <field name="model">res.partner.activity.filename</field>
+            <field name="arch" type="xml">
+                <form string="Modelli di file" version="7.0">
+                    <sheet>
+                        <group colspan="4" col="4">
+                            <field name="code" />
+                            <field name="name" />
+                            <field name="folder_id" />
+                            <field name="filename" />
+                            <separator string="Note" colspan="4"/>
+                            <field name="note" colspan="4" nolabel="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="view_res_partner_activity_filename_tree">
+            <field name="name">res.partner.activity.filename.tree</field>
+            <field name="model">res.partner.activity.filename</field>
+            <field name="arch" type="xml">
+                <tree string="Modelli di file">
+                    <field name="code" />
+                    <field name="name" />
+                    <field name="folder_id" />
+                    <field name="filename" />
+                    <field name="note"/>
+                </tree>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_res_partner_activity_filename">
+            <field name="name">Modelli di file</field>
+            <field name="res_model">res.partner.activity.filename</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_res_partner_activity_filename_tree"/>
+        </record>
+
         <!-- res.partner.activity.storage -->
         <record model="ir.ui.view" id="view_res_partner_activity_storage_stage_form">
             <field name="name">res.partner.activity.storage.stage.form</field>
@@ -22,7 +99,7 @@
             <field name="model">res.partner.activity.storage.stage</field>
             <field name="arch" type="xml">
                 <tree string="Stato attività clienti" editable="bottom">
-                    <field name="name" readonly="1"/>
+                    <field name="name" />
                     <field name="note"/>
                 </tree>
             </field>

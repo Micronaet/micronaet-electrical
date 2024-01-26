@@ -31,6 +31,18 @@
                     action="action_res_partner_activity_storage_stage"
                     sequence="10"
                     />
+                <menuitem
+                    parent="menu_res_partner_activity_configuration"
+                    id="menu_res_partner_activity_folder"
+                    action="action_res_partner_activity_folder"
+                    sequence="20"
+                    />
+                <menuitem
+                    parent="menu_res_partner_activity_configuration"
+                    id="menu_res_partner_activity_filename"
+                    action="action_res_partner_activity_filename"
+                    sequence="30"
+                    />
 
     </data>
 </openerp>

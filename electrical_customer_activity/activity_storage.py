@@ -53,6 +53,7 @@ class ResPartnerActivityFolder(orm.Model):
 
     _columns = {
         'name': fields.char('Nome'),
+        'note': fields.text('Note'),
         'path': fields.char(
             'Percorso',
             help='Utilizzare path formato Linux File system, es.'
