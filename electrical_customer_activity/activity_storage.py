@@ -224,7 +224,7 @@ class ResPartnerActivityStorage(orm.Model):
             '%sintervent_mode' % mode: 'all',  # 'pending',
 
             '%sactivity_price' % mode: activity_price,
-            '%activity_material_discount' % mode: activity_material_discount,
+            '%sactivity_material_discount' % mode: activity_material_discount,
         }
 
     def open_wizard(self, cr, uid, ids, context=None):
@@ -281,7 +281,7 @@ class ResPartnerActivityStorage(orm.Model):
             domain.append(('is_invoiced', '=', True))
             name = 'Interventi fatturati'
         else:
-        # Mode B: Intervent not invoiced:
+            # Mode B: Intervent not invoiced:
             domain.append(('is_invoiced', '=', False))
             name = 'Interventi da fatture'
 

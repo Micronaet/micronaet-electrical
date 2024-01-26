@@ -475,165 +475,190 @@ class ResPartnerActivityWizard(orm.TransientModel):
         context['collect_mode'] = True
 
         # Create a wizard for call report element
-        # This month period:
-        now = datetime.now()
         if ids:  # Comes from wizard (selected month)
             this_wizard = self.browse(cr, uid, ids, context=context)[0]
-            name = this_wizard.from_date[:7]
+            from_month = this_wizard.from_date[:7]
+            to_month = this_wizard.to_date[:7]
+            names = []
+            while from_month <= to_month:
+                names.append(from_month)  # Always append fist date
+                # Generate next month
+                part = from_month.split('-')
+                current_year = int(part[0])
+                current_month = int(part[1])
+
+                if current_month == 12:
+                    current_year += 1
+                    current_month = 1
+                else:
+                    current_month += 1
+                from_month = '%04d-%02d' % (current_year, current_month)
+
+            # todo Generate name list
         else:  # Updated from scheduled (current month)
-            name = now.strftime('%Y-%m')
+            now = datetime.now()
+            names = [now.strftime('%Y-%m')]
 
-        year = now.year
-        month = now.month
-        if month == 12:
-            new_month = 1
-            new_year = year + 1
-        else:
-            new_month = month + 1
-            new_year = year
-
-        from_date = '%s-01' % name
-        to_date = '%04d-%02d-01' % (new_year, new_month)
-        to_date_dt = datetime.strptime(to_date, DEFAULT_SERVER_DATE_FORMAT)
-        to_date = (to_date_dt - timedelta(days=1)).strftime(
-            DEFAULT_SERVER_DATE_FORMAT)
-
-        _logger.info('Generating stored data from %s to %s' % (
-            from_date, to_date))
-
-        wizard_id = self.create(cr, uid, {
-            'from_date': from_date,
-            'to_date': to_date,
-            'mode': 'partner',
-
-            'picking_mode': 'all',
-            'ddt_mode': 'all',  # 'ddt',  # Not invoiced (not all!)
-            'intervent_mode': 'all',   # 'pending',
-        }, context=context)
-
-        # Call original report with parameter:
-        res = self.action_print_touched(cr, uid, [wizard_id], context=context)
-
-        # ---------------------------------------------------------------------
-        #                         Collect detail:
-        # ---------------------------------------------------------------------
-        keys = {}
-        empty_key = {
-            'total_intervent_draft': 0,
-            'total_intervent_invoice': 0,
-            'total_picking': 0,
-            'total_ddt_draft': 0,
-            'total_ddt_invoice': 0,
-            'total_invoice': 0,
-
-            # todo Totals (not filled for now):
-            'amount_intervent': 0.0,
-            'amount_picking': 0.0,
-            'amount_ddt': 0.0,
-            'amount_invoice': 0.0,
-        }
-
-        # Intervent:
-        intervents = res.get('intervent', ())
-        for intervent in intervents:
-            key = (
-                intervent.intervent_partner_id.id or False,
-                intervent.account_id.id or False,
-                intervent.intervent_contact_id.id or False,
-            )
-            if key not in keys:
-                keys[key] = empty_key.copy()
-
-            if intervent.is_invoiced:
-                keys[key]['total_intervent_invoice'] += 1
+        _logger.info('Generating this months: %s' % (names, ))
+        selected_ids = []  # List of touched:
+        for name in names:
+            name_part = name.split('-')
+            year = name_part[0]
+            month = name_part[1]
+            if month == 12:
+                new_month = 1
+                new_year = year + 1
             else:
-                keys[key]['total_intervent_draft'] += 1
+                new_month = month + 1
+                new_year = year
 
-        # Picking:
-        pickings = res.get('picking', ())
-        for picking in pickings:
-            key = (
-                picking.partner_id.id or False,
-                picking.account_id.id or False,
-                picking.contact_id.id or False,
-            )
-            if key not in keys:
-                keys[key] = empty_key.copy()
+            from_date = '%s-01' % name
+            to_date = '%04d-%02d-01' % (new_year, new_month)
+            to_date_dt = datetime.strptime(to_date, DEFAULT_SERVER_DATE_FORMAT)
+            to_date = (to_date_dt - timedelta(days=1)).strftime(
+                DEFAULT_SERVER_DATE_FORMAT)
 
-            keys[key]['total_picking'] += 1
+            _logger.info('Generating stored data from %s to %s' % (
+                from_date, to_date))
 
-        # DDT:
-        ddts = res.get('ddt', ())
-        for ddt in ddts:
-            key = (
-                ddt.partner_id.id or False,
-                ddt.account_id.id or False,
-                ddt.contact_id.id or False,
-            )
-            if key not in keys:
-                keys[key] = empty_key.copy()
-
-            if ddt.is_invoiced:
-                keys[key]['total_ddt_invoice'] += 1
-            else:
-                keys[key]['total_ddt_draft'] += 1
-
-        # ---------------------------------------------------------------------
-        # Load this month from store:
-        # ---------------------------------------------------------------------
-        store_ids = store_pool.search(cr, uid, [
-            ('name', '=', name),
-         ], context=context)
-        store_db = {}
-        for store in store_pool.browse(cr, uid, store_ids, context=context):
-            key = (
-                store.partner_id.id or False,
-                store.account_id.id or False,
-                store.contact_id.id or False,
-                )
-            store_db[key] = store.id  # keep store?
-
-        # todo for now used only Account page
-        # Update data in stored items
-        selected_ids = []
-        for key in keys:
-            partner_id, account_id, contact_id = key
-            record = keys[key]
-
-            data = {
-                'name': name,
+            wizard_id = self.create(cr, uid, {
                 'from_date': from_date,
                 'to_date': to_date,
-                'partner_id': partner_id,
-                'account_id': account_id,
-                'contact_id': contact_id,
-                # 'stage_id':
+                'mode': 'partner',
 
-                # todo not used: Check:
-                # 'check_intervent': has_intervent,
-                # 'check_stock': has_picking,
-                # 'check_ddt': has_ddt,
-                # 'check_invoice': False,  # todo never Invoice?
+                'picking_mode': 'all',
+                'ddt_mode': 'all',  # 'ddt',  # Not invoiced (not all!)
+                'intervent_mode': 'all',   # 'pending',
+            }, context=context)
+
+            # Call original report with parameter:
+            res = self.action_print_touched(
+                cr, uid, [wizard_id], context=context)
+
+            # -----------------------------------------------------------------
+            #                        Collect detail:
+            # -----------------------------------------------------------------
+            keys = {}
+            empty_key = {
+                'total_intervent_draft': 0,
+                'total_intervent_invoice': 0,
+                'total_picking': 0,
+                'total_ddt_draft': 0,
+                'total_ddt_invoice': 0,
+                'total_invoice': 0,
+
+                # todo Totals (not filled for now):
+                'amount_intervent': 0.0,
+                'amount_picking': 0.0,
+                'amount_ddt': 0.0,
+                'amount_invoice': 0.0,
             }
-            data.update(record)  # Add total fields
 
-            record_id = store_db.get(key)
-            if record_id:
-                # todo only if theres' difference?
-                store_pool.write(
-                    cr, uid, [record_id], data, context=context)
-                del(store_db[key])
-            else:
-                record_id = store_pool.create(cr, uid, data, context=context)
-            selected_ids.append(record_id)
-            # todo generate file?
+            # Intervent:
+            intervents = res.get('intervent', ())
+            for intervent in intervents:
+                key = (
+                    intervent.intervent_partner_id.id or False,
+                    intervent.account_id.id or False,
+                    intervent.intervent_contact_id.id or False,
+                )
+                if key not in keys:
+                    keys[key] = empty_key.copy()
 
-        # Deleting no more records:
-        for key in store_db:
-            remove_id = store_db[key]
-            store_pool.unlink(cr, uid, [remove_id], context=context)
-            # todo delete linked file
+                if intervent.is_invoiced:
+                    keys[key]['total_intervent_invoice'] += 1
+                else:
+                    keys[key]['total_intervent_draft'] += 1
 
+            # Picking:
+            pickings = res.get('picking', ())
+            for picking in pickings:
+                key = (
+                    picking.partner_id.id or False,
+                    picking.account_id.id or False,
+                    picking.contact_id.id or False,
+                )
+                if key not in keys:
+                    keys[key] = empty_key.copy()
+
+                keys[key]['total_picking'] += 1
+
+            # DDT:
+            ddts = res.get('ddt', ())
+            for ddt in ddts:
+                key = (
+                    ddt.partner_id.id or False,
+                    ddt.account_id.id or False,
+                    ddt.contact_id.id or False,
+                )
+                if key not in keys:
+                    keys[key] = empty_key.copy()
+
+                if ddt.is_invoiced:
+                    keys[key]['total_ddt_invoice'] += 1
+                else:
+                    keys[key]['total_ddt_draft'] += 1
+
+            # -----------------------------------------------------------------
+            # Load this month from store:
+            # -----------------------------------------------------------------
+            store_ids = store_pool.search(cr, uid, [
+                ('name', '=', name),
+             ], context=context)
+            store_db = {}
+            for store in store_pool.browse(
+                    cr, uid, store_ids, context=context):
+                key = (
+                    store.partner_id.id or False,
+                    store.account_id.id or False,
+                    store.contact_id.id or False,
+                    )
+                store_db[key] = store.id  # keep store?
+
+            # todo for now used only Account page
+            # Update data in stored items
+            for key in keys:
+                partner_id, account_id, contact_id = key
+                record = keys[key]
+
+                data = {
+                    'name': name,
+                    'from_date': from_date,
+                    'to_date': to_date,
+                    'partner_id': partner_id,
+                    'account_id': account_id,
+                    'contact_id': contact_id,
+                    # 'stage_id':
+
+                    # todo not used: Check:
+                    # 'check_intervent': has_intervent,
+                    # 'check_stock': has_picking,
+                    # 'check_ddt': has_ddt,
+                    # 'check_invoice': False,  # todo never Invoice?
+                }
+                data.update(record)  # Add total fields
+
+                record_id = store_db.get(key)
+                if record_id:
+                    # todo only if theres' difference?
+                    store_pool.write(
+                        cr, uid, [record_id], data, context=context)
+                    del(store_db[key])
+                else:
+                    record_id = store_pool.create(
+                        cr, uid, data, context=context)
+                selected_ids.append(record_id)
+                # todo generate file?
+
+            # Deleting no more records:
+            for key in store_db:
+                remove_id = store_db[key]
+                store_pool.unlink(cr, uid, [remove_id], context=context)
+                # todo delete linked file
+
+        # ---------------------------------------------------------------------
+        # Return selected elements in a tree:
+        # ---------------------------------------------------------------------
         if not selected_ids:
             return True
 
