@@ -144,7 +144,6 @@ class ResPartnerActivityStorage(orm.Model):
             contact = clean_name_path(store.contact_id.name)
             year = store.name[:4]
             month = store.name[-2:]
-            pdb.set_trace()
 
             fullname = template_name.format(
                 name=name,
