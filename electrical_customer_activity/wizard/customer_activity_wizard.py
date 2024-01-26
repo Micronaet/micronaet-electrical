@@ -1893,8 +1893,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             (pick_total2, f_number_color),
                             (pick_total3, f_number_color),
                             ))
-                        save_summary['picking'] = [
-                            pick_total1, pick_total2, pick_total3]
 
                     # ---------------------------------------------------------
                     # Total line at the end of the block:
@@ -2077,8 +2075,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             (ddt_total2, f_number_color),
                             (ddt_total3, f_number_color),
                             ))
-                        save_summary['ddt'] = [
-                            ddt_total1, ddt_total2, ddt_total3]
 
                 # -------------------------------------------------------------
                 # Total line at the end of the block:
@@ -2163,8 +2159,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             (invoice.name, f_text),
                             (invoice_total3, f_number),
                             ))
-                        save_summary['invoice'] = [
-                            ddt_total3]
 
                 # -------------------------------------------------------------
                 # Total line at the end of the block:
@@ -2230,8 +2224,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             (subtotal2, f_number),
                             (subtotal3, f_number),
                             ))
-                        save_summary['account'] = [
-                            subtotal1, subtotal2, subtotal3]
 
                         # -----------------------------------------------------
                         #                    TOTALS:
@@ -2545,8 +2537,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             (this_cost, f_number_color),
                             (this_revenue, f_number_color),
                             ))
-                        save_summary['intervent'] = [
-                            this_cost, this_revenue]
 
                         # -----------------------------------------------------
                         # Totals:
@@ -2751,6 +2741,10 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     total['total_cost'] += total_cost
                     total['total_discount'] += total_discount
                     total['total_revenue'] += total_revenue
+
+                    save_summary[block] = [
+                        total_cost, total_discount, total_revenue,
+                    ]
 
                 # Final total of the table:
                 sheet['row'] += 1
@@ -3135,7 +3129,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
             _logger.info('Save as file: %s' % save_fullname)
             excel_pool.save_file_as(save_fullname)
             pdb.set_trace()
-            return save_summary
+            return summary
         else:
             _logger.info('Return as report')
             return excel_pool.return_attachment(cr, uid, 'partner_activity')
