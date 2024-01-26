@@ -17,6 +17,7 @@
                 parent="menu_res_partner_activity_root"
                 id="menu_res_partner_activity_wizard_view"
                 action="action_res_partner_activity_wizard_view"
+                name="Wizard di stampa"
                 sequence="20"
                 />
             <menuitem
