@@ -45,6 +45,7 @@ _logger = logging.getLogger(__name__)
 
 file_char_substitute = [
     ('/', '-'),
+    ('&', 'e'),
     ('"', '\''),
 ]
 
