@@ -43,6 +43,12 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 _logger = logging.getLogger(__name__)
 
 
+file_char_substitute = [
+    ('/', '-'),
+    ('"', '\''),
+]
+
+
 class ResPartnerActivityFolder(orm.Model):
     """ Model name: Res Partner Folder
     """
@@ -118,7 +124,9 @@ class ResPartnerActivityStorage(orm.Model):
             """ Clean not used character
             """
             name = (name or '').strip()
-            name = name.replace('/', '-')
+
+            for from_char, to_char in file_char_substitute:
+                name = name.replace(from_char, to_char)
             return name
 
         file_pool = self.pool.get('res.partner.activity.filename')
