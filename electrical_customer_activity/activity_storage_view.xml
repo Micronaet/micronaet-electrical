@@ -236,7 +236,7 @@
                     <button name="get_total_intervent_draft" string="Apri lista interventi da chiudere" type="object" icon="gtk-justify-fill" attrs="{'invisible': [('total_intervent_draft', '=', 0)]}"/>
                     <button name="mark_invoiced_intervent_draft" string="Marca come fatturati gli interventi da chiudere"
                             confirm="Confermi la chiusura degli interventi aperti come fatturati? E' consigliabile verificare la lista per sicurezza potrebbero esserci nuovi interventi dall'ultimo aggiornamento!"
-                            type="object" icon="gtk-apply" attrs="{'invisible': [('total_intervent_draft', '=', 0)]}"/>
+                            type="object" icon="gtk-copy" attrs="{'invisible': [('total_intervent_draft', '=', 0)]}"/>
 
                     <field name="total_intervent_invoice" string="INT (ft)" readonly="1"  sum="num_intervent_invoice"/>
                     <button name="get_total_intervent_invoice" string="Apri lista interventi chiusi" type="object" icon="gtk-justify-fill" attrs="{'invisible': [('total_intervent_invoice', '=', 0)]}"/>
