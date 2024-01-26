@@ -156,8 +156,15 @@ class ResPartnerActivityStorage(orm.Model):
             folder = os.path.dirname(fullname)
             filename = os.path.basename(fullname)
             _logger.info('Creating report: %s' % fullname)
-            os.system('mkdir -p "%s"' % folder)
-            os.system('touch "%s"' % fullname)
+            try:
+                os.system('mkdir -p "%s"' % folder)
+                os.system('touch "%s"' % fullname)
+            except:
+                raise osv.except_osv(
+                    _('Errore'),
+                    _('Impossibile creare il percorso %s!'
+                      'Probabilmente vanno puliti dei caratteri.' % fullname),
+                )
         return True
 
     def open_wizard(self, cr, uid, ids, context=None):
