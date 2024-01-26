@@ -114,6 +114,40 @@ class ResPartnerActivityStorage(orm.Model):
     def generate_report_complete(self, cr, uid, ids, context=None):
         """ Generate report complete
         """
+        file_pool = self.pool.get('res.partner.activity.filename')
+        file_ids = file_pool.search(cr, uid, [
+            ('code', '=', 'ACTIVITY'),
+        ], context=context)
+        if not file_ids:
+            raise osv.except_osv(
+                _('Errore'),
+                _('Impossibile generare un file, impostare nei modelli di '
+                  'file un template con codice ACTIVITY per continuare!'),
+            )
+        file = file_pool.browse(cr, uid, file_ids, context=context)[0]
+        template_name = os.path.join(
+            os.path.expanduser(file.folder_id.path),
+            file.filename,
+        )
+        pdb.set_trace()
+        for store in self.browse(cr, uid, ids, context=context):
+            name = store.name
+            partner = store.partner_id.name or ''
+            account = store.account_id.name or ''
+            contact = store.contact_id.name or ''
+            year = store.name[:4]
+            month = store.name[-2:]
+            template_name.format(
+                name=name,
+                partner=partner,
+                account=account,
+                contact=contact,
+                year=year,
+                month=month)
+            _logger.info('Creating report: %s' % template_name)
+            folder = os.path.dirname(template_name)
+            filename = os.path.basename(template_name)
+            os.system('mkdir -p %s' % folder)
 
         return True
 
