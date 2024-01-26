@@ -185,7 +185,12 @@ class ResPartnerActivityStorage(orm.Model):
             # Run Print button in wizard force save as filename:
             ctx = context.copy()
             ctx['save_fullname'] = fullname
-            wizard_pool.action_print(cr, uid, [wizard_id], context=ctx)
+            summary_data = wizard_pool.action_print(
+                cr, uid, [wizard_id], context=ctx)
+
+            pdb.set_trace()
+            for ws_name in summary_data:
+                summary_data = summary_data[ws_name]['data']
 
             # Store filename for delete operation:
             self.write(cr, uid, ids, {

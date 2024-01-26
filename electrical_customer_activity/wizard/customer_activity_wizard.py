@@ -2458,7 +2458,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         # Read revenue:
                         if user_mode_id in partner_forced:  # partner forced
                             unit_revenue = partner_forced[user_mode_id]
-                        else: # read for default list:
+                        else:  # read for default list:
                             unit_revenue = mode_pricelist.get(
                                 user_mode_id, 0.0)
 
@@ -3122,7 +3122,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         if save_fullname:
             _logger.info('Save as file: %s' % save_fullname)
-            return excel_pool.save_file_as(save_fullname)
+            excel_pool.save_file_as(save_fullname)
+            return summary
         else:
             _logger.info('Return as report')
             return excel_pool.return_attachment(cr, uid, 'partner_activity')
