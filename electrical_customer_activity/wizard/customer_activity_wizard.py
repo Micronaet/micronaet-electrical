@@ -993,6 +993,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
         if context is None:
             context = {}
+        save_fullname = context.get('save_fullname')
 
         # Mapping text (for readability):
         pick_state_map = {
@@ -3093,7 +3094,12 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         total,
                         ], default_format=f_number, col=1)
 
-        return excel_pool.return_attachment(cr, uid, 'partner_activity')
+        if save_fullname:
+            _logger.info('Save as file: %s' % save_fullname)
+            return excel_pool.save_file_as(save_fullname)
+        else:
+            _logger.info('Return as report')
+            return excel_pool.return_attachment(cr, uid, 'partner_activity')
 
     _columns = {
         'mode': fields.selection([
