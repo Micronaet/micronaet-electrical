@@ -319,11 +319,13 @@ class ResPartnerActivityStorage(orm.Model):
             context = {}
 
         context['mark_invoiced'] = True
-        updated = self.get_total_intervent_draft(cr, uid, ids, context=context)
+        item_id = ids[0]
+        updated = self.get_total_intervent_draft(
+            cr, uid, [item_id], context=context)
         if updated:
-            store = self.browse(cr, uid, ids, context=context)[0]
+            store = self.browse(cr, uid, item_id, context=context)
             total_intervent_invoice = store.total_intervent_invoice + updated
-            self.write(cr, uid, ids, {
+            self.write(cr, uid, [item_id], {
                 'total_intervent_draft': 0,
                 'total_intervent_invoice': total_intervent_invoice,
             }, context=context)
