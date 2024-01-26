@@ -64,7 +64,7 @@ msgstr "Creato il"
 #: model:ir.actions.act_window,name:electrical_customer_activity.action_res_partner_activity_wizard_view
 #: model:ir.ui.menu,name:electrical_customer_activity.menu_res_partner_activity_wizard_view
 msgid "Customer activity"
-msgstr "Attività clienti"
+msgstr "Wizard stampa attività"
 
 #. module: electrical_customer_activity
 #: selection:res.partner.activity.wizard,ddt_mode:0
