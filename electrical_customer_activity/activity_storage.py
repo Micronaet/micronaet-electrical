@@ -114,6 +114,13 @@ class ResPartnerActivityStorage(orm.Model):
     def generate_report_complete(self, cr, uid, ids, context=None):
         """ Generate report complete
         """
+        def clean_name_path(name):
+            """ Clean not used character
+            """
+            name = (name or '').strip()
+            name = name.replace('/', '-')
+            return name
+
         file_pool = self.pool.get('res.partner.activity.filename')
         file_ids = file_pool.search(cr, uid, [
             ('code', '=', 'ACTIVITY'),
@@ -129,13 +136,16 @@ class ResPartnerActivityStorage(orm.Model):
             os.path.expanduser(file.folder_id.path),
             file.filename,
         )
+
         for store in self.browse(cr, uid, ids, context=context):
             name = store.name
-            customer = (store.partner_id.name or '').strip()
-            account = (store.account_id.name or '').strip()
-            contact = (store.contact_id.name or '').strip()
+            customer = clean_name_path(store.partner_id.name)
+            account = clean_name_path(store.account_id.name)
+            contact = clean_name_path(store.contact_id.name)
             year = store.name[:4]
             month = store.name[-2:]
+            pdb.set_trace()
+
             fullname = template_name.format(
                 name=name,
                 customer=customer,
@@ -143,11 +153,12 @@ class ResPartnerActivityStorage(orm.Model):
                 contact=contact,
                 year=year,
                 month=month)
+
             folder = os.path.dirname(fullname)
             filename = os.path.basename(fullname)
             _logger.info('Creating report: %s' % fullname)
-            os.system('mkdir -p %s' % folder)
-            os.system('touch %s' % fullname)
+            os.system('mkdir -p "%s"' % folder)
+            os.system('touch "%s"' % fullname)
         return True
 
     def open_wizard(self, cr, uid, ids, context=None):
