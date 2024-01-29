@@ -360,9 +360,14 @@ class ResPartnerActivityStorage(orm.Model):
         if updated:
             store = self.browse(cr, uid, item_id, context=context)
             total_intervent_invoice = store.total_intervent_invoice + updated
+            amount_ddt = store.amount_ddt + store.amount_picking
+
             self.write(cr, uid, [item_id], {
-                'total_intervent_draft': 0,
-                'total_intervent_invoice': total_intervent_invoice,
+                'total_intervent_draft': 0,  # Clean
+                'total_intervent_invoice': total_intervent_invoice,  # Update
+
+                'amount_picking': 0.0,  # Clean
+                'amount_ddt': amount_ddt  # Update
             }, context=context)
         return True
 
