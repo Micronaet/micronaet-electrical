@@ -185,15 +185,26 @@ class ResPartnerActivityStorage(orm.Model):
             # Run Print button in wizard force save as filename:
             ctx = context.copy()
             ctx['save_fullname'] = fullname
-            summary_data = wizard_pool.action_print(
+            save_summary = wizard_pool.action_print(
                 cr, uid, [wizard_id], context=ctx)
+            pdb.set_trace()
 
-            for block in summary_data:
-                _logger.info(summary_data[block])
+            intervent_data = save_summary.get('Interventi', (0.0, 0.0, 0.0))
+            amount_intervent = intervent_data[0]  # Cost
+            delivery_data = save_summary.get('Consegne', (0.0, 0.0, 0.0))
+            amount_picking = delivery_data[0]  # Cost
+            ddt_data = save_summary.get('DDT', (0.0, 0.0, 0.0))
+            amount_ddt = ddt_data[0]  # Cost
+            invoice_data = save_summary.get('Fatture', (0.0, 0.0, 0.0))
+            amount_invoice = invoice_data[0]  # Cost
 
             # Store filename for delete operation:
             self.write(cr, uid, ids, {
                 'fullname': fullname,
+                'amount_intervent': amount_intervent,
+                'amount_picking': amount_picking,
+                'amount_ddt': amount_ddt,
+                'amount_invoice': amount_invoice,
             }, context=context)
         return True
 
@@ -494,10 +505,22 @@ class ResPartnerActivityStorage(orm.Model):
         'total_invoice': fields.integer('# Fatture'),
 
         # Amount:
-        'amount_intervent': fields.float('Tot. Interventi', digits=(16, 2)),
-        'amount_picking': fields.float('Tot. Consegnato', digits=(16, 2)),
-        'amount_ddt': fields.float('Tot. DDT', digits=(16, 2)),
-        'amount_invoice': fields.float('Tot. Fatturato', digits=(16, 2)),
+        'amount_intervent': fields.float(
+            'Tot. Interventi', digits=(16, 2),
+            help='Costo degli interventi in base al tipo di operatore e '
+                 'della operazione effettuata'),
+
+        'amount_picking': fields.float(
+            'Tot. Consegnato', digits=(16, 2),
+            help='Costo del materiale consegnato'),
+
+        'amount_ddt': fields.float(
+            'Tot. DDT', digits=(16, 2),
+            help='Costo del materiale consegnato'),
+
+        'amount_invoice': fields.float(
+            'Tot. Fatturato', digits=(16, 2)
+            , help='Totale fatturato per questa commessa'),
         }
 
 
