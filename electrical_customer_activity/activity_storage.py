@@ -197,6 +197,10 @@ class ResPartnerActivityStorage(orm.Model):
             amount_ddt = ddt_data[0]  # Cost
             invoice_data = save_summary.get('Fatture', (0.0, 0.0, 0.0))
             amount_invoice = invoice_data[0]  # Cost
+            amount_expense = 0.0  # todo
+
+            amount_cost = (amount_intervent + amount_picking + amount_ddt +
+                           amount_expense)
 
             # Store filename for delete operation:
             self.write(cr, uid, ids, {
@@ -204,6 +208,9 @@ class ResPartnerActivityStorage(orm.Model):
                 'amount_intervent': amount_intervent,
                 'amount_picking': amount_picking,
                 'amount_ddt': amount_ddt,
+                'amount_expense': amount_expense,
+
+                'amount_cost': amount_cost,
                 'amount_invoice': amount_invoice,
             }, context=context)
         return True
@@ -517,6 +524,14 @@ class ResPartnerActivityStorage(orm.Model):
         'amount_ddt': fields.float(
             'Tot. DDT', digits=(16, 2),
             help='Costo del materiale consegnato'),
+
+        'amount_expense': fields.float(
+            'Tot. Spese', digits=(16, 2),
+            help='Spese extra di amministrazione commessa'),
+
+        'amount_cost': fields.float(
+            'Tot. Costi', digits=(16, 2)
+            , help='Totale costi (interventi, consegne, DDT, spesefatturato per questa commessa'),
 
         'amount_invoice': fields.float(
             'Tot. Fatturato', digits=(16, 2)

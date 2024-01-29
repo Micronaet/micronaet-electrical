@@ -256,7 +256,10 @@
                     <field name="amount_intervent" string="Int tot." readonly="1" sum="sum_int"/>
                     <field name="amount_picking" string="Pick tot." readonly="1" sum="sum_stock"/>
                     <field name="amount_ddt" string="DDT tot." readonly="1" sum="sum_ddt"/>
-                    <field name="amount_invoice" string="Fatt. tot." readonly="1" sum="sum_invoice"/>
+                    <field name="amount_expense" string="Spese tot." readonly="1" sum="expense_ddt"/>
+
+                    <field name="amount_cost" string="[Costi. tot.]" readonly="1" sum="sum_total_cost"/>
+                    <field name="amount_invoice" string="þFatt. tot.]" readonly="1" sum="sum_invoice"/>
                 </tree>
             </field>
         </record>
