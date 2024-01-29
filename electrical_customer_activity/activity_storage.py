@@ -44,10 +44,11 @@ _logger = logging.getLogger(__name__)
 
 
 file_char_substitute = [
-    ('\\', '-'),
-    ('/', '-'),
-    ('&', 'e'),
-    ('"', '\''),
+    (u'\\', u'-'),
+    (u'/', u'-'),
+    (u'&', u'e'),
+    (u'"', u'\''),
+    (u'°', u'o'),
     ]
 
 
@@ -187,7 +188,6 @@ class ResPartnerActivityStorage(orm.Model):
             ctx['save_fullname'] = fullname
             save_summary = wizard_pool.action_print(
                 cr, uid, [wizard_id], context=ctx)
-            pdb.set_trace()
 
             intervent_data = save_summary.get('Interventi', (0.0, 0.0, 0.0))
             amount_intervent = intervent_data[0]  # Cost
