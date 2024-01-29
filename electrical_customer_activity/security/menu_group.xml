@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+   <data>
+        <record id="group_activity_manager" model="res.groups">
+            <field name="name">Manager (costi e ricavi commessa)</field>
+        </record>
+        <record id="group_activity_operator" model="res.groups">
+            <field name="name">Manager attività (dettaglio mensile e generazione storico e report)</field>
+        </record>
+   </data>
+</openerp>

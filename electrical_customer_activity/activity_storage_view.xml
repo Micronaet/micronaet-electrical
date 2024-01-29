@@ -253,13 +253,13 @@
                     <field name="total_invoice" string="FATT" readonly="1" sum="num_invoice"/>
                     <button name="get_total_invoice" string="Apri lista fatture" type="object" icon="gtk-justify-fill" attrs="{'invisible': [('total_invoice', '=', 0)]}"/>
 
-                    <field name="amount_intervent" string="Int tot." readonly="1" sum="sum_int"/>
-                    <field name="amount_picking" string="Pick tot." readonly="1" sum="sum_stock"/>
-                    <field name="amount_ddt" string="DDT tot." readonly="1" sum="sum_ddt"/>
-                    <field name="amount_expense" string="Spese tot." readonly="1" sum="expense_ddt"/>
+                    <field name="amount_intervent" string="Int tot." readonly="1" sum="sum_int" groups="electrical_customer_activity.group_activity_manager"/>
+                    <field name="amount_picking" string="Pick tot." readonly="1" sum="sum_stock" groups="electrical_customer_activity.group_activity_manager"/>
+                    <field name="amount_ddt" string="DDT tot." readonly="1" sum="sum_ddt" groups="electrical_customer_activity.group_activity_manager"/>
+                    <field name="amount_expense" string="Spese tot." readonly="1" sum="expense_ddt" groups="electrical_customer_activity.group_activity_manager"/>
 
-                    <field name="amount_cost" string="[Costi]" readonly="1" sum="sum_total_cost"/>
-                    <field name="amount_invoice" string="[Ricavi]" readonly="1" sum="sum_invoice"/>
+                    <field name="amount_cost" string="[Costi]" readonly="1" sum="sum_total_cost" groups="electrical_customer_activity.group_activity_manager"/>
+                    <field name="amount_invoice" string="[Ricavi]" readonly="1" sum="sum_invoice" groups="electrical_customer_activity.group_activity_manager"/>
                 </tree>
             </field>
         </record>

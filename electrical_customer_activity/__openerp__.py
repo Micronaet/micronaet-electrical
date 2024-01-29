@@ -52,6 +52,7 @@
     'init_xml': [],
     'demo': [],
     'data': [
+        'security/security_group.xml',
         'security/ir.model.access.csv',
 
         'wizard/customer_activity_view.xml',
