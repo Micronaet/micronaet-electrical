@@ -1454,11 +1454,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     mask['Interventi'][4] = '0001'
                     mask['Consegne'][4] = '00001'
                     mask['DDT'][4] = '00001'
+                    mask['Spese'][4] = '00001'
 
                     # Summary total:
                     mask['Interventi'][5] = '01'
                     mask['Consegne'][5] = '001'
                     mask['DDT'][5] = '001'
+                    mask['Spese'][5] = '001'
 
                     # Position total:
                     mask['Interventi'][6] = 0
