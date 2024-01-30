@@ -2638,7 +2638,6 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 sheet = sheets[ws_name]
 
                 for block in sheet_order[1:-2]:  # Jump todo commesse?!?
-
                     # Check if sheet must be created:
                     if block in mask and not mask[block][0]:
                         continue
@@ -3098,6 +3097,63 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             ],
                         default_format=f_text, col=4)
                     private_summary.append(('Interventi', total))
+
+                # -------------------------------------------------------------
+                # D. EXPENSES:
+                # -------------------------------------------------------------
+                if any(expence_db.values()):
+                    total = 0.0
+
+                    # Print header
+                    row += 2
+                    excel_pool.write_xls_line(
+                        ws_name_ref, row, [
+                            'SPESE', '', '', '', '', '',
+                            ], default_format=f_header)
+
+                    row += 1
+                    excel_pool.write_xls_line(
+                        ws_name_ref, row, [
+                            'Data', 'Categoria', 'Costo',  'Scontato',
+                            'Totale',
+                            ], default_format=f_header)
+
+                    for key in expence_db:
+                        account_name, category, date = key
+                        for expence in expence_db[key]:
+                            # Readability:
+                            cost = expence.total
+                            revenue = expence.total_forced or cost
+                            discount = 0.0  # used?
+
+                            f_number_color = f_number
+                            f_text_color = f_text
+
+                            data = [
+                                formatLang(date[:10]),
+                                category,
+                                (cost, f_number_color),
+                                (discount, f_number_color),
+                                (revenue, f_number_color),
+                                ]
+
+                            row += 1
+                            excel_pool.write_xls_line(
+                                ws_name_ref, row, data,
+                                default_format=f_text_color
+                                )
+                            total += revenue
+
+                    # ---------------------------------------------------------
+                    # Total line at the end of the block:
+                    # ---------------------------------------------------------
+                    row += 1
+                    excel_pool.write_xls_line(
+                        ws_name_ref, row, [
+                            (total, f_number),
+                            ],
+                        default_format=f_text, col=4)
+                    private_summary.append(('Spese', total))
 
                 # -------------------------------------------------------------
                 # SUMMARY:
