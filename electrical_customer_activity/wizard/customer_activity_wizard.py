@@ -1466,6 +1466,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     mask['Interventi'][6] = 0
                     mask['Consegne'][6] = 0
                     mask['DDT'][6] = 0
+                    mask['Spese'][6] = 0
                 else:  # detail
                     # Summary line:
                     mask['Interventi'][4] = '1101'

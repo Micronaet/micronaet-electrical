@@ -197,10 +197,12 @@ class ResPartnerActivityStorage(orm.Model):
             amount_ddt = ddt_data[0]  # Cost
             invoice_data = save_summary.get('Fatture', (0.0, 0.0, 0.0))
             amount_invoice = invoice_data[0]  # Cost
-            amount_expense = 0.0  # todo
+            expense_data = save_summary.get('Spese', (0.0, 0.0, 0.0))
+            amount_expense = expense_data[0]  # Cost
 
-            amount_cost = (amount_intervent + amount_picking + amount_ddt +
-                           amount_expense)
+            amount_cost = (
+                amount_intervent + amount_picking + amount_ddt +
+                amount_expense)
 
             # Store filename for delete operation:
             self.write(cr, uid, ids, {
