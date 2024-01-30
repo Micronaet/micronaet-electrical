@@ -3108,7 +3108,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     row += 2
                     excel_pool.write_xls_line(
                         ws_name_ref, row, [
-                            'SPESE', '', '', '', '', '',
+                            'SPESE', '', '', '', '',
                             ], default_format=f_header)
 
                     row += 1
