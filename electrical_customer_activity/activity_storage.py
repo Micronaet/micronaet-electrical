@@ -129,6 +129,7 @@ class ResPartnerActivityStorage(orm.Model):
             """ Clean not used character
             """
             name = (name or '').strip()
+            name = (name or '').strip('.')  # Remove trail dot
 
             for from_char, to_char in file_char_substitute:
                 name = name.replace(from_char, to_char)
@@ -174,7 +175,6 @@ class ResPartnerActivityStorage(orm.Model):
             year = store.name[:4]
             month = store.name[-2:]
 
-            force_date = False
             if not account:
                 template_name = template['']
             elif code.startswith('M'):
@@ -263,12 +263,16 @@ class ResPartnerActivityStorage(orm.Model):
             activity_material_discount = 0.0
             activity_price = 'lst_price'
 
-        if store.account_id and (store.account_id.code or '')[:1].isdigit():
+        if (store.account_id.code or '')[:1].isdigit():
+            # No date filter if numeric account code (Commessa)
             from_date = '1900-01-01'
             to_date = '2100-01-01'
+            _logger.info('Force mode data for Wizard')
         else:
             from_date = store.from_date
             to_date = store.to_date
+            _logger.info('From to date mode for Wizard')
+
         return {
             '%smode' % mode: 'complete',
 
