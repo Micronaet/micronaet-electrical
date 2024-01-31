@@ -207,12 +207,8 @@ class ResPartnerActivityStorage(orm.Model):
                 )
 
             # Generate Wizard for print report:
-            data = self.get_wizard_setup_data(store, mode='')
-
-            # Update force data in account mode:
-            if force_date:
-                data['from_date'] = force_date[0]
-                data['to_date'] = force_date[1]
+            data = self.get_wizard_setup_data(
+                store, mode='', force_date=force_date)
 
             wizard_id = wizard_pool.create(cr, uid, data, context=context)
 
@@ -250,9 +246,11 @@ class ResPartnerActivityStorage(orm.Model):
             }, context=context)
         return True
 
-    def get_wizard_setup_data(self, store, mode='default'):
+    def get_wizard_setup_data(
+            self, store, mode='default', force_date=False):
         """ Generate wizard 'data for open or generate report
             mode = '' or 'default'
+            force_date = (from_date, to_date) used to force in account mode
         """
         if mode:
             mode = '%s_' % mode
@@ -266,11 +264,17 @@ class ResPartnerActivityStorage(orm.Model):
             activity_material_discount = 0.0
             activity_price = 'lst_price'
 
+        if force_date:
+            from_date = force_date[0]
+            to_date = force_date[1]
+        else:
+            from_date = store.from_date
+            to_date = store.to_date
         return {
             '%smode' % mode: 'complete',
 
-            '%sfrom_date' % mode: store.from_date,
-            '%sto_date' % mode: store.to_date,
+            '%sfrom_date' % mode: from_date,
+            '%sto_date' % mode: to_date,
 
             '%spartner_id' % mode: store.partner_id.id,
             '%saccount_id' % mode: store.account_id.id,
