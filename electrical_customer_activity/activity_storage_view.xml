@@ -9,6 +9,7 @@
              <field name="state">code</field>
              <field name="code">action = env['res.partner.activity.storage'].generate_report_complete()</field>
          </record>
+
         <!-- res.partner.activity.folder -->
         <record model="ir.ui.view" id="view_res_partner_activity_folder_form">
             <field name="name">res.partner.activity.folder.form</field>

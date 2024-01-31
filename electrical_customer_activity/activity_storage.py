@@ -135,6 +135,11 @@ class ResPartnerActivityStorage(orm.Model):
                 name = name.replace(from_char, to_char)
             return name
 
+        if context is None:
+            context = {}
+        if not ids:
+            ids = context.get('active_ids')
+
         pdb.set_trace()
         file_pool = self.pool.get('res.partner.activity.filename')
         wizard_pool = self.pool.get('res.partner.activity.wizard')
