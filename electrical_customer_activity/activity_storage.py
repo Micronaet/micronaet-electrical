@@ -49,6 +49,8 @@ file_char_substitute = [
     (u'&', u'e'),
     (u'"', u'\''),
     (u'°', u'o'),
+    (u',', u'.'),
+    (u';', u'.'),
     ]
 
 
@@ -135,28 +137,47 @@ class ResPartnerActivityStorage(orm.Model):
         file_pool = self.pool.get('res.partner.activity.filename')
         wizard_pool = self.pool.get('res.partner.activity.wizard')
 
-        file_ids = file_pool.search(cr, uid, [
-            ('code', '=', 'ACTIVITY'),
-        ], context=context)
-        if not file_ids:
-            raise osv.except_osv(
-                _('Errore'),
-                _('Impossibile generare un file, impostare nei modelli di '
-                  'file un template con codice ACTIVITY per continuare!'),
+        loop = [
+            ('MANUTENZIONI', 'M'),  # Start with M
+            ('COMMESSE', '0'),  # Start with number
+            ('INTERNE', 'A'),  # Start with A
+            ('SENZA', ''),  # No account
+        ]
+        template = {}
+        for search_code, key in loop:
+            file_ids = file_pool.search(cr, uid, [
+                ('code', '=', search_code),
+            ], context=context)
+            if not file_ids:
+                raise osv.except_osv(
+                    _('Errore'),
+                    _('Impossibile generare un file, impostare nei modelli di '
+                      'file un template con codice %s per continuare!' %
+                      search_code),
+                )
+            file = file_pool.browse(cr, uid, file_ids, context=context)[0]
+            template[key] = os.path.join(
+                os.path.expanduser(file.folder_id.path),
+                file.filename,
             )
-        file = file_pool.browse(cr, uid, file_ids, context=context)[0]
-        template_name = os.path.join(
-            os.path.expanduser(file.folder_id.path),
-            file.filename,
-        )
 
         for store in self.browse(cr, uid, ids, context=context):
             name = store.name
             customer = clean_name_path(store.partner_id.name)
             account = clean_name_path(store.account_id.name)
+            code = clean_name_path(store.account_id.code).upper()
             contact = clean_name_path(store.contact_id.name)
             year = store.name[:4]
             month = store.name[-2:]
+
+            if not account:
+                template_name = template['']
+            elif code.startswith('M'):
+                template_name = template['M']
+            elif code.startswith('A'):
+                template_name = template['A']
+            else:  # Number
+                template_name = template['0']
 
             fullname = template_name.format(
                 name=name,
@@ -218,7 +239,7 @@ class ResPartnerActivityStorage(orm.Model):
         return True
 
     def get_wizard_setup_data(self, store, mode='default'):
-        """ Generate wizard data for open or generate report
+        """ Generate wizard 'data for open or generate report
             mode = '' or 'default'
         """
         if mode:
