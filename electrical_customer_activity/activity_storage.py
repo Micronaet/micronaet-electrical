@@ -135,6 +135,7 @@ class ResPartnerActivityStorage(orm.Model):
                 name = name.replace(from_char, to_char)
             return name
 
+        pdb.set_trace()
         file_pool = self.pool.get('res.partner.activity.filename')
         wizard_pool = self.pool.get('res.partner.activity.wizard')
 
