@@ -183,12 +183,12 @@ class ResPartnerActivityStorage(orm.Model):
                 template_name = template['A']
             else:  # Number
                 template_name = template['0']
-                force_date = ('1900-01-01', '3000-01-01')
 
             fullname = template_name.format(
                 name=name,
                 customer=customer,
                 account=account,
+                code=code or '-',
                 contact=contact,
                 year=year,
                 month=month)
@@ -208,7 +208,7 @@ class ResPartnerActivityStorage(orm.Model):
 
             # Generate Wizard for print report:
             data = self.get_wizard_setup_data(
-                store, mode='', force_date=force_date)
+                store, mode='')
 
             wizard_id = wizard_pool.create(cr, uid, data, context=context)
 
@@ -247,10 +247,9 @@ class ResPartnerActivityStorage(orm.Model):
         return True
 
     def get_wizard_setup_data(
-            self, store, mode='default', force_date=False):
+            self, store, mode='default'):
         """ Generate wizard 'data for open or generate report
             mode = '' or 'default'
-            force_date = (from_date, to_date) used to force in account mode
         """
         if mode:
             mode = '%s_' % mode
@@ -264,9 +263,9 @@ class ResPartnerActivityStorage(orm.Model):
             activity_material_discount = 0.0
             activity_price = 'lst_price'
 
-        if force_date:
-            from_date = force_date[0]
-            to_date = force_date[1]
+        if store.account_id and (store.account_id.code or '')[:1].isdigit():
+            from_date = '1900-01-01'
+            to_date = '2100-01-01'
         else:
             from_date = store.from_date
             to_date = store.to_date
