@@ -137,13 +137,17 @@ class ResPartnerActivityStorage(orm.Model):
         file_pool = self.pool.get('res.partner.activity.filename')
         wizard_pool = self.pool.get('res.partner.activity.wizard')
 
+        # ---------------------------------------------------------------------
+        # Load all template used (depend on account code):
+        # ---------------------------------------------------------------------
+        template = {}  # All template mode used
         loop = [
             ('MANUTENZIONI', 'M'),  # Start with M
             ('COMMESSE', '0'),  # Start with number
             ('INTERNE', 'A'),  # Start with A
             ('SENZA', ''),  # No account
         ]
-        template = {}
+
         for search_code, key in loop:
             file_ids = file_pool.search(cr, uid, [
                 ('code', '=', search_code),
@@ -162,7 +166,7 @@ class ResPartnerActivityStorage(orm.Model):
             )
 
         for store in self.browse(cr, uid, ids, context=context):
-            name = store.name
+            name = store.name  # Not used for account mode!
             customer = clean_name_path(store.partner_id.name)
             account = clean_name_path(store.account_id.name)
             code = clean_name_path(store.account_id.code).upper()
@@ -170,6 +174,7 @@ class ResPartnerActivityStorage(orm.Model):
             year = store.name[:4]
             month = store.name[-2:]
 
+            force_date = False
             if not account:
                 template_name = template['']
             elif code.startswith('M'):
@@ -178,6 +183,7 @@ class ResPartnerActivityStorage(orm.Model):
                 template_name = template['A']
             else:  # Number
                 template_name = template['0']
+                force_date = ('1900-01-01', '3000-01-01')
 
             fullname = template_name.format(
                 name=name,
@@ -202,6 +208,12 @@ class ResPartnerActivityStorage(orm.Model):
 
             # Generate Wizard for print report:
             data = self.get_wizard_setup_data(store, mode='')
+
+            # Update force data in account mode:
+            if force_date:
+                data['from_date'] = force_date[0]
+                data['to_date'] = force_date[1]
+
             wizard_id = wizard_pool.create(cr, uid, data, context=context)
 
             # Run Print button in wizard force save as filename:
