@@ -199,7 +199,6 @@ class ResPartnerActivityStorage(orm.Model):
             amount_invoice = invoice_data[0]  # Cost
             expense_data = save_summary.get('Spese', (0.0, 0.0, 0.0))
             amount_expense = expense_data[0]  # Cost
-            pdb.set_trace()
 
             amount_cost = (
                 amount_intervent + amount_picking + amount_ddt +
