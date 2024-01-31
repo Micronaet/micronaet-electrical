@@ -249,7 +249,7 @@ class ResPartnerActivityStorage(orm.Model):
                 'amount_cost': amount_cost,
                 'amount_invoice': amount_invoice,
             }, context=context)
-        # return True
+        return {}
 
     def get_wizard_setup_data(
             self, store, mode='default'):
