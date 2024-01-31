@@ -140,7 +140,6 @@ class ResPartnerActivityStorage(orm.Model):
         if not ids:
             ids = context.get('active_ids')
 
-        pdb.set_trace()
         file_pool = self.pool.get('res.partner.activity.filename')
         wizard_pool = self.pool.get('res.partner.activity.wizard')
 
@@ -250,7 +249,7 @@ class ResPartnerActivityStorage(orm.Model):
                 'amount_cost': amount_cost,
                 'amount_invoice': amount_invoice,
             }, context=context)
-        return True
+        # return True
 
     def get_wizard_setup_data(
             self, store, mode='default'):
