@@ -268,6 +268,17 @@ class ResPartnerActivityStorage(orm.Model):
             activity_material_discount = 0.0
             activity_price = 'lst_price'
 
+        # Parameters:
+        code = (store.account_id.code or '').upper()
+        if code[:1] == 'M':
+            picking_mode = 'delivered'
+            ddt_mode = 'ddt'
+            intervent_mode = 'pending'
+        else:
+            picking_mode = 'all'
+            ddt_mode = 'all'
+            intervent_mode = 'all'
+
         if (store.account_id.code or '')[:1].isdigit():
             # No date filter if numeric account code (Commessa)
             from_date = '1900-01-01'
@@ -288,9 +299,9 @@ class ResPartnerActivityStorage(orm.Model):
             '%saccount_id' % mode: store.account_id.id,
             '%scontact_id' % mode: store.contact_id.id,
 
-            '%spicking_mode' % mode: 'all',
-            '%sddt_mode' % mode: 'all',  # 'ddt',  # Not invoiced (not all!)
-            '%sintervent_mode' % mode: 'all',  # 'pending',
+            '%spicking_mode' % mode: picking_mode,
+            '%sddt_mode' % mode: ddt_mode,
+            '%sintervent_mode' % mode: intervent_mode,
 
             '%sactivity_price' % mode: activity_price,
             '%sactivity_material_discount' % mode: activity_material_discount,
