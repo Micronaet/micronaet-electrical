@@ -83,8 +83,8 @@ class AccountAnalyticAccount(orm.Model):
         'activity_material_discount': fields.float(
             'Sconto materiale (report attività)', digits=(16, 4)),
         'activity_price': fields.selection([
-            ('metel_sale', 'Discount price'),
-            ('lst_price', 'List price'),
+            ('metel_sale', 'Prezzo scontato'),
+            ('lst_price', 'Prezzo METEL (listino)'),
             ], 'Prezzo utilizzato (report attitivà)'),
         }
 
