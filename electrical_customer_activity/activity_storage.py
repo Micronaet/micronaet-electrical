@@ -126,7 +126,7 @@ class ResPartnerActivityStorage(orm.Model):
         """ Generate report complete
         """
         current = self.browse(cr, uid, ids, context=context)
-        fullname = current.fullname
+        fullname = current.fullname or 'FILE NON PRESENTE'
         raise osv.except_osv(
             u'Informazioni',
             u'Il file del report nella cartella del server:\n\n'
