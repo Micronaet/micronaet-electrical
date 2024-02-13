@@ -122,6 +122,19 @@ class ResPartnerActivityStorage(orm.Model):
     _order = 'name desc, partner_id, account_id'
 
     # Button to open list:
+    def get_report_info(self, cr, uid, ids, context=None):
+        """ Generate report complete
+        """
+        current = self.browse(cr, uid, ids, context=context)
+        fullname = current.fullname
+        raise osv.except_osv(
+            u'Informazioni',
+            u'Il file del report nella cartella del server:\n\n'
+            u'%s\n\n[%sPRESENTE]' % (
+                fullname,
+                '' if os.path.isfile(fullname) else 'NON ',
+            ))
+
     def generate_report_complete(self, cr, uid, ids, context=None):
         """ Generate report complete
         """

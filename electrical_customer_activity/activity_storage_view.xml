@@ -230,6 +230,7 @@
             <field name="model">res.partner.activity.storage</field>
             <field name="arch" type="xml">
                 <tree string="Attività clienti (blu con pendenze)" editable="bottom" colors="blue: total_intervent_draft > 0 or total_picking > 0 or total_ddt_draft > 0">
+                    <button name="get_report_info" string="Dettaglio file report" type="object" icon="gtk-info" />
                     <field name="name" readonly="1"/>
                     <button name="generate_report_complete" string="Salva report completo" type="object" icon="gtk-print" />
 
