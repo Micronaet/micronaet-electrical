@@ -261,15 +261,20 @@ class ResPartnerActivityStorage(orm.Model):
 
         # Partner or contact used:
         partner = store.partner_id or store.contact_id
-        if partner:
+        account = store.account_id
+
+        if account and account.activity_price:  # More priority
+            activity_price = account.activity_price
+            activity_material_discount = account.activity_material_discount
+        elif partner and partner.activity_price:  # Less priority
+            activity_price = partner.activity_price
             activity_material_discount = partner.activity_material_discount
-            activity_price = partner.activity_price or 'lst_price'
-        else:
+        else:  # Default if not setup
             activity_material_discount = 0.0
             activity_price = 'lst_price'
 
         # Parameters:
-        code = (store.account_id.code or '').upper()
+        code = (account.code or '').upper()
         if code[:1] == 'M':
             picking_mode = 'delivered'
             ddt_mode = 'ddt'
@@ -279,7 +284,7 @@ class ResPartnerActivityStorage(orm.Model):
             ddt_mode = 'all'
             intervent_mode = 'all'
 
-        if (store.account_id.code or '')[:1].isdigit():
+        if code[:1].isdigit():
             # No date filter if numeric account code (Commessa)
             from_date = '1900-01-01'
             to_date = '2100-01-01'

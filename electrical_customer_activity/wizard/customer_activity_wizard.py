@@ -436,20 +436,38 @@ class ResPartnerActivityWizard(orm.TransientModel):
     # -------------------------------------------------------------------------
     # Onchange:
     # -------------------------------------------------------------------------
-    def onchange_partner_private(self, cr, uid, ids, partner_id, context=None):
+    def onchange_partner_private(
+            self, cr, uid, ids, partner_id, account_id, context=None):
         """ Change default discount and price for private report
         """
+        partner_pool = self.pool.get('res.partner')
+        account_pool = self.pool.get('account.analytic.account')
+
         res = {}
         if not partner_id:
             return res
 
-        partner_pool = self.pool.get('res.partner')
-        partner = partner_pool.browse(cr, uid, partner_id, context=context)
+        data_loaded = False  # present
+        if account_id:
+            account = account_pool.browse(
+                cr, uid, account_id, context=context)
+            if account.activity_price:
+                data_loaded = True
+                res['value'] = {
+                    'activity_material_discount':
+                        account.activity_material_discount,
+                    'activity_price': account.activity_price,
+                    }
 
-        res['value'] = {
-            'activity_material_discount': partner.activity_material_discount,
-            'activity_price': partner.activity_price,
-            }
+        if not data_loaded and partner_id:
+            partner = partner_pool.browse(
+                cr, uid, partner_id, context=context)
+
+            res['value'] = {
+                'activity_material_discount':
+                    partner.activity_material_discount,
+                'activity_price': partner.activity_price,
+                }
         return res
 
     def data_mask_filter(self, data, mask):

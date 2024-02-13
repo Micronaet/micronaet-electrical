@@ -71,3 +71,23 @@ class ResPartner(orm.Model):
     _defaults = {
         'activity_price': lambda *x: 'lst_price',
         }
+
+
+class AccountAnalyticAccount(orm.Model):
+    """ Model name: Account
+    """
+
+    _inherit = 'account.analytic.account'
+
+    _columns = {
+        'activity_material_discount': fields.float(
+            'Sconto materiale (report attività)', digits=(16, 4)),
+        'activity_price': fields.selection([
+            ('metel_sale', 'Discount price'),
+            ('lst_price', 'List price'),
+            ], 'Prezzo utilizzato (report attitivà)'),
+        }
+
+    _defaults = {
+        # 'activity_price': lambda *x: 'lst_price',
+        }
