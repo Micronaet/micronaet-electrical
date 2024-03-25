@@ -74,7 +74,7 @@ class ProductProductKitLine(orm.Model):
 
     _columns = {
         'sequence': fields.integer('Seq.'),
-        'product_code': fields.char('Cerca codice', size=40),
+        'search_code': fields.char('Cerca codice', size=40),
         'kit_id': fields.many2one(
             'electrical.product.kit', 'Kit'),
         'product_id': fields.many2one(
