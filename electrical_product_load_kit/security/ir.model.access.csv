@@ -1,4 +1,4 @@
 "id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
-access_product_product_kit_user,product.product.kit,model_product_product_kit,base.group_user,1,1,1,1
-access_product_product_kit_line_user,product.product.kit.line,model_product_product_kit_line,base.group_user,1,1,1,1
+access_electrical_product_kit_user,electrical.product.kit,model_electrical_product_kit,base.group_user,1,1,1,1
+access_electrical_product_kit_line_user,electrical.product.kit.line,model_electrical_product_kit_line,base.group_user,1,1,1,1
 

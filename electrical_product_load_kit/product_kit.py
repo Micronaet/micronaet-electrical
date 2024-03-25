@@ -43,11 +43,11 @@ from openerp.tools import (
 _logger = logging.getLogger(__name__)
 
 
-class ProductProductKit(orm.Model):
-    """ Model name: Product Kit
+class ElectricalProductKit(orm.Model):
+    """ Model name: electrical Product Kit
     """
 
-    _name = 'product.product.kit'
+    _name = 'electrical.product.kit'
     _description = 'Electrical Kit'
     _rec_name = 'name'
     _order = 'name'
@@ -62,12 +62,12 @@ class ProductProductKit(orm.Model):
         'active': lambda *x: True,
     }
 
-'''
+
 class ProductProductKitLine(orm.Model):
     """ Model name: Product Kit
     """
 
-    _name = 'product.product.kit.line'
+    _name = 'electrical.product.kit.line'
     _description = 'Eletrical Kit line'
     _rec_name = 'product_id'
     _order = 'sequence'
@@ -76,7 +76,7 @@ class ProductProductKitLine(orm.Model):
         'sequence': fields.integer('Seq.'),
         'product_code': fields.char('Cerca codice', size=40),
         'kit_id': fields.many2one(
-            'product.product.kit', 'Kit'),
+            'electrical.product.kit', 'Kit'),
         'product_id': fields.many2one(
             'product.product', 'Componente', required=True),
         'uom_id': fields.many2one(
@@ -87,4 +87,4 @@ class ProductProductKitLine(orm.Model):
     _defaults = {
         'sequence': lambda *x: 10,
     }
-'''
+
