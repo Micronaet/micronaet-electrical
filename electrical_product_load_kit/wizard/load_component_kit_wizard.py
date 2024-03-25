@@ -70,7 +70,6 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
         # Picking mode (stock.move):
         # ---------------------------------------------------------------------
         if picking:
-            pdb.set_trace()
             picking_id = picking.id
             partner_id = picking.partner_id.id
             picking_type = picking.picking_type_id
@@ -78,22 +77,24 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
             default_location_dest_id = picking_type.default_location_dest_id.id
 
             # sequence = max([m.sequence for m in picking.move_lines])
+            pdb.set_trace()
             for component in kit.product_ids:
                 # sequence += 10
                 product_id = component.product_id.id
                 move_quantity = quantity * component.quantity
 
                 # Generate line stock move in picking:
-                res = move_pool.onchange_product_id(
+                data = move_pool.onchange_product_id(
                     cr, uid, ids,
                     product_id=product_id,
                     loc_id=default_location_src_id,
                     loc_dest_id=default_location_dest_id,
                     partner_id=partner_id).get('value', {})
-                res.update({
+                data.update({
                     'picking_id': picking_id,
                     'product_uom_qty': move_quantity,
                 })
+                move_pool.create(cr, uid, data, context=context)
 
             return True
         _logger.error('No document passed!')
