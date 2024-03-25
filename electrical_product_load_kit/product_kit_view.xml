@@ -24,14 +24,14 @@
                             <field name="active" invisible="1"/>
 
                             <separator string="Componenti" colspan="4" />
-                            <!--<field name="product_ids" colspan="4">
+                            <field name="product_ids" colspan="4">
                                 <tree string="Componenti" editable="bottom">
                                     <field name="search_code" />
                                     <field name="product_id" />
                                     <field name="uom_id" />
                                     <field name="quantity" />
                                 </tree>
-                            </field>-->
+                            </field>
                             <separator string="Note" colspan="4" />
                             <field name="note" colspan="4" />
                         </group>
