@@ -52,9 +52,36 @@ class ElectricalProductKit(orm.Model):
     _rec_name = 'name'
     _order = 'name'
 
+    def onchange_product_id(self, cr, uid, ids, product_id, context=None):
+        """ Force domain of product
+        """
+        product_pool = self.pool.get('product.product')
+        res = {}
+        if not product_id:
+            return res
+
+        product = product_pool.browse(cr, uid, product_id, context=context)
+        res['value'] = {
+            'uom_id': product.uom_id.id,
+        }
+        return res
+
+    def onchange_search_code(self, cr, uid, ids, search_code, context=None):
+        """ Force domain of product
+        """
+        res = {
+            'domain': {'product_id': []},
+            'value': {},
+            }
+
+        if search_code:
+            res['domain']['product_id'].append(
+                ('default_code', 'ilike', search_code))
+        return res
+
     _columns = {
         'active': fields.boolean('Attiva'),
-        'name': fields.char('Description', size=80, required=True),
+        'name': fields.char('Nome', size=80, required=True),
         'note': fields.text('Note'),
         }
 
