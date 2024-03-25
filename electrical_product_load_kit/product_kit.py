@@ -52,6 +52,26 @@ class ElectricalProductKit(orm.Model):
     _rec_name = 'name'
     _order = 'name'
 
+    _columns = {
+        'active': fields.boolean('Attiva'),
+        'name': fields.char('Nome', size=80, required=True),
+        'note': fields.text('Note'),
+        }
+
+    _defaults = {
+        'active': lambda *x: True,
+    }
+
+
+class ProductProductKitLine(orm.Model):
+    """ Model name: Product Kit
+    """
+
+    _name = 'electrical.product.kit.line'
+    _description = 'Eletrical Kit line'
+    _rec_name = 'product_id'
+    _order = 'sequence'
+
     def onchange_product_id(self, cr, uid, ids, product_id, context=None):
         """ Force domain of product
         """
@@ -80,26 +100,6 @@ class ElectricalProductKit(orm.Model):
         return res
 
     _columns = {
-        'active': fields.boolean('Attiva'),
-        'name': fields.char('Nome', size=80, required=True),
-        'note': fields.text('Note'),
-        }
-
-    _defaults = {
-        'active': lambda *x: True,
-    }
-
-
-class ProductProductKitLine(orm.Model):
-    """ Model name: Product Kit
-    """
-
-    _name = 'electrical.product.kit.line'
-    _description = 'Eletrical Kit line'
-    _rec_name = 'product_id'
-    _order = 'sequence'
-
-    _columns = {
         'sequence': fields.integer('Seq.'),
         'search_code': fields.char('Cerca codice', size=40),
         'kit_id': fields.many2one(
@@ -108,12 +108,45 @@ class ProductProductKitLine(orm.Model):
             'product.product', 'Componente', required=True),
         'uom_id': fields.many2one(
             'product.uom', 'UM', required=True),
-        'quantity': fields.float('Q.', digits=(16, 2)),
+        'quantity': fields.float('Q.', digits=(16, 2), required=True),
         }
 
     _defaults = {
         'sequence': lambda *x: 10,
+        'quantity': lambda *x: 1,
     }
+
+
+class StockPicking(orm.Model):
+    """ Model name: Stock Picking
+    """
+
+    _inherit = 'stock.picking'
+
+    def action_load_kit_item(self, cr, uid, ids, context=None):
+        """ Open Kit wizard from Picking
+        """
+        if context is None:
+            context = {}
+        ctx = context.copy()
+
+        # Setup context:
+        ctx['default_picking_id'] = ids[0]
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Carica Kit'),
+            'view_type': 'form',
+            'view_mode': 'form',
+            # 'res_id': False,
+            'res_model': 'load.product.kit.wizard',
+            # 'view_id': view_id, # False
+            'views': [(False, 'tree'), (False, 'form')],
+            'domain': [],
+            'context': context,
+            'target': 'new',  # 'new'
+            'nodestroy': False,
+        }
 
 
 class ElectricalProductKitInherit(orm.Model):

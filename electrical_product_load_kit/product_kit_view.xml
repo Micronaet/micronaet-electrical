@@ -1,13 +1,25 @@
 <?xml version="1.0"?>
 <openerp>
     <data>
+	    <!--stock.picking-->
+        <record model="ir.ui.view" id="view_product_uom_metel_tree">
+            <field name="name">stock.picking.kit.form</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <field name="origin" position="after">
+                    <button name="action_load_kit_item" string="Carica Kit" type="object" icon="gtk-add" class="oe_highlight" />
+                </field>
+            </field>
+        </record>
+
         <!--product.product.kit-->
         <record model="ir.ui.view" id="view_electrical_product_kit_tree">
             <field name="name">electrical.product.kit.tree</field>
             <field name="model">electrical.product.kit</field>
             <field name="arch" type="xml">
                 <tree string="Kit">
-                     <field name="active" />
+                     <field name="active" invisible="1"/>
                      <field name="name" />
                      <field name="note" />
                 </tree>
