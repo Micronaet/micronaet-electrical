@@ -89,7 +89,7 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
                     product_id=product_id,
                     loc_id=default_location_src_id,
                     loc_dest_id=default_location_dest_id,
-                    partner_id=partner_id)
+                    partner_id=partner_id).get('value', {})
                 res.update({
                     'picking_id': picking_id,
                     'product_uom_qty': move_quantity,
