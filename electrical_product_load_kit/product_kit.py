@@ -143,7 +143,7 @@ class StockPicking(orm.Model):
             # 'view_id': view_id, # False
             'views': [(False, 'form')],
             'domain': [],
-            'context': context,
+            'context': ctx,
             'target': 'new',  # 'new'
             'nodestroy': False,
         }
