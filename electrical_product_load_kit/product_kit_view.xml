@@ -17,14 +17,14 @@
             <field name="name">electrical.product.kit.form</field>
             <field name="model">electrical.product.kit</field>
             <field name="arch" type="xml">
-                <form string="Kit">
+                <form string="Kit" version="7.0">
                     <sheet>
-                        <group>
+                        <group colpsan="4" col="4">
                             <field name="name" />
                             <field name="active" invisible="1"/>
 
                             <separator string="Componenti" colspan="4" />
-                            <field name="product_ids" colspan="4">
+                            <field name="product_ids" colspan="4" nolabel="1">
                                 <tree string="Componenti" editable="bottom">
                                     <field name="search_code" />
                                     <field name="product_id" />
