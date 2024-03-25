@@ -82,10 +82,10 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
 
         lines = ''
 
-        for line in kit.product_id:
+        for component in kit.product_ids:
             lines += '<tr><td>%s</td><td>%s</td></tr>' % (
-                line.product_id.default_code,
-                line.quantity * quantity,
+                component.product_id.default_code,
+                component.quantity * quantity,
             )
         res['detail'] = '<table>%s</table>' % lines
         return res
