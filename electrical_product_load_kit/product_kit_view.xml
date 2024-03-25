@@ -49,24 +49,12 @@
             <field name="domain">[]</field>
         </record>
 
-        <!--<menuitem
+        <menuitem
             parent="base.menu_base_config"
-            id="menu_action_account_expence_root"
-            sequence="10"
-                action="action_account_analytic_expence"
-                />
-            <menuitem
-                parent="menu_action_account_expence_root"
-                id="menu_action_account_expence_tree"
-                action="action_account_analytic_expence"
-                sequence="10"
-                />
-            <menuitem
-                parent="menu_action_account_expence_root"
-                id="menu_action_account_expence_category_tree"
-                action="action_analytic_expence_category"
-                sequence="20"
-                />-->
+            id="menu_view_electrical_product_kit_root"
+            sequence="60"
+            action="action_view_electrical_product_kit"
+            />
     </data>
 </openerp>
 
