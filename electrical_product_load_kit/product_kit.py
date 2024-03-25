@@ -96,6 +96,7 @@ class ElectricalProductKitInherit(orm.Model):
     _inherit = 'electrical.product.kit'
 
     _columns = {
-        fields.one2many('electrical.product.kit.line', 'kit_id', 'Componenti'),
+        'product_ids': fields.one2many(
+            'electrical.product.kit.line', 'kit_id', 'Componenti'),
         }
 
