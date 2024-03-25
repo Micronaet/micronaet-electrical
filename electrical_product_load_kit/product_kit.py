@@ -88,3 +88,15 @@ class ProductProductKitLine(orm.Model):
         'sequence': lambda *x: 10,
     }
 
+'''
+class ElectricalProductKitInherit(orm.Model):
+    """ Model name: electrical Product Kit
+    """
+
+    _inherit = 'electrical.product.kit'
+
+    _columns = {
+        fields.one2many('electrical.product.kit.line', 'kit_id', 'Componenti'),
+        }
+
+'''

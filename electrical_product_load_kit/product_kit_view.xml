@@ -24,14 +24,14 @@
                             <field name="active" invisible="1"/>
 
                             <separator string="Componenti" colspan="4" />
-                            <field name="product_ids" colspan="4">
+                            <!--<field name="product_ids" colspan="4">
                                 <tree string="Componenti" editable="bottom">
                                     <field name="search_code" />
                                     <field name="product_id" />
                                     <field name="uom_id" />
                                     <field name="quantity" />
                                 </tree>
-                            </field>
+                            </field>-->
                             <separator string="Note" colspan="4" />
                             <field name="note" colspan="4" />
                         </group>
@@ -39,12 +39,12 @@
                 </form>
             </field>
         </record>
-        <record model="ir.actions.act_window" id="action_view_product_product_kit">
+        <record model="ir.actions.act_window" id="action_view_electrical_product_kit">
             <field name="name">Kit</field>
             <field name="res_model">electrical.product.kit</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
-            <field name="view_id" ref="view_product_product_kit_tree"/>
+            <field name="view_id" ref="view_electrical_product_kit_tree"/>
             <field name="context">{}</field>
             <field name="domain">[]</field>
         </record>
