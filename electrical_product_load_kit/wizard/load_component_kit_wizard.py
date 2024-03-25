@@ -42,10 +42,10 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 _logger = logging.getLogger(__name__)
 
 
-class LoadProductKitWizard(orm.TransientModel):
+class LoadElectricalProductKitWizard(orm.TransientModel):
     """ Wizard load component
     """
-    _name = 'load.product.kit.wizard'
+    _name = 'load.electrical.product.kit.wizard'
 
     def load_component(self, cr, uid, ids, context=None):
         """ Update generator with component data
@@ -68,7 +68,7 @@ class LoadProductKitWizard(orm.TransientModel):
             self, cr, uid, ids, kit_id, quantity, context=None):
         """ Generate a preview form
         """
-        kit_pool = self.pool.get('product.product.kit')
+        kit_pool = self.pool.get('electrical.product.kit')
 
         res = {}
         return res
@@ -76,7 +76,8 @@ class LoadProductKitWizard(orm.TransientModel):
     _columns = {
         'order_id': fields.many2one('sale.order', 'Ordine'),
         'picking_id': fields.many2one('stock.picking', 'Picking'),
-        'kit_id': fields.many2one('product.product.kit', 'Kit', required=True),
+        'kit_id': fields.many2one(
+            'electrical.product.kit', 'Kit', required=True),
         'quantity': fields.integer('Q.', required=True),
         }
 

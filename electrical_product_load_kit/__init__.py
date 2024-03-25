@@ -22,5 +22,5 @@
 ###############################################################################
 
 from . import product_kit
-#from . import wizard
+from . import wizard
 
