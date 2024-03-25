@@ -139,9 +139,9 @@ class StockPicking(orm.Model):
             'view_type': 'form',
             'view_mode': 'form',
             # 'res_id': False,
-            'res_model': 'load.product.kit.wizard',
+            'res_model': 'load.electrical.product.kit.wizard',
             # 'view_id': view_id, # False
-            'views': [(False, 'tree'), (False, 'form')],
+            'views': [(False, 'form')],
             'domain': [],
             'context': context,
             'target': 'new',  # 'new'

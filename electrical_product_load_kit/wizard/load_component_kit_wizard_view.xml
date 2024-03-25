@@ -3,27 +3,27 @@
     <data>
        <record model="ir.ui.view" id="view_load_product_kit_wizard_form">
            <field name="name">load.product.kit.wizard.form</field>
-           <field name="model">load.product.kit.wizard</field>
+           <field name="model">load.electrical.product.kit.wizard</field>
            <field name="arch" type="xml">
-               <form string="Wizard load component">
-                   <sheet>
+               <form string="Wizard load component" version="7.0">
                        <header>
-
+                            <button name="action_load_kit_item" string="Carica componenti nel documento" type="object" icon="gtk-add" class="oe_highlight" />
                        </header>
-                       <group colspan="4">
-                           <field name="kit_id" />
-                           <field name="quantity" />
-                           <field name="order_id" attrs="{invisible: [('order_id', '=', False)]}" />
-                           <field name="picking_id" attrs="{invisible: [('picking_id', '=', False)]}"/>
-                       </group>
-                   </sheet>
+                       <sheet>
+                           <group colspan="4" col="4">
+                               <field name="kit_id" />
+                               <field name="quantity" />
+                               <field name="order_id" attrs="{'invisible': [('order_id', '=', False)]}" />
+                               <field name="picking_id" attrs="{'invisible': [('picking_id', '=', False)]}"/>
+                           </group>
+                       </sheet>
                </form>
            </field>
        </record>
 
       <record model="ir.actions.act_window" id="action_view_load_product_kit_wizard">
           <field name="name">Wizard carica kit</field>
-          <field name="res_model">load.product.kit.wizard</field>
+          <field name="res_model">load.electrical.product.kit.wizard</field>
           <field name="view_type">form</field>
           <field name="view_mode">form</field>
           <field name="target">new</field>
@@ -31,4 +31,3 @@
       </record>
     </data>
 </openerp>
-

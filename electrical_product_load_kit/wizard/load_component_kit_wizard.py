@@ -47,7 +47,7 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
     """
     _name = 'load.electrical.product.kit.wizard'
 
-    def load_component(self, cr, uid, ids, context=None):
+    def action_load_kit_item(self, cr, uid, ids, context=None):
         """ Update generator with component data
         """
         line_pool = self.pool.get('sale.order.line')
@@ -62,7 +62,12 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
         kit = wizard.kit_id
         quantity = wizard.quantity
 
-        # Generate line with kit:
+        if order:
+            return True
+        if picking:
+            # Generate line stock move in picking:
+            return True
+        _logger.error('No document passed!')
 
     def onchange_kit_quantity(
             self, cr, uid, ids, kit_id, quantity, context=None):
