@@ -2,9 +2,9 @@
 <openerp>
     <data>
         <!--product.product.kit-->
-        <record model="ir.ui.view" id="view_product_product_kit_tree">
-            <field name="name">product.product.kit.tree</field>
-            <field name="model">product.product.kit</field>
+        <record model="ir.ui.view" id="view_electrical_product_kit_tree">
+            <field name="name">electrical.product.kit.tree</field>
+            <field name="model">electrical.product.kit</field>
             <field name="arch" type="xml">
                 <tree string="Kit">
                      <field name="active" />
@@ -13,9 +13,9 @@
                 </tree>
             </field>
         </record>
-        <record model="ir.ui.view" id="view_product_product_kit_form">
-            <field name="name">product.product.kit.form</field>
-            <field name="model">product.product.kit</field>
+        <record model="ir.ui.view" id="view_electrical_product_kit_form">
+            <field name="name">electrical.product.kit.form</field>
+            <field name="model">electrical.product.kit</field>
             <field name="arch" type="xml">
                 <form string="Kit">
                     <sheet>
@@ -41,7 +41,7 @@
         </record>
         <record model="ir.actions.act_window" id="action_view_product_product_kit">
             <field name="name">Kit</field>
-            <field name="res_model">product.product.kit</field>
+            <field name="res_model">electrical.product.kit</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_product_product_kit_tree"/>
