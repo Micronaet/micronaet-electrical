@@ -80,13 +80,13 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
             return res
         kit = kit_pool.browse(cr, uid, kit_id, context=context)
 
-        lines = '<tr><th>Codice</th><th>Componente</th><th>Q.</th></tr>'
+        lines = '<tr><th>Q.</th><th>Codice</th><th>Componente</th></tr>'
 
         for component in kit.product_ids:
             lines += '<tr><td>%s</td><td>%s</td><td>%s</td></tr>' % (
+                component.quantity * quantity,
                 component.product_id.default_code,
                 component.product_id.name,
-                component.quantity * quantity,
             )
         res['value'] = {
             'detail':
