@@ -90,7 +90,8 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
             )
         res['value'] = {
             'detail':
-                '<table class="table table-condensed table-bordered">'
+                '<table width="90%%" '
+                'class="table table-condensed table-bordered">'
                 '%s'
                 '</table>' % lines,
         }
