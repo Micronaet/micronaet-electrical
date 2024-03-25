@@ -48,7 +48,7 @@ class ProductProductKit(orm.Model):
     """
 
     _name = 'product.product.kit'
-    _description = 'Eletrical Kit'
+    _description = 'Electrical Kit'
     _rec_name = 'name'
     _order = 'name'
 
@@ -62,7 +62,7 @@ class ProductProductKit(orm.Model):
         'active': lambda *x: True,
     }
 
-
+'''
 class ProductProductKitLine(orm.Model):
     """ Model name: Product Kit
     """
@@ -87,3 +87,4 @@ class ProductProductKitLine(orm.Model):
     _defaults = {
         'sequence': lambda *x: 10,
     }
+'''
