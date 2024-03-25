@@ -55,17 +55,41 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
 
         if not context:
             context = {}
+
+        # Read wizart data:
         wizard = self.browse(cr, uid, ids, context=context)
+        kit = wizard.kit_id
+        quantity = wizard.quantity
 
         order = wizard.order_id
         picking = wizard.picking_id
-        kit = wizard.kit_id
-        quantity = wizard.quantity
 
         if order:
             return True
         if picking:
-            # Generate line stock move in picking:
+            pdb.set_trace()
+            partner_id = picking.partner_id.id
+            picking_type = picking.picking_type_id
+            default_location_src_id = picking_type.default_location_src_id.id
+            default_location_dest_id = picking_type.default_location_dest_id.id
+
+            sequence = max([m.sequence for m in picking.move_lines])
+            for component in kit.product_ids:
+                sequence += 10
+                product_id = component.product_id.id
+                move_quantity = quantity * component.quantity
+
+                # Generate line stock move in picking:
+                res = move_pool.onchange_product_id(
+                    cr, uid, ids,
+                    product_id=product_id,
+                    loc_id=default_location_src_id,
+                    loc_dest_id=default_location_dest_id,
+                    partner_id=partner_id)
+                res.update({
+                    'product_uom_qty': quantity,
+                })
+
             return True
         _logger.error('No document passed!')
 
