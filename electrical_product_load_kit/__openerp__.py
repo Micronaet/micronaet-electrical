@@ -38,6 +38,7 @@
         'sale',
         'product',
         'stock',
+        'fast_stock_move',  # micronaet-addons-private repo
         ],
     'init_xml': [],
     'demo': [],

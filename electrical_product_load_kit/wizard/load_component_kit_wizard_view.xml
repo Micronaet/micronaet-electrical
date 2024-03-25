@@ -11,12 +11,16 @@
                        </header>
                        <sheet>
                            <group colspan="4" col="4">
-                               <separator string="Carico da KIT:" colspan="4"/>
-                               <field name="kit_id" />
-                               <field name="quantity" />
                                <separator string="Documento collegato:" colspan="4"/>
                                <field name="order_id" attrs="{'invisible': [('order_id', '=', False)]}" readonly="1"/>
                                <field name="picking_id" attrs="{'invisible': [('picking_id', '=', False)]}" readonly="1"/>
+
+                               <separator string="Carico da KIT:" colspan="4"/>
+                               <field name="kit_id" on_change="onchange_kit_quantity(kit_id, quantity)"/>
+                               <field name="quantity" on_change="onchange_kit_quantity(kit_id, quantity)" />
+
+                               <separator string="Dettaglio:" colspan="4" attrs="{'invisible': [('detail', '=', False)]}" />
+                               <field name="detail" nolabel="1" readonly="1" attrs="{'invisible': [('detail', '=', False)]}" widget="html" />
                            </group>
                        </sheet>
                </form>

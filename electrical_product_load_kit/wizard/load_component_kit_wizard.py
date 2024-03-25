@@ -76,6 +76,18 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
         kit_pool = self.pool.get('electrical.product.kit')
 
         res = {}
+        if not(kit_id and quantity > 0):
+            return res
+        kit = kit_pool.browse(cr, uid, kit_id, context=context)
+
+        lines = ''
+
+        for line in kit.product_id:
+            lines += '<tr><td>%s</td><td>%s</td></tr>' % (
+                line.product_id.default_code,
+                line.quantity * quantity,
+            )
+        res['detail'] = '<table>%s</table>' % lines
         return res
 
     _columns = {
@@ -84,6 +96,7 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
         'kit_id': fields.many2one(
             'electrical.product.kit', 'Kit', required=True),
         'quantity': fields.integer('Q.', required=True),
+        'detail': fields.text('Dettagli'),
         }
 
     _defaults = {
