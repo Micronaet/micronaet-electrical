@@ -25,7 +25,6 @@ import os
 import sys
 import logging
 import openerp
-import openerp.netsvc as netsvc
 import openerp.addons.decimal_precision as dp
 from openerp.osv import fields, osv, expression, orm
 from datetime import datetime, timedelta
@@ -34,7 +33,8 @@ from openerp import SUPERUSER_ID, api
 from openerp import tools
 from openerp.tools.translate import _
 from openerp.tools.float_utils import float_round as round
-from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
+from openerp.tools import (
+    DEFAULT_SERVER_DATE_FORMAT,
     DEFAULT_SERVER_DATETIME_FORMAT,
     DATETIME_FORMATS_MAP,
     float_compare)
@@ -53,9 +53,14 @@ class ProductProductKit(orm.Model):
     _order = 'name'
 
     _columns = {
+        'active': fields.boolean('Attiva'),
         'name': fields.char('Description', size=80, required=True),
         'note': fields.text('Note'),
         }
+
+    _defaults = {
+        'active': lambda *x: True,
+    }
 
 
 class ProductProductKitLine(orm.Model):
@@ -77,5 +82,8 @@ class ProductProductKitLine(orm.Model):
         'uom_id': fields.many2one(
             'product.uom', 'UM', required=True),
         'quantity': fields.float('Q.', digits=(16, 2)),
-        'note': fields.text('Note'),
         }
+
+    _defaults = {
+        'sequence': lambda *x: 10,
+    }
