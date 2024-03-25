@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+       <record model="ir.ui.view" id="view_load_product_kit_wizard_form">
+           <field name="name">load.product.kit.wizard.form</field>
+           <field name="model">load.product.kit.wizard</field>
+           <field name="arch" type="xml">
+               <form string="Wizard load component">
+                   <sheet>
+                       <header>
+
+                       </header>
+                       <group colspan="4">
+                           <field name="kit_id" />
+                           <field name="quantity" />
+                           <field name="order_id" invisible="1"/>
+                           <field name="picking_id" invisible="1"/>
+                       </group>
+                   </sheet>
+               </form>
+           </field>
+       </record>
+
+      <record model="ir.actions.act_window" id="action_view_load_product_kit_wizard">
+          <field name="name">Wizard carica kit</field>
+          <field name="res_model">load.product.kit.wizard</field>
+          <field name="view_type">form</field>
+          <field name="view_mode">form</field>
+          <field name="target">new</field>
+          <field name="view_id" ref="view_load_product_kit_wizard_form"/>
+      </record>
+    </data>
+</openerp>
+
