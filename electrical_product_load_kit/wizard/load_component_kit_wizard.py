@@ -66,8 +66,12 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
 
         if order:
             return True
+        # ---------------------------------------------------------------------
+        # Picking mode (stock.move):
+        # ---------------------------------------------------------------------
         if picking:
             pdb.set_trace()
+            picking_id = picking.id
             partner_id = picking.partner_id.id
             picking_type = picking.picking_type_id
             default_location_src_id = picking_type.default_location_src_id.id
@@ -87,7 +91,8 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
                     loc_dest_id=default_location_dest_id,
                     partner_id=partner_id)
                 res.update({
-                    'product_uom_qty': quantity,
+                    'picking_id': picking_id,
+                    'product_uom_qty': move_quantity,
                 })
 
             return True
