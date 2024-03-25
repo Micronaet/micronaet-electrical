@@ -77,9 +77,9 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
             default_location_src_id = picking_type.default_location_src_id.id
             default_location_dest_id = picking_type.default_location_dest_id.id
 
-            sequence = max([m.sequence for m in picking.move_lines])
+            # sequence = max([m.sequence for m in picking.move_lines])
             for component in kit.product_ids:
-                sequence += 10
+                # sequence += 10
                 product_id = component.product_id.id
                 move_quantity = quantity * component.quantity
 
