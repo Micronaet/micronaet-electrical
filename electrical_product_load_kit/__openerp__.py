@@ -44,7 +44,7 @@
     'data': [
         'security/ir.model.access.csv',
         'product_kit_view.xml',
-        #'wizard/load_component_kit_wizard_view.xml',
+        'wizard/load_component_kit_wizard_view.xml',
         ],
     'active': False,
     'installable': True,
