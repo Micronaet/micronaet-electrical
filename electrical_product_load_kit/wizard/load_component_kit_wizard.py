@@ -73,14 +73,13 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
             picking_id = picking.id
             partner_id = picking.partner_id.id
             picking_type = picking.picking_type_id
+            picking_type_id = picking_type.id
             default_location_src_id = picking_type.default_location_src_id.id
             default_location_dest_id = picking_type.default_location_dest_id.id
 
-            # sequence = max([m.sequence for m in picking.move_lines])
-            pdb.set_trace()
             for component in kit.product_ids:
-                # sequence += 10
-                product_id = component.product_id.id
+                product = component.product_id
+                product_id = product.id
                 move_quantity = quantity * component.quantity
 
                 # Generate line stock move in picking:
@@ -93,6 +92,9 @@ class LoadElectricalProductKitWizard(orm.TransientModel):
                 data.update({
                     'picking_id': picking_id,
                     'product_uom_qty': move_quantity,
+                    'product_id': product_id,
+                    'picking_type_id': picking_type_id,
+                    'price_unit': product.standard_price,
                 })
                 move_pool.create(cr, uid, data, context=context)
 
