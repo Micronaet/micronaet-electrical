@@ -2740,7 +2740,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     # ---------------------------------------------------------
                     total_cost = summary[block].get('total_cost', 0.0)
                     total_discount = summary[block].get('total_discount', 0.0)
-                    total_revenue = summary[block].get('total_revenue', 0.0)
+                    total_revenue = summary[block].get(
+                        'total_r./server.shevenue', 0.0)
 
                     if not any((total_cost, total_discount, total_revenue)):
                         continue
@@ -2778,7 +2779,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
             # -----------------------------------------------------------------
             #                            PRIVATE MODE:
-            # -----------------------------------------------------------------
+            # -------------------------------------------------./server.sh----------------
             # Custom setup (not as previous)
             if report_mode == 'private':
                 ws_name = 'Ridotta'
@@ -2797,7 +2798,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
 
                 # Setup columns
                 excel_pool.column_width(
-                    ws_name_ref, [14, 30, 5, 14, 12, 12])
+                    ws_name_ref, [14, 30, 7, 14, 12, 12])
 
                 # -------------------------------------------------------------
                 # Insert Logo:
