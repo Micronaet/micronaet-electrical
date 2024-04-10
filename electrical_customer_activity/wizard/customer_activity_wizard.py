@@ -3131,7 +3131,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         ws_name_ref, row, [
                             'SPESE', '',
                             # '', '',
-                            # '',
+                            '',
                             ], default_format=f_header)
 
                     row += 1
