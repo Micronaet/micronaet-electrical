@@ -3129,13 +3129,16 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     row += 2
                     excel_pool.write_xls_line(
                         ws_name_ref, row, [
-                            'SPESE', '', '', '', '',
+                            'SPESE', '',
+                            # '', '',
+                            # '',
                             ], default_format=f_header)
 
                     row += 1
                     excel_pool.write_xls_line(
                         ws_name_ref, row, [
-                            'Data', 'Categoria', 'Costo',  'Scontato',
+                            'Data', 'Categoria',
+                            # 'Costo',  'Scontato',
                             'Totale',
                             ], default_format=f_header)
 
@@ -3153,8 +3156,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             data = [
                                 formatLang(date[:10]),
                                 category,
-                                (cost, f_number_color),
-                                (discount, f_number_color),
+                                # (cost, f_number_color),
+                                # (discount, f_number_color),
                                 (revenue, f_number_color),
                                 ]
 
@@ -3173,7 +3176,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         ws_name_ref, row, [
                             (total, f_number),
                             ],
-                        default_format=f_text, col=4)
+                        default_format=f_text, col=2)
                     private_summary.append(('Spese', total))
 
                 # -------------------------------------------------------------
