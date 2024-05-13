@@ -55,11 +55,28 @@ class NewReceiptWizard(orm.Model):
         """
         return True
 
+    def action_courtesy_print(self, cr, uid, ids, context=None):
+        """ Print label selected
+        """
+        # wiz_proxy = self.browse(cr, uid, ids, context=context)[0]
+        datas = {
+            'mode': 'courtesy',
+        }
+
+        return {
+            'type': 'ir.actions.report.xml',
+            'report_name': 'new_receipt_wizard_report',
+            'datas': datas,
+            'context': context,
+        }
+
     def action_print(self, cr, uid, ids, context=None):
         """ Print label selected
         """
         # wiz_proxy = self.browse(cr, uid, ids, context=context)[0]
-        datas = {}
+        datas = {
+            'mode': 'confirmed',
+        }
 
         return {
             'type': 'ir.actions.report.xml',

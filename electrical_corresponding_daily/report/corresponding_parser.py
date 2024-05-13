@@ -37,10 +37,13 @@ class Parser(report_sxw.rml_parse):
     def __init__(self, cr, uid, name, context):
         super(Parser, self).__init__(cr, uid, name, context)
         self.localcontext.update({
-            # 'get_data': self.get_data,
+            'get_mode': self.get_mode,
         })
 
-    # def get_data(self, o):
-    #    """ Reset parameter used in report
-    #    """
-    #    return ''
+    def get_mode(self, data):
+        """ Reset parameter used in report
+        """
+        if data.get('mode') == 'courtesy':
+            return 'STAMPA DI CORTESIA'
+        else:
+            return 'SCONTRINO'
