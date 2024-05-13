@@ -29,7 +29,7 @@
                                 <field name="cost" />
                                 <field name="price" />
                                 <field name="price_vat" />
-                                <field name="subtotal" total="subtotal" />
+                                <field name="subtotal" sum="subtotal" />
                             </tree>
                         </field>
                         <field name="total" readonly="1" />

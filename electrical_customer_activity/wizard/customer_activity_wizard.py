@@ -1560,12 +1560,15 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         'Codice', 'Descrizione', 'UM',
                         'Q.', 'Costo ultimo', 'Scontato', 'Prezzo unitario',
                         'Sub. ultimo', 'Sub. scontato', 'Totale',
+                        'Note pre', 'Note post',
                         ], mask['Consegne'][1]),
                     'width': self.data_mask_filter([
                         30, 30, 15, 10, 20,
                         20, 35, 15,
                         10, 10, 10, 10,
-                        15, 15, 15, ], mask['Consegne'][1]),
+                        15, 15, 15,
+                        20, 20,
+                    ], mask['Consegne'][1]),
                     'total': {},
                     'data': picking_db,
                     },
@@ -1577,11 +1580,13 @@ class ResPartnerActivityWizard(orm.TransientModel):
                         'Descrizione', 'UM',
                         'Q.', 'Costo ultimo', 'Scontato', 'METEL',
                         'Sub. ultimo', 'Sub. scontato', 'Sub. METEL',
+                        'Note pre', 'Note post',
                         ],
                     'width': [
                         35, 20, 15, 10, 25, 35, 10,
                         15, 15, 15, 15,
                         20, 20, 20,
+                        20, 20,
                         ],
                     'total': {},
                     'data': ddt_db,
@@ -1592,9 +1597,11 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'header': [
                         'Data', 'Commessa', 'Destinazione', 'Contatto', 'Rif.',
                         'Note', 'Totale',
+                        # 'Note pre', 'Note post',
                         ],
                     'width': [
                         15, 20, 25, 25, 10, 40, 15,
+                        # 20, 20,
                         ],
                     'total': {},
                     'data': invoice_db,
@@ -1774,6 +1781,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                 total = sheet['total']
                 for key in picking_db:
                     for picking in picking_db[key]:
+                        note_pre = picking.note_pre or ''
+                        note_post = picking.note_post or ''
+
                         # document_total = 0.0
                         account = picking.account_id
                         account_id = account.id
@@ -1840,6 +1850,8 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                         (subtotal2, f_number_color),
                                         (subtotal3, f_number_color),
 
+                                        note_pre,
+                                        note_post,
                                         ], mask['Consegne'][1])
 
                                     excel_pool.write_xls_line(
@@ -1885,6 +1897,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                     (0.0, f_number),
                                     (0.0, f_number),
                                     (0.0, f_number),
+
+                                    note_pre,
+                                    note_post,
                                     ], mask['Consegne'][1])
 
                                 excel_pool.write_xls_line(
@@ -1955,6 +1970,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                             total[account_id] = 0.0
                         if ddt.picking_ids:
                             for picking in ddt.picking_ids:
+                                note_pre = picking.note_pre or ''
+                                note_post = picking.note_post or ''
+
                                 if picking.move_lines:
                                     for move in picking.move_lines:
                                         product = move.product_id
@@ -2007,6 +2025,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                             (subtotal1, f_number_color),
                                             (subtotal2, f_number_color),
                                             (subtotal3, f_number_color),
+
+                                            note_pre,
+                                            note_post,
                                             ], mask['DDT'][1])
 
                                         excel_pool.write_xls_line(
@@ -2045,6 +2066,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                         (0.0, f_number),
                                         (0.0, f_number),
                                         (0.0, f_number),
+
+                                        note_pre,
+                                        note_post,
                                         ], mask['DDT'][1])
 
                                     excel_pool.write_xls_line(
@@ -2067,6 +2091,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                                 (0.0, f_number),
                                 (0.0, f_number),
                                 (0.0, f_number),
+
+                                '/',
+                                '/',
                                 ], mask['DDT'][1])
 
                             excel_pool.write_xls_line(
