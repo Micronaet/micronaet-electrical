@@ -10,7 +10,7 @@
                    <header>
                        <button name="dummy_action" string="Total" type="object" attrs="{'invisible': [('state','=','done')]}" class="oe_highlight"/>
                        <button name="action_done" string="Confirm" type="object" icon="gtk-jump-to" attrs="{'invisible': [('state','=','done')]}" class="oe_highlight"/>
-                       <button name="action_courtesy_print" string="Stampa di cortesia" type="object" icon="gtk-print" class="oe_highlight" />
+                       <button name="action_courtesy_print" string="Stampa di cortesia" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('state','=','done')]}"/>
                        <button name="action_print" string="Stampa scontrino" type="object" icon="gtk-print" class="oe_highlight" attrs="{'invisible': [('state','!=','done')]}"/>
                        <field name="state" widget="statusbar" />
                    </header>
