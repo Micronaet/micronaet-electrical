@@ -44,6 +44,6 @@ class Parser(report_sxw.rml_parse):
         """ Reset parameter used in report
         """
         if data.get('mode') == 'courtesy':
-            return 'STAMPA DI CORTESIA'
+            return 'STAMPA DI CORTESIA\n'
         else:
-            return 'SCONTRINO'
+            return ''
