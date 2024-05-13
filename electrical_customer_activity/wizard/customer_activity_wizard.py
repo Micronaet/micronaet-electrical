@@ -1597,11 +1597,9 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     'header': [
                         'Data', 'Commessa', 'Destinazione', 'Contatto', 'Rif.',
                         'Note', 'Totale',
-                        # 'Note pre', 'Note post',
                         ],
                     'width': [
                         15, 20, 25, 25, 10, 40, 15,
-                        # 20, 20,
                         ],
                     'total': {},
                     'data': invoice_db,
