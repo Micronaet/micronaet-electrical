@@ -2766,7 +2766,7 @@ class ResPartnerActivityWizard(orm.TransientModel):
                     total_cost = summary[block].get('total_cost', 0.0)
                     total_discount = summary[block].get('total_discount', 0.0)
                     total_revenue = summary[block].get(
-                        'total_r./server.shevenue', 0.0)
+                        'total_revenue', 0.0)
 
                     if not any((total_cost, total_discount, total_revenue)):
                         continue

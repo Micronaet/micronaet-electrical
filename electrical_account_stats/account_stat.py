@@ -50,6 +50,61 @@ class AccountAnalyticAccount(orm.Model):
 
     _inherit = 'account.analytic.account'
 
+    def get_stat_filename(self, cr, uid, ids, context=None):
+        """ Get filename for this account
+            @return filename, account cleaned
+        """
+        account = self.browse(cr, uid, ids, context=context)[0]
+        path = os.path.expanduser('~/Analisi')
+        account_name = (account.code or 'noname').replace('/', '-')
+        filename = os.path.join(path, '%s.xlsx' % account_name)
+        return filename, account_name
+
+    def return_stat_attachment(self, cr, uid, ids, context=None):
+        """ Return attachment passed
+            filename: Name for the attachment
+            name: file name downloaded
+            php: paremeter if activate save_as module for 7.0 (passed base srv)
+            context: context passed
+        """
+        if context is None:
+            context = {
+                'lang': 'it_IT',
+            }
+
+        filename, name = self.get_stat_filename(
+            cr, uid, ids, context=context)
+
+        # Pool used:
+        attachment_pool = self.pool.get('ir.attachment')
+        try:
+            b64 = open(filename, 'rb').read().encode('base64')
+        except:
+            _logger.error(_('Cannot return file: %s') % filename)
+            raise osv.except_osv(
+                _('Report error'),
+                _('Cannot return file: %s') % filename,
+            )
+
+        # account_id = ids[0]
+        attachment_id = attachment_pool.create(cr, uid, {
+            'name': 'Dettaglio commessa',
+            'datas_fname': name,
+            'type': 'binary',
+            'datas': b64,
+            'partner_id': 1,  # account_id,
+            'res_model': 'res.partner',  # 'account.analytic.account'
+            'res_id': 1,   #account_id,
+        }, context=context)
+
+        # todo routine di pulizia
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/web/binary/saveas?model=ir.attachment&field=datas&'
+                   'filename_field=datas_fname&id=%s' % attachment_id,
+            'target': 'self',
+        }
+
     def get_detail_account_cost(self, cr, uid, ids, context=None):
         """ Return cost view:
         """
@@ -160,7 +215,8 @@ class AccountAnalyticAccount(orm.Model):
         excel_log = True  # Enable export in excel log file
 
         if excel_log:
-            save_fullname = os.path.expanduser('/tmp/log_excel.xlsx')
+            save_fullname, account_name = self.get_stat_filename(
+                cr, uid, ids, context=context)
             _logger.info('Preparing log file: %s' % save_fullname)
 
             # Pool for storage folder: 'res.partner.activity.storage'
@@ -757,7 +813,6 @@ class AccountAnalyticAccount(orm.Model):
         if excel_log:
             # Save log file:
             excel_pool.save_file_as(save_fullname)
-
         return res
 
     def refresh_stats(self, cr, uid, ids, context=None):
@@ -847,4 +902,3 @@ class AccountAnalyticAccount(orm.Model):
         'history_margin_invoice': fields.float(
             'Margine fatturato', digits=(16, 2)),
         }
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
