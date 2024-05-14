@@ -154,6 +154,75 @@ class AccountAnalyticAccount(orm.Model):
                 )
 
         # ---------------------------------------------------------------------
+        # Parameters:
+        # ---------------------------------------------------------------------
+        excel_pool = self.pool.get('excel.writer')
+        excel_log = True  # Enable export in excel log file
+
+        if excel_log:
+            save_fullname = os.path.expanduser('/tmp/log_excel.xlsx')
+            _logger.info('Preparing log file: %s' % save_fullname)
+
+            # Pool for storage folder: 'res.partner.activity.storage'
+            # -----------------------------------------------------------------
+            #                         Excel log file:
+            # -----------------------------------------------------------------
+            # Partner:
+            ws_name = 'Log commessa'
+
+            header = [
+                'Modo', 'Riferimento', 'Descrizione', 'Data',
+                'Q./H.', 'Prodotto/Operatore',
+                'Costo', 'Ricavo', 'Utile', 'Errore'
+                ]
+            width = [
+                10, 12, 32, 10,
+                5, 15,
+                10, 10, 10, 5,
+            ]
+            excel_pool.create_worksheet(ws_name)
+            excel_pool.freeze_panes(ws_name, 1, 3)
+
+            # Load formats:
+            excel_format = {
+                'title': excel_pool.get_format('title'),
+                'header': excel_pool.get_format('header'),
+                'white': {
+                    'text': excel_pool.get_format('text'),
+                    'number': excel_pool.get_format('number'),
+                    },
+                'red': {
+                    'text': excel_pool.get_format('bg_red'),
+                    'number': excel_pool.get_format('bg_red_number'),
+                    },
+                'green': {
+                    'text': excel_pool.get_format('bg_green'),
+                    'number': excel_pool.get_format('bg_green_number'),
+                    },
+                'grey': {
+                    'text': excel_pool.get_format('bg_grey'),
+                    'number': excel_pool.get_format('bg_grey_number'),
+                    },
+                'blue': {
+                    'text': excel_pool.get_format('bg_blue'),
+                    'number': excel_pool.get_format('bg_blue_number'),
+                    },
+                'yellow': {
+                    'text': excel_pool.get_format('bg_yellow'),
+                    'number': excel_pool.get_format('bg_yellow_number'),
+                    },
+            }
+
+            # Setup columns header
+            excel_pool.column_width(ws_name, width)
+            row = 0
+            excel_pool.write_xls_line(
+                ws_name, row, header, default_format=excel_format['header'])
+            excel_pool.autofilter(ws_name, row, 0, row, len(header) - 1)
+        else:
+            save_fullname = ''
+
+        # ---------------------------------------------------------------------
         #                             Procedure
         # ---------------------------------------------------------------------
         # Pool used:
@@ -231,7 +300,7 @@ class AccountAnalyticAccount(orm.Model):
                 }
 
             # -----------------------------------------------------------------
-            # Pre load data:
+            # Pre load data used in loop:
             # -----------------------------------------------------------------
             partner = account.partner_id
             partner_forced = {}
@@ -256,7 +325,7 @@ class AccountAnalyticAccount(orm.Model):
                 ('pick_move', '=', 'out'),  # Only out movement
                 ], context=context)
             if picking_ids:
-                # TODO manage also state of picking:
+                # todo manage also state of picking:
                 pickings = picking_pool.browse(
                     cr, uid, picking_ids, context=context)
                 partner = pickings[0].partner_id
@@ -276,14 +345,27 @@ class AccountAnalyticAccount(orm.Model):
                         <th>Errori</th>
                     </tr>''' % (activity_price, len(picking_ids))
                 for picking in pickings:
-                    if picking.ddt_id:
+                    ddt = picking.ddt_id
+                    log_description = ''  # empty is picking only
+                    log_date = str(picking.date)[:10]
+
+                    if ddt:
+                        log_description += '[Pick %s]' % picking.name
                         if picking.ddt_id.is_invoiced:
                             mode = 'invoice'
                             total['account_invoice'][1] += \
                                 picking.ddt_id.invoice_amount
+
+                            log_description += '[DDT %s]' % ddt.name
+                            # todo:
+                            log_reference = 'FT XXX'  # todo FT mode!
+                            log_date = 'FT DATE'
                         else:
+                            log_reference = ddt.name
+                            log_date = str(ddt.date)[:10]
                             mode = 'ddt'
                     else:
+                        log_reference = picking.name
                         mode = 'picking'
 
                     for move in picking.move_lines:
@@ -318,9 +400,36 @@ class AccountAnalyticAccount(orm.Model):
 
                         if not cost or not revenue:
                             total[mode][3] += 1  # error
+                            log_error = True
+                        else:
+                            log_error = False
 
                         total[mode][0] += cost
                         total[mode][1] += revenue
+
+                        # -----------------------------------------------------
+                        # Log line:
+                        # -----------------------------------------------------
+                        if excel_log:
+                            row += 1
+                            if log_error:
+                                color_format = excel_format['red']
+                            else:
+                                color_format = excel_format['white']
+                            excel_pool.write_xls_line(
+                                ws_name, row, [
+                                    mode,
+                                    log_reference,
+                                    log_description,
+                                    log_date,
+                                    (qty, color_format['number']),
+                                    product.default_code or '/',
+                                    (cost, color_format['number']),
+                                    (revenue, color_format['number']),
+                                    (revenue - cost, color_format['number']),
+                                    'X' if log_error else '',
+                                ],
+                                default_format=color_format['text'])
 
                 for mode, name in (
                         ('picking', 'Consegne'),
@@ -380,11 +489,44 @@ class AccountAnalyticAccount(orm.Model):
                     else:  # read for default list:
                         unit_revenue = mode_pricelist.get(user_mode_id, 0.0)
 
-                    total[mode][0] -= ts.amount  # Always negative
-                    total[mode][1] += ts.unit_amount * unit_revenue  # revenue
-                    total[mode][3] += ts.unit_amount  # H.
+                    this_cost = ts.amount  # Always negative
+                    this_revenue = ts.unit_amount * unit_revenue  # revenue
+                    this_h = ts.unit_amount  # H.
 
-                for mode, name in (('intervent', 'Da fatturare'),
+                    total[mode][0] -= this_cost
+                    total[mode][1] += this_revenue
+                    total[mode][3] += this_h
+
+                    # ---------------------------------------------------------
+                    # Log line:
+                    # ---------------------------------------------------------
+                    if excel_log:
+                        row += 1
+                        if not this_cost or not this_revenue:
+                            color_format = excel_format['red']
+                            log_error = True
+                        else:
+                            color_format = excel_format['white']
+                            log_error = False
+                        excel_pool.write_xls_line(
+                            ws_name, row, [
+                                mode,
+                                ts.ref or '',
+                                ts.operation_id.name or '',
+                                str(ts.date_start)[:10],
+                                # intervent_total?
+                                (this_h, color_format['number']),
+                                ts.user_id.name or '/',
+                                (this_cost, color_format['number']),
+                                (this_revenue, color_format['number']),
+                                (this_revenue + this_cost,
+                                    color_format['number']),
+                                'X' if log_error else '',
+                            ],
+                            default_format=color_format['text'])
+
+                for mode, name in (
+                        ('intervent', 'Da fatturare'),
                         ('intervent_invoiced', 'Fatturati')):
                     total[mode][2] = total[mode][1] - total[mode][0]
 
@@ -404,7 +546,7 @@ class AccountAnalyticAccount(orm.Model):
                     <p><b>Interventi</b>:<br/>Non presenti!</p>'''
 
             # -----------------------------------------------------------------
-            #                           Expences:
+            #                           Expenses:
             # -----------------------------------------------------------------
             expence_ids = expence_pool.search(cr, uid, [
                 ('account_id', '=', account_id),
@@ -612,6 +754,10 @@ class AccountAnalyticAccount(orm.Model):
                             bold=True,
                             ),
                         )
+        if excel_log:
+            # Save log file:
+            excel_pool.save_file_as(save_fullname)
+
         return res
 
     def refresh_stats(self, cr, uid, ids, context=None):
