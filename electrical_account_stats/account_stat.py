@@ -89,7 +89,7 @@ class AccountAnalyticAccount(orm.Model):
         # account_id = ids[0]
         attachment_id = attachment_pool.create(cr, uid, {
             'name': 'Dettaglio commessa',
-            'datas_fname': name,
+            'datas_fname': '%s.xlsx' % name,
             'type': 'binary',
             'datas': b64,
             'partner_id': 1,  # account_id,
@@ -233,7 +233,7 @@ class AccountAnalyticAccount(orm.Model):
                 ]
             width = [
                 10, 12, 32, 10,
-                5, 15,
+                8, 16,
                 10, 10, 10, 5,
             ]
             excel_pool.create_worksheet(ws_name)
@@ -271,7 +271,8 @@ class AccountAnalyticAccount(orm.Model):
 
             # Setup columns header
             excel_pool.column_width(ws_name, width)
-            row = 0
+            row = 1  # jump first line for total (write after)
+            from_line = row + 1
             excel_pool.write_xls_line(
                 ws_name, row, header, default_format=excel_format['header'])
             excel_pool.autofilter(ws_name, row, 0, row, len(header) - 1)
@@ -811,6 +812,27 @@ class AccountAnalyticAccount(orm.Model):
                             ),
                         )
         if excel_log:
+            to_line = row
+
+            # Write total row:
+            color_format = excel_format['blue']
+            row = 0  # Write first line total
+            excel_pool.write_xls_line(
+                ws_name, row,
+                ['', '', '', 'Totali', 'X', '', 'X', 'X', 'X', ''],
+                default_format=color_format['text'])
+
+            for col in (4, 6, 7, 8):
+                from_cell = excel_pool.rowcol_to_cell(from_line, col)
+                to_cell = excel_pool.rowcol_to_cell(to_line, col)
+                formula = u"=SUBTOTAL(9,%s:%s)" % (from_cell, to_cell)
+                excel_pool.write_formula(
+                    ws_name,
+                    row, col, formula,
+                    color_format['number'],
+                    0.0,  # complete_total[position],
+                )
+
             # Save log file:
             excel_pool.save_file_as(save_fullname)
         return res
