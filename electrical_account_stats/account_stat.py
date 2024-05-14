@@ -232,7 +232,7 @@ class AccountAnalyticAccount(orm.Model):
                 'Costo', 'Ricavo', 'Utile', 'Errore'
                 ]
             width = [
-                14, 12, 32, 10,
+                14, 18, 40, 10,
                 8, 16,
                 10, 10, 10, 5,
             ]
