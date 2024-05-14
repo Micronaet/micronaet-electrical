@@ -237,7 +237,7 @@ class AccountAnalyticAccount(orm.Model):
                 10, 10, 10, 5,
             ]
             excel_pool.create_worksheet(ws_name)
-            excel_pool.freeze_panes(ws_name, 1, 3)
+            excel_pool.freeze_panes(ws_name, 2, 3)
 
             # Load formats:
             excel_format = {
