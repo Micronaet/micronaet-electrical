@@ -624,17 +624,44 @@ class AccountAnalyticAccount(orm.Model):
 
                 for expence in expence_pool.browse(
                         cr, uid, expence_ids, context=context):
-                    total[mode][0] += expence.total
-                    total[mode][1] += expence.total_forced or expence.total
+                    this_cost = expence.total
+                    this_revenue = expence.total_forced or expence.total
+                    total[mode][0] += this_cost
+                    total[mode][1] += this_revenue
+
+                    # ---------------------------------------------------------
+                    # Log line:
+                    # ---------------------------------------------------------
+                    if excel_log:
+                        row += 1
+                        color_format = excel_format['white']
+                        log_error = False
+                        excel_pool.write_xls_line(
+                            ws_name, row, [
+                                'expence',
+                                expence.category_id.name or '',
+                                expence.name or '',
+                                str(expence.date),
+                                # intervent_total?
+                                (1, color_format['number']),
+                                expence.printable or '/',
+                                (this_cost, color_format['number']),
+                                (this_revenue, color_format['number']),
+                                (this_revenue - this_cost,
+                                 color_format['number']),
+                                'X' if log_error else '',
+                            ],
+                            default_format=color_format['text'])
+
                 total[mode][2] = total[mode][1] - total[mode][0]
 
                 res[account_id]['statinfo_complete'] += '''
                     <tr class='table_bf'>
                         <td class="td_text">Spese</td>%s%s%s
                     </tr>''' % (
-                        number_cell(total[mode][0]), # cost
-                        number_cell(total[mode][1]), # revenue
-                        number_cell(total[mode][2]), # gain
+                        number_cell(total[mode][0]),  # cost
+                        number_cell(total[mode][1]),  # revenue
+                        number_cell(total[mode][2]),  # gain
                         )
                 res[account_id]['statinfo_complete'] += '''</table><br/>'''
 
